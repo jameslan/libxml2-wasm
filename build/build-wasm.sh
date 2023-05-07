@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 
-rm -rf build
-mkdir build
-cd build
-emconfigure ../libxml2/autogen.sh \
+emconfigure $1/autogen.sh \
   --without-python \
   --without-http \
   --without-sax1 \
@@ -15,4 +12,4 @@ emconfigure ../libxml2/autogen.sh \
   --disable-shared \
   --enable-static
 emmake make
-emcc -L.libs -lxml2 -o libxml2.wasm --no-entry -s EXPORTED_FUNCTIONS=_xmlNewDoc,_xmlNewDocText,_xmlNewDocComment
+emcc -L.libs -lxml2 -o libxml2.wasm --no-entry -s EXPORTED_FUNCTIONS=@$(dirname $0)/wasm-exported.txt

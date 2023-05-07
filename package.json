@@ -2,7 +2,10 @@
     "name": "libxml2-wasm",
     "version": "0.0.1",
     "description": "Bring libxml2 to browsers using WebAssembly",
-    "scripts": {},
+    "scripts": {
+        "clean": "rm -rf out && mkdir out",
+        "build:wasm": "cd out && ../build/build-wasm.sh ../libxml2"
+    },
     "repository": {
         "type": "git",
         "url": "git@github.com:jameslan/libxml2-wasm.git"

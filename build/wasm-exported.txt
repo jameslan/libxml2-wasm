@@ -1,0 +1,3 @@
+_xmlNewDoc
+_xmlNewDocText
+_xmlNewDocComment
