@@ -1,3 +1,4 @@
 _xmlNewDoc
 _xmlNewDocText
 _xmlNewDocComment
+_xmlReadMemory

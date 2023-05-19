@@ -1,0 +1,24 @@
+const wasmSrc = atob('<%= wasm %>')
+
+const mod = new WebAssembly.Module(Uint8Array.from(wasmSrc, c => c.charCodeAt(0)))
+
+const impObj = WebAssembly.Module.imports(mod)
+    .filter(({ kind }) => kind === 'function')
+    .reduce(
+        (obj, imp) => {
+            (obj[imp.module] ||= {})[imp.name] = () => {} // every module is an object, with empty function for each name
+            return obj
+        },
+        {},
+    )
+
+const instance = WebAssembly.instantiate(mod, impObj).then(inst => {
+    inst.exports._initialize()
+    return inst
+})
+
+<% funcs.forEach(function(func) { %>
+export async function <%= func %>() {
+    return (await instance).exports.<%= func %>.apply(null, arguments)
+}
+<% }) %>
