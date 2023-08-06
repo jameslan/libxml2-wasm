@@ -1,3 +1,4 @@
 /node_modules
 /lib
 /out
+/benchmark/node_modules
