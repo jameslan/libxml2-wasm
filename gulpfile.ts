@@ -62,7 +62,7 @@ export function link(cb: TaskFunctionCallback) {
             '-lxml2',
             '-o', 'libxml2.wasm',
             '--no-entry',
-            '-s', `EXPORTED_FUNCTIONS=@${relative(libxmlBin, libxmlExportListFile)}`
+            '-s', `EXPORTED_FUNCTIONS=@${relative(libxmlBin, libxmlExportListFile)}`,
         ],
         cb,
     )
