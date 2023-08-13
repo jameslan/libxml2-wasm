@@ -12,13 +12,18 @@ const impObj = WebAssembly.Module.imports(mod)
         {},
     )
 
-const instance = WebAssembly.instantiate(mod, impObj).then(inst => {
+async function init() {
+    const inst = await WebAssembly.instantiate(mod, impObj);
     inst.exports._initialize()
     return inst
-})
+}
+
+const instance = await init();
+
+export default instance;
 
 <% funcs.forEach(function(func) { %>
-export async function <%= func %>() {
-    return (await instance).exports.<%= func %>.apply(null, arguments)
+export function <%= func %>() {
+    return instance.exports.<%= func %>.apply(null, arguments);
 }
 <% }) %>

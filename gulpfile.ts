@@ -10,7 +10,7 @@ const dest = 'lib'
 const libxmlWasm = `${libxmlBin}/libxml2.wasm`
 const libxmlWrapTemplate = 'build/wrap-wasm.ejs'
 const libxmlExportListFile = 'build/wasm-exported.txt'
-const libxmlModuleJs = `${libxmlBin}/libxml2.js`
+const libxmlModuleJs = `${libxmlBin}/libxml2.mjs`
 
 function execInBin(cmd: string[], cb: TaskFunctionCallback) {
     const subprocess = exec(cmd.join(' '), { cwd: libxmlBin }, cb)
