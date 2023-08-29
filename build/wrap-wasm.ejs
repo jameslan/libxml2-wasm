@@ -23,7 +23,5 @@ const instance = await init();
 export default instance;
 
 <% funcs.forEach(function(func) { %>
-export function <%= func %>() {
-    return instance.exports.<%= func %>.apply(null, arguments);
-}
+export const <%= func %> = instance.exports.<%= func %>;
 <% }) %>
