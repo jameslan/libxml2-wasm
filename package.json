@@ -3,7 +3,8 @@
     "version": "0.0.1",
     "description": "Bring libxml2 to browsers using WebAssembly",
     "scripts": {
-        "build": "gulp all"
+        "wasm": "gulp rebuild",
+        "build": "npm run wasm"
     },
     "repository": {
         "type": "git",
@@ -12,13 +13,13 @@
     "author": "James Lan",
     "license": "MIT",
     "devDependencies": {
-        "@types/ejs": "^3.1.2",
         "@types/gulp": "^4.0.13",
         "@types/node": "^20.4.5",
-        "ejs": "^3.1.9",
+        "@types/yargs": "^17.0.24",
         "gulp": "^4.0.2",
         "ts-node": "^10.9.1",
         "typedoc": "^0.24.8",
-        "typescript": "^5.1.6"
+        "typescript": "^5.1.6",
+        "yargs": "^17.7.2"
     }
 }

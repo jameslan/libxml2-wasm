@@ -2,15 +2,12 @@ import { exec } from 'node:child_process';
 import { TaskFunctionCallback, series } from 'gulp';
 import { mkdirSync, rmSync, promises as fs } from 'node:fs';
 import { relative } from 'node:path';
-import { renderFile } from 'ejs';
+import { argv } from 'yargs';
 
 const libxmlSrc = 'libxml2';
 const libxmlBin = 'out';
 const dest = 'lib';
-const libxmlWasm = `${libxmlBin}/libxml2.wasm`;
-const libxmlWrapTemplate = 'build/wrap-wasm.ejs';
 const libxmlExportListFile = 'build/wasm-exported.txt';
-const libxmlModuleJs = `${libxmlBin}/libxml2.mjs`;
 
 function execInBin(cmd: string[], cb: TaskFunctionCallback) {
     const subprocess = exec(cmd.join(' '), { cwd: libxmlBin }, cb);
@@ -55,29 +52,29 @@ export function compile(cb: TaskFunctionCallback) {
 }
 
 export function link(cb: TaskFunctionCallback) {
+    const cmd = [
+        'emcc',
+        '-L.libs',
+        '-lxml2',
+        '-o', 'libxml2.js',
+        '--no-entry',
+        '-s', 'MODULARIZE',
+        '-s', `EXPORTED_FUNCTIONS=@${relative(libxmlBin, libxmlExportListFile)}`,
+    ];
+
+    // debug build?
+    if ((argv as any).g) {
+        cmd.push('-g');
+    } else {
+        cmd.push('-s', 'SINGLE_FILE');
+    }
+
     execInBin(
-        [
-            'emcc',
-            '-L.libs',
-            '-lxml2',
-            '-o', 'libxml2.wasm',
-            '--no-entry',
-            '-s', `EXPORTED_FUNCTIONS=@${relative(libxmlBin, libxmlExportListFile)}`,
-        ],
+        cmd,
         cb,
     );
 }
 
-export async function wrap() {
-    const wasm = (await fs.readFile(libxmlWasm, {})).toString('base64');
-    const exportList = (await fs.readFile(libxmlExportListFile, 'utf-8'))
-        .split(/\r?\n/)
-        .filter(func => func.trim().length)
-        .map(func => func.slice(1));
-    const src = await renderFile(libxmlWrapTemplate, { wasm, funcs: exportList });
-    await fs.writeFile(libxmlModuleJs, src);
-}
-
 export const libxml = series(init, configure, compile);
-export const all = series(libxml, link, wrap);
+export const all = series(libxml, link);
 export const rebuild = series(clean, all);
