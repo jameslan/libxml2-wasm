@@ -1,3 +1,5 @@
+_malloc
+_free
 _xmlNewDoc
 _xmlNewDocText
 _xmlNewDocComment
