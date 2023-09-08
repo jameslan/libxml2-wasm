@@ -1,33 +1,34 @@
 import { exec } from 'node:child_process';
-import { TaskFunctionCallback, series } from 'gulp';
+import { dest, series, src } from 'gulp';
 import { mkdirSync, rmSync, promises as fs } from 'node:fs';
 import { relative } from 'node:path';
 import { argv } from 'yargs';
 
 const libxmlSrc = 'libxml2';
 const libxmlBin = 'out';
-const dest = 'lib';
+const destDir = 'lib';
+const generated = 'libxml2raw.js';
 const libxmlExportListFile = 'build/wasm-exported.txt';
 
-function execInBin(cmd: string[], cb: TaskFunctionCallback) {
+function execInBin(cmd, cb) {
     const subprocess = exec(cmd.join(' '), { cwd: libxmlBin }, cb);
     subprocess.stdout?.pipe(process.stdout);
     subprocess.stderr?.pipe(process.stderr);
 }
 
-export function clean(cb: TaskFunctionCallback) {
-    rmSync(dest, { recursive: true, force: true });
+export function clean(cb) {
+    rmSync(destDir, { recursive: true, force: true });
     rmSync(libxmlBin, { recursive: true, force: true });
     cb();
 }
 
-export function init(cb: TaskFunctionCallback) {
-    mkdirSync(dest, { recursive: true });
+export function init(cb) {
+    mkdirSync(destDir, { recursive: true });
     mkdirSync(libxmlBin, { recursive: true });
     cb();
 }
 
-export function configure(cb: TaskFunctionCallback) {
+export function configure(cb) {
     execInBin(
         [
             'emconfigure',
@@ -47,23 +48,24 @@ export function configure(cb: TaskFunctionCallback) {
     );
 }
 
-export function compile(cb: TaskFunctionCallback) {
+export function compile(cb) {
     execInBin(['emmake', 'make'], cb);
 }
 
-export function link(cb: TaskFunctionCallback) {
+export function link(cb) {
     const cmd = [
         'emcc',
         '-L.libs',
         '-lxml2',
-        '-o', 'libxml2.js',
+        '-o', generated,
         '--no-entry',
         '-s', 'MODULARIZE',
+        '-s', 'EXPORTED_RUNTIME_METHODS=lengthBytesUTF8,stringToUTF8',
         '-s', `EXPORTED_FUNCTIONS=@${relative(libxmlBin, libxmlExportListFile)}`,
     ];
 
     // debug build?
-    if ((argv as any).g) {
+    if (argv.g) {
         cmd.push('-g');
     } else {
         cmd.push('-s', 'SINGLE_FILE');
@@ -75,6 +77,11 @@ export function link(cb: TaskFunctionCallback) {
     );
 }
 
+export function collect() {
+    return src('./out/libxml2raw.js')
+        .pipe(dest(destDir));
+}
+
 export const libxml = series(init, configure, compile);
-export const all = series(libxml, link);
+export const all = series(libxml, link, collect);
 export const rebuild = series(clean, all);

@@ -19,5 +19,7 @@ jobs:
           version: ${{ env.EM_VERSION }}
       - name: Install npm packages
         run: npm ci
-      - name: Build wasm
+      - name: Build the library
         run: npm run build
+      - name: Test
+        run: npm run test
