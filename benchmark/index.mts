@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import * as libxmljs2 from 'libxmljs2';
 import { XMLParser } from 'fast-xml-parser';
 import { XmlDocument } from 'xmldoc';
+import { parseXmlString } from 'libxml2-wasm';
 
 for (const fixture of ['fixtures/small.xml', 'fixtures/medium.xml', 'fixtures/large.xml']) {
     const xml = readFileSync(fixture, 'utf-8');
@@ -16,6 +17,10 @@ for (const fixture of ['fixtures/small.xml', 'fixtures/medium.xml', 'fixtures/la
         }),
         benny.add('xmldoc', () => {
             new XmlDocument(xml);
+        }),
+        benny.add('libxml-wasm', () => {
+            const doc = parseXmlString(xml);
+            doc.dispose();
         }),
         benny.cycle(),
         benny.complete(() => console.log()),

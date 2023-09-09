@@ -4,13 +4,14 @@
   "description": "Benchmark for libxml2-wasm",
   "main": "index.js",
   "scripts": {
-    "test": "ts-node index.ts"
+    "test": "ts-node --esm index.mts"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "benny": "^3.7.1",
     "fast-xml-parser": "^4.2.7",
+    "libxml2-wasm": "file:..",
     "libxmljs2": "^0.32.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.6",

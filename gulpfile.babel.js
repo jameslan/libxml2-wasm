@@ -60,6 +60,7 @@ export function link(cb) {
         '-o', generated,
         '--no-entry',
         '-s', 'MODULARIZE',
+        '-s', 'ALLOW_MEMORY_GROWTH',
         '-s', 'EXPORTED_RUNTIME_METHODS=lengthBytesUTF8,stringToUTF8',
         '-s', `EXPORTED_FUNCTIONS=@${relative(libxmlBin, libxmlExportListFile)}`,
     ];
