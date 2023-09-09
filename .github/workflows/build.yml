@@ -3,23 +3,14 @@ on:
   push:
     branches:
       - master
-env:
-  EM_VERSION: 3.1.44
 jobs:
-  Build:
+  Checkout:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Setup Emcripten
-        uses: mymindstorm/setup-emsdk@v12
-        with:
-          version: ${{ env.EM_VERSION }}
-      - name: Install npm packages
-        run: npm ci
-      - name: Build the library
-        run: npm run build
-      - name: Test
-        run: npm run test
+  Build:
+        uses: jameslan/libxml2-wasm/.github/workflows/continuous-integration.yml@feature/ci
+        needs: Checkout
