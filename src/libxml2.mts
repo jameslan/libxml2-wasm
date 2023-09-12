@@ -12,7 +12,7 @@ function withStringUTF8<R>(str: string, process: (buf: number, len: number) => R
 }
 
 export function xmlReadMemory(xmlString: string) {
-    return withStringUTF8(xmlString, (buf, len) => libxml2._xmlReadMemory(buf, len));
+    return withStringUTF8(xmlString, (buf, len) => libxml2._xmlReadMemory(buf, len, 0, 0, 0));
 }
 
 export function xmlFreeDoc(xmlDocPtr: number) {

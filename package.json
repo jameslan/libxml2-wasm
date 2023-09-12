@@ -5,7 +5,7 @@
     "scripts": {
         "wasm": "gulp rebuild",
         "test": "mocha",
-        "build": "npm run wasm && tsc"
+        "build": "npm run wasm && tsc --declaration"
     },
     "repository": {
         "type": "git",
