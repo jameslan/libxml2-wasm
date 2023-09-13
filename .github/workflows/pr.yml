@@ -9,7 +9,7 @@ jobs:
           echo "github.event.pull_request.merge_commit_sha = ${{ github.event.pull_request.merge_commit_sha }}"
           echo "github.ref = ${{ github.ref }}"
           echo "github.sha = ${{ github.sha }}"
-          echo "github = ${{ github }}"
+          find .git/refs
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
