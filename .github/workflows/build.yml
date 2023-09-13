@@ -10,12 +10,12 @@ jobs:
   Checkout:
     runs-on: ubuntu-latest
     steps:
-      - name: Show file
-        run: cat .gitignore
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
           submodules: true
+      - name: Show file
+        run: cat .gitignore
       - name: Setup Emcripten
         uses: mymindstorm/setup-emsdk@v12
         with:
