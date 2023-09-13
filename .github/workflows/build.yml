@@ -7,7 +7,7 @@ on:
 env:
   EM_VERSION: 3.1.44
 jobs:
-  Checkout:
+  Build_Package:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -15,7 +15,7 @@ jobs:
         with:
           submodules: true
       - name: Show file
-        run: cat .gitignore
+        run: find .
       - name: Setup Emcripten
         uses: mymindstorm/setup-emsdk@v12
         with:
