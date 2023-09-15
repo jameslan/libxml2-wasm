@@ -1,12 +1,12 @@
 // @ts-ignore
 import { xmlFreeDoc, xmlNewDoc } from './libxml2.mjs';
-import { Element } from './element.mjs';
+import Element from './element.mjs';
 
-export class Document {
+export default class Document {
     xmlDocPtr: number;
 
     constructor(xmlDocPtr?: number) {
-        this.xmlDocPtr = xmlDocPtr ? xmlDocPtr : xmlNewDoc();
+        this.xmlDocPtr = xmlDocPtr || xmlNewDoc();
     }
 
     dispose() {

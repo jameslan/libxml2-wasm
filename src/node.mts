@@ -1,7 +1,7 @@
-import { Document } from "./document.mjs";
-import { Element } from "./element.mjs";
+import Document from "./document.mjs";
+import Element from "./element.mjs";
 
-export abstract class Node {
+export default abstract class Node {
     private _doc: Document;
 
     constructor(doc: Document) {
@@ -15,6 +15,5 @@ export abstract class Node {
     // parent(): Element | Document {
     // }
 
-    abstract type(): 'comment'|'element'|'text'|'attribute';
-
+    abstract type(): 'comment' | 'element' | 'text' | 'attribute';
 }

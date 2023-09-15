@@ -1,4 +1,4 @@
-import { Document } from './document.mjs';
+import Document from './document.mjs';
 import { xmlReadMemory } from './libxml2.mjs';
 
 export interface ParserOptions {
