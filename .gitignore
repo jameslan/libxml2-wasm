@@ -2,3 +2,4 @@
 /lib
 /out
 /benchmark/node_modules
+/libxml2-wasm-*.tgz
