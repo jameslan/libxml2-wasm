@@ -1,14 +1,14 @@
-import Document from "./document.mjs";
-import Element from "./element.mjs";
+import XmlDocument from "./document.mjs";
+import XmlElement from "./element.mjs";
 
-export default abstract class Node {
-    private _doc: Document;
+export default abstract class XmlNode {
+    private _doc: XmlDocument;
 
-    constructor(doc: Document) {
+    constructor(doc: XmlDocument) {
         this._doc = doc;
     }
 
-    doc(): Document {
+    doc(): XmlDocument {
         return this._doc;
     }
 

@@ -1,8 +1,8 @@
 // @ts-ignore
 import { xmlFreeDoc, xmlNewDoc } from './libxml2.mjs';
-import Element from './element.mjs';
+import XmlElement from './element.mjs';
 
-export default class Document {
+export default class XmlDocument {
     xmlDocPtr: number;
 
     constructor(xmlDocPtr?: number) {
@@ -16,7 +16,7 @@ export default class Document {
     get(xPath: string) {
     }
 
-    root(): Element | null {
+    root(): XmlElement | null {
         return null;
     }
 }

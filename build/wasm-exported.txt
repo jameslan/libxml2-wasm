@@ -5,3 +5,6 @@ _xmlNewDocText
 _xmlNewDocComment
 _xmlReadMemory
 _xmlFreeDoc
+_xmlXPathNewContext
+_xmlXPathFreeContext
+_xmlDocGetRootElement

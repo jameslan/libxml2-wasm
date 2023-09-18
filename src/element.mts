@@ -1,6 +1,6 @@
-import Node from './node.mjs';
+import XmlNode from './node.mjs';
 
-export default class Element extends Node {
+export default class XmlElement extends XmlNode {
     type(): 'comment' | 'element' | 'text' | 'attribute' {
         return 'element';
     }

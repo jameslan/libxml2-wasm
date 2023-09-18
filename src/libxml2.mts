@@ -1,4 +1,4 @@
-import module_loader from './libxml2raw.js';
+import module_loader, { XmlDocPtr } from './libxml2raw.js';
 
 const libxml2 = await module_loader();
 
@@ -11,12 +11,15 @@ function withStringUTF8<R>(str: string, process: (buf: number, len: number) => R
     return ret;
 }
 
-export function xmlReadMemory(xmlString: string) {
+export function xmlReadMemory(xmlString: string): XmlDocPtr {
     return withStringUTF8(xmlString, (buf, len) => libxml2._xmlReadMemory(buf, len, 0, 0, 0));
 }
 
-export function xmlFreeDoc(xmlDocPtr: number) {
-    libxml2._xmlFreeDoc(xmlDocPtr);
+export function xmlFreeDoc(doc: XmlDocPtr) {
+    libxml2._xmlFreeDoc(doc);
 }
 
 export const xmlNewDoc = libxml2._xmlNewDoc;
+export const xmlXPathNewContext = libxml2._xmlXPathNewContext;
+export const xmlXPathFreeContext = libxml2._xmlXPathFreeContext;
+export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
