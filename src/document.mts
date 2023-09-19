@@ -1,22 +1,26 @@
 // @ts-ignore
-import { xmlFreeDoc, xmlNewDoc } from './libxml2.mjs';
+import { xmlDocGetRootElement, xmlFreeDoc, xmlNewDoc } from './libxml2.mjs';
 import XmlElement from './element.mjs';
 
 export default class XmlDocument {
-    xmlDocPtr: number;
+    _docPtr: number;
 
     constructor(xmlDocPtr?: number) {
-        this.xmlDocPtr = xmlDocPtr || xmlNewDoc();
+        this._docPtr = xmlDocPtr ?? xmlNewDoc();
     }
 
     dispose() {
-        xmlFreeDoc(this.xmlDocPtr);
+        xmlFreeDoc(this._docPtr);
     }
 
     get(xPath: string) {
     }
 
     root(): XmlElement | null {
-        return null;
+        const root = xmlDocGetRootElement(this._docPtr);
+        if (!root) {
+            return null;
+        }
+        return new XmlElement(this, root);
     }
 }
