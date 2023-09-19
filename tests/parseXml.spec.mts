@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { parseXmlString } from '../lib/index.mjs';
+import exp from 'constants';
 
 describe('parseXmlString', () => {
     it('should parse valid xml string', () => {
@@ -8,4 +9,9 @@ describe('parseXmlString', () => {
         expect(doc.xmlDocPtr).to.not.equal(0);
         doc.dispose()
     });
+
+    it('should return null on invalid xml string', () => {
+        const doc = parseXmlString('<doc>');
+        expect(doc).to.be.null;
+    })
 });
