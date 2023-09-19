@@ -5,9 +5,10 @@ import exp from 'constants';
 describe('parseXmlString', () => {
     it('should parse valid xml string', () => {
         const doc = parseXmlString('<doc/>');
-        expect(doc.xmlDocPtr).to.be.a('number');
-        expect(doc.xmlDocPtr).to.not.equal(0);
-        doc.dispose()
+        expect(doc).is.not.null;
+        expect(doc!.xmlDocPtr).to.be.a('number');
+        expect(doc!.xmlDocPtr).to.not.equal(0);
+        doc!.dispose()
     });
 
     it('should return null on invalid xml string', () => {
