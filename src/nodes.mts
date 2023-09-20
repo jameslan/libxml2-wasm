@@ -1,11 +1,11 @@
 import XmlDocument from './document.mjs';
-import XmlElement from './element.mjs';
 import { XmlNodePtr } from './libxml2raw';
 
-export default abstract class XmlNode {
+export abstract class XmlNode {
     private _doc: XmlDocument;
     private _nodePtr: XmlNodePtr;
 
+    // TODO: Node creation
     constructor(doc: XmlDocument, nodePtr: XmlNodePtr) {
         this._doc = doc;
         this._nodePtr = nodePtr;
@@ -17,6 +17,16 @@ export default abstract class XmlNode {
 
     // parent(): Element | Document {
     // }
+}
 
-    abstract type(): 'comment' | 'element' | 'text' | 'attribute';
+export class XmlElement extends XmlNode {
+}
+
+export class XmlComment extends XmlNode {
+}
+
+export class XmlText extends XmlNode {
+}
+
+export class XmlAttribute extends XmlNode {
 }

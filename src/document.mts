@@ -1,6 +1,6 @@
 // @ts-ignore
 import { xmlDocGetRootElement, xmlFreeDoc, xmlNewDoc } from './libxml2.mjs';
-import XmlElement from './element.mjs';
+import { XmlElement } from './nodes.mjs';
 
 export default class XmlDocument {
     _docPtr: number;
