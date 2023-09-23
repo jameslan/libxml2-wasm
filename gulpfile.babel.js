@@ -8,7 +8,7 @@ const libxmlSrc = 'libxml2';
 const libxmlBin = 'out';
 const destDir = 'lib';
 const generated = 'libxml2raw.js';
-const libxmlExportListFile = 'build/wasm-exported.txt';
+const libxmlExportListFile = 'binding/exported-functions.txt';
 
 function execInBin(cmd, cb) {
     const subprocess = exec(cmd.join(' '), { cwd: libxmlBin }, cb);
