@@ -1,9 +1,11 @@
+import { getXmlNodeName } from './libxml2.mjs';
 import XmlDocument from './document.mjs';
 import { XmlNodePtr } from './libxml2raw';
 
 export abstract class XmlNode {
     private _doc: XmlDocument;
-    private _nodePtr: XmlNodePtr;
+
+    protected _nodePtr: XmlNodePtr;
 
     // TODO: Node creation
     constructor(doc: XmlDocument, nodePtr: XmlNodePtr) {
@@ -20,6 +22,9 @@ export abstract class XmlNode {
 }
 
 export class XmlElement extends XmlNode {
+    name(): string {
+        return getXmlNodeName(this._nodePtr);
+    }
 }
 
 export class XmlComment extends XmlNode {

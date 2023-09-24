@@ -1,4 +1,4 @@
-import module_loader, { XmlDocPtr } from './libxml2raw.js';
+import module_loader, { XmlDocPtr, XmlNodePtr } from './libxml2raw.js';
 
 const libxml2 = await module_loader();
 
@@ -9,6 +9,10 @@ function withStringUTF8<R>(str: string, process: (buf: number, len: number) => R
     const ret = process(buf, len);
     libxml2._free(buf);
     return ret;
+}
+
+export function getXmlNodeName(node: XmlNodePtr): string {
+    return libxml2.UTF8ToString(libxml2.getValue(node + 8, '*'));
 }
 
 export function xmlReadMemory(xmlString: string): XmlDocPtr {

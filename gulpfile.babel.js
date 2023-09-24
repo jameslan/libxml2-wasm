@@ -9,6 +9,7 @@ const libxmlBin = 'out';
 const destDir = 'lib';
 const generated = 'libxml2raw.js';
 const libxmlExportListFile = 'binding/exported-functions.txt';
+const libxmlExportRuntimeListFile = 'binding/exported-runtime-functions.txt';
 
 function execInBin(cmd, cb) {
     const subprocess = exec(cmd.join(' '), { cwd: libxmlBin }, cb);
@@ -61,7 +62,7 @@ export function link(cb) {
         '--no-entry',
         '-s', 'MODULARIZE',
         '-s', 'ALLOW_MEMORY_GROWTH',
-        '-s', 'EXPORTED_RUNTIME_METHODS=lengthBytesUTF8,stringToUTF8',
+        '-s', `EXPORTED_RUNTIME_METHODS=@${relative(libxmlBin, libxmlExportRuntimeListFile)}`,
         '-s', `EXPORTED_FUNCTIONS=@${relative(libxmlBin, libxmlExportListFile)}`,
     ];
 
