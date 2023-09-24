@@ -9,8 +9,8 @@ describe('parseXmlString', () => {
         expect(doc).is.not.null;
         expect(doc!._docPtr).to.be.a('number');
         expect(doc!._docPtr).to.not.equal(0);
-        expect(doc!.root()).is.not.null
-        expect(doc!.root()?.name()).equals('doc');
+        expect(doc!.root).is.not.null
+        expect(doc!.root!.name).equals('doc');
 
         doc!.dispose()
     });

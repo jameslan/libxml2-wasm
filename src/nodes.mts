@@ -13,7 +13,7 @@ export abstract class XmlNode {
         this._nodePtr = nodePtr;
     }
 
-    doc(): XmlDocument {
+    get doc(): XmlDocument {
         return this._doc;
     }
 
@@ -22,7 +22,7 @@ export abstract class XmlNode {
 }
 
 export class XmlElement extends XmlNode {
-    name(): string {
+    get name(): string {
         return getXmlNodeName(this._nodePtr);
     }
 }

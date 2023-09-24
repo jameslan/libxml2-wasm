@@ -16,7 +16,7 @@ export default class XmlDocument {
     get(xPath: string) {
     }
 
-    root(): XmlElement | null {
+    get root(): XmlElement | null {
         const root = xmlDocGetRootElement(this._docPtr);
         if (!root) {
             return null;
