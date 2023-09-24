@@ -2,6 +2,9 @@ import module_loader, { XmlDocPtr, XmlNodePtr } from './libxml2raw.js';
 
 const libxml2 = await module_loader();
 
+export class XmlError extends Error {}
+export class XmlParseError extends XmlError {}
+
 function withStringUTF8<R>(str: string, process: (buf: number, len: number) => R): R {
     const len = libxml2.lengthBytesUTF8(str);
     const buf = libxml2._malloc(len + 1);

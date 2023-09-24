@@ -1,5 +1,5 @@
 // @ts-ignore
-import { xmlDocGetRootElement, xmlFreeDoc, xmlNewDoc } from './libxml2.mjs';
+import { XmlError, xmlDocGetRootElement, xmlFreeDoc, xmlNewDoc } from './libxml2.mjs';
 import { XmlElement } from './nodes.mjs';
 
 export default class XmlDocument {
@@ -16,10 +16,11 @@ export default class XmlDocument {
     get(xPath: string) {
     }
 
-    get root(): XmlElement | null {
+    get root(): XmlElement {
         const root = xmlDocGetRootElement(this._docPtr);
         if (!root) {
-            return null;
+            // TODO: get error information from libxml2
+            throw new XmlError();
         }
         return new XmlElement(this, root);
     }
