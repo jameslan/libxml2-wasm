@@ -7,4 +7,5 @@ _xmlReadMemory
 _xmlFreeDoc
 _xmlXPathNewContext
 _xmlXPathFreeContext
+_xmlXPathNodeEval
 _xmlDocGetRootElement

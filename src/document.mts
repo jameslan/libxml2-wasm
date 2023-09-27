@@ -1,6 +1,8 @@
 // @ts-ignore
-import { XmlError, xmlDocGetRootElement, xmlFreeDoc, xmlNewDoc } from './libxml2.mjs';
-import { XmlElement } from './nodes.mjs';
+import {
+    XmlError, xmlDocGetRootElement, xmlFreeDoc, xmlNewDoc,
+} from './libxml2.mjs';
+import { XmlElement, XmlNode } from './nodes.mjs';
 
 export default class XmlDocument {
     _docPtr: number;
@@ -13,7 +15,8 @@ export default class XmlDocument {
         xmlFreeDoc(this._docPtr);
     }
 
-    get(xPath: string) {
+    get(xpath: string): XmlNode | boolean | number | string | null {
+        return this.root.get(xpath);
     }
 
     get root(): XmlElement {
