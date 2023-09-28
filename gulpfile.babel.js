@@ -53,7 +53,7 @@ export function compile(cb) {
     execInBin(['emmake', 'make'], cb);
 }
 
-export function link(cb) {
+export function bind(cb) {
     const cmd = [
         'emcc',
         '-L.libs',
@@ -79,11 +79,12 @@ export function link(cb) {
     );
 }
 
-export function collect() {
-    return src('./out/libxml2raw.js')
+export function dist() {
+    return src('./out/libxml2raw.*')
         .pipe(dest(destDir));
 }
 
 export const libxml = series(init, configure, compile);
-export const all = series(libxml, link, collect);
+export const link = series(bind, dist);
+export const all = series(libxml, link);
 export const rebuild = series(clean, all);
