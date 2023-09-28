@@ -1,6 +1,12 @@
-import module_loader, { XmlDocPtr, XmlNodePtr, XmlXPathContextPtr, XmlXPathObjectPtr } from './libxml2raw.js';
+import type {
+    XmlDocPtr,
+    XmlNodePtr,
+    XmlXPathContextPtr,
+    XmlXPathObjectPtr,
+} from './libxml2raw.js';
+import moduleLoader from './libxml2raw.js';
 
-const libxml2 = await module_loader();
+const libxml2 = await moduleLoader();
 
 export class XmlError extends Error {}
 export class XmlParseError extends XmlError {}

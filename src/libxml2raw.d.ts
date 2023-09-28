@@ -30,4 +30,4 @@ export class LibXml2 {
     _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
 }
 
-export default function module_loader(): Promise<LibXml2>;
+export default function moduleLoader(): Promise<LibXml2>;

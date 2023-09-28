@@ -4,8 +4,9 @@
     "description": "Bring libxml2 to browsers using WebAssembly",
     "scripts": {
         "wasm": "gulp rebuild",
-        "test": "mocha",
+        "test": "mocha && npm run lint",
         "build": "npm run wasm && tsc --declaration",
+        "lint": "eslint src/*",
         "watch": "tsc --declaration --watch"
     },
     "repository": {
@@ -15,7 +16,9 @@
     "main": "lib/index.mjs",
     "author": "James Lan",
     "license": "MIT",
-    "files": ["lib/*"],
+    "files": [
+        "lib/*"
+    ],
     "devDependencies": {
         "@babel/core": "^7.22.15",
         "@babel/preset-env": "^7.22.15",
@@ -25,6 +28,11 @@
         "@types/node": "^20.4.5",
         "@types/yargs": "^17.0.24",
         "chai": "^4.3.8",
+        "eslint": "^8.50.0",
+        "eslint-config-airbnb-base": "^15.0.0",
+        "eslint-config-airbnb-typescript": "^17.1.0",
+        "eslint-import-resolver-typescript": "^3.6.1",
+        "eslint-plugin-import": "^2.28.1",
         "gulp": "^4.0.2",
         "mocha": "^10.2.0",
         "ts-node": "^10.9.1",

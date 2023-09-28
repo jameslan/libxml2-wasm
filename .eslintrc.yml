@@ -1,0 +1,21 @@
+root: true
+extends:
+  - airbnb-base
+  - airbnb-typescript/base
+parserOptions:
+  project:
+    - ./tsconfig.json
+plugins:
+  - import
+rules:
+  '@typescript-eslint/indent': off
+  no-underscore-dangle: off
+  max-classes-per-file: off # factory method in abstract base class requires multiple sub-classes in the same file
+  '@typescript-eslint/no-use-before-define': off # factory method in abstract base class requires multiple sub-classes in the same file
+  import/extensions:
+    - error
+    - never
+    - mjs: always # ESM import requires the full name
+settings:
+  import/resolver: typescript
+

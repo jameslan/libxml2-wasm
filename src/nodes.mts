@@ -3,10 +3,12 @@ import {
     XmlNodeSetStruct,
     XmlNodeStruct,
     XmlXPathObjectStruct,
-    xmlXPathFreeContext, xmlXPathNewContext, xmlXPathNodeEval
+    xmlXPathFreeContext,
+    xmlXPathNewContext,
+    xmlXPathNodeEval,
 } from './libxml2.mjs';
-import XmlDocument from './document.mjs';
-import { XmlNodePtr } from './libxml2raw';
+import type XmlDocument from './document.mjs';
+import type { XmlNodePtr } from './libxml2raw';
 
 export abstract class XmlNode {
     protected _doc: XmlDocument;
