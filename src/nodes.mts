@@ -25,24 +25,20 @@ export abstract class XmlNode {
         return this._doc;
     }
 
-    get(xpath: string): XmlNode | boolean | number | string | null {
+    get(xpath: string): XmlNode | null {
         const context = xmlXPathNewContext(this._doc._docPtr);
         const xpathObj = xmlXPathNodeEval(this._nodePtr, xpath, context);
         xmlXPathFreeContext(context);
-        switch (XmlXPathObjectStruct.type(xpathObj)) {
-            case XmlXPathObjectStruct.Type.XPATH_NODESET:
-                return this.create(
-                    XmlNodeSetStruct.nodeTable(XmlXPathObjectStruct.nodesetval(xpathObj)),
-                );
-            case XmlXPathObjectStruct.Type.XPATH_BOOLEAN:
-                return XmlXPathObjectStruct.boolval(xpathObj);
-            case XmlXPathObjectStruct.Type.XPATH_NUMBER:
-                return XmlXPathObjectStruct.floatval(xpathObj);
-            case XmlXPathObjectStruct.Type.XPATH_STRING:
-                return XmlXPathObjectStruct.stringval(xpathObj);
-            default:
-                return null;
+        if (XmlXPathObjectStruct.type(xpathObj) !== XmlXPathObjectStruct.Type.XPATH_NODESET) {
+            return null;
         }
+        const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
+        if (XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
+            return null;
+        }
+        return this.create(
+            XmlNodeSetStruct.nodeTable(nodeSet),
+        );
     }
 
     private create(nodePtr: XmlNodePtr): XmlNode {

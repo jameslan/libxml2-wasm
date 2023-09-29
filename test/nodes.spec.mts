@@ -22,5 +22,9 @@ describe('XmlNode', () => {
             expect(book).to.be.an.instanceOf(XmlElement);
             expect((book as XmlElement).name).to.equal('book');
         });
+
+        it('should return null if not found', () => {
+            expect(doc.get('bookstore')).to.be.null;
+        });
     });
 });

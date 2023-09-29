@@ -8,6 +8,7 @@ parserOptions:
     - ./tsconfig.test.json
 plugins:
   - import
+  - chai-friendly
 rules:
   '@typescript-eslint/indent': off
   no-underscore-dangle: off
@@ -17,6 +18,8 @@ rules:
     - error
     - never
     - mjs: always # ESM import requires the full name
+  '@typescript-eslint/no-unused-expressions': off
+  chai-friendly/no-unused-expressions: error
 settings:
   import/resolver: typescript
 overrides:

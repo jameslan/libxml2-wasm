@@ -15,7 +15,7 @@ export default class XmlDocument {
         xmlFreeDoc(this._docPtr);
     }
 
-    get(xpath: string): XmlNode | boolean | number | string | null {
+    get(xpath: string): XmlNode | null {
         return this.root.get(xpath);
     }
 
