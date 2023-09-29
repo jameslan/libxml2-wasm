@@ -20,7 +20,7 @@ describe('XmlNode', () => {
         it('should query the first element', () => {
             const book = doc.get('book');
             expect(book).to.be.an.instanceOf(XmlElement);
-            expect((book as XmlElement).name).to.equal('book');
+            expect(book!.name).to.equal('book');
         });
 
         it('should return null if not found', () => {

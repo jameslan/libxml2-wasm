@@ -25,6 +25,10 @@ export abstract class XmlNode {
         return this._doc;
     }
 
+    get name(): string {
+        return XmlNodeStruct.name_(this._nodePtr);
+    }
+
     get(xpath: string): XmlNode | null {
         const context = xmlXPathNewContext(this._doc._docPtr);
         const xpathObj = xmlXPathNodeEval(this._nodePtr, xpath, context);
@@ -61,9 +65,6 @@ export abstract class XmlNode {
 }
 
 export class XmlElement extends XmlNode {
-    get name(): string {
-        return XmlNodeStruct.name_(this._nodePtr);
-    }
 }
 
 export class XmlComment extends XmlNode {
@@ -73,7 +74,4 @@ export class XmlText extends XmlNode {
 }
 
 export class XmlAttribute extends XmlNode {
-    get name(): string {
-        return XmlNodeStruct.name_(this._nodePtr);
-    }
 }
