@@ -1,6 +1,6 @@
-import { expect } from "chai";
-import { parseXmlString } from "../lib/index.mjs";
-import { XmlElement } from "../lib/nodes.mjs";
+import { expect } from 'chai';
+import { parseXmlString } from '../lib/index.mjs';
+import { XmlElement } from '../lib/nodes.mjs';
 
 describe('XmlNode', () => {
     describe('get', () => {

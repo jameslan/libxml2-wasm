@@ -5,6 +5,7 @@ extends:
 parserOptions:
   project:
     - ./tsconfig.json
+    - ./tsconfig.test.json
 plugins:
   - import
 rules:
@@ -18,4 +19,9 @@ rules:
     - mjs: always # ESM import requires the full name
 settings:
   import/resolver: typescript
+overrides:
+  - files:
+    - test/*
+    env:
+      mocha: true
 

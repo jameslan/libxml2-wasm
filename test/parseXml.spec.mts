@@ -8,7 +8,7 @@ describe('parseXmlString', () => {
 
         expect(doc.root.name).equals('doc');
 
-        doc.dispose()
+        doc.dispose();
     });
 
     it('should throw exception on invalid xml string', () => {
