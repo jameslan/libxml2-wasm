@@ -74,4 +74,11 @@ export class XmlText extends XmlNode {
 }
 
 export class XmlAttribute extends XmlNode {
+    get value(): string {
+        const children = XmlNodeStruct.children(this._nodePtr);
+        if (children) {
+            return XmlNodeStruct.content(children);
+        }
+        return '';
+    }
 }

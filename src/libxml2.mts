@@ -81,6 +81,12 @@ export class XmlNodeStruct {
     static type = getValueFunc(4, 'i32');
 
     static name_ = getStringValueFunc(8);
+
+    static children = getValueFunc(12, '*');
+
+    static parent = getValueFunc(20, '*');
+
+    static content = getStringValueFunc(40);
 }
 
 export module XmlNodeStruct {
