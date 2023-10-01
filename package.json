@@ -7,6 +7,7 @@
         "test": "mocha && npm run lint",
         "build": "npm run wasm && tsc --declaration",
         "lint": "eslint src/* test/*",
+        "doc": "typedoc",
         "watch": "tsc --declaration --watch"
     },
     "repository": {
