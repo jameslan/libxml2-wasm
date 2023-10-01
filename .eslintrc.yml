@@ -20,6 +20,9 @@ rules:
     - mjs: always # ESM import requires the full name
   '@typescript-eslint/no-unused-expressions': off
   chai-friendly/no-unused-expressions: error
+  eol-last:
+    - error
+    - always
 settings:
   import/resolver: typescript
 overrides:
@@ -27,4 +30,3 @@ overrides:
     - test/*
     env:
       mocha: true
-

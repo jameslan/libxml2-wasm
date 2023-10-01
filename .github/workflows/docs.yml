@@ -1,4 +1,4 @@
-name: CI Build
+name: Doc Site Build
 on:
   push:
     branches:
