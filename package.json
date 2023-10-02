@@ -5,6 +5,7 @@
     "scripts": {
         "wasm": "gulp rebuild",
         "test": "mocha && npm run lint",
+        "cov": "c8 mocha",
         "build": "npm run wasm && tsc --declaration",
         "lint": "eslint src/* test/*",
         "doc": "typedoc",
@@ -28,6 +29,7 @@
         "@types/mocha": "^10.0.1",
         "@types/node": "^20.4.5",
         "@types/yargs": "^17.0.24",
+        "c8": "^8.0.1",
         "chai": "^4.3.8",
         "eslint": "^8.50.0",
         "eslint-config-airbnb-base": "^15.0.0",

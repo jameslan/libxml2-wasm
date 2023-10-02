@@ -1,0 +1,5 @@
+{
+  "exclude": [
+    "lib/libxml2raw.js"
+  ]
+}

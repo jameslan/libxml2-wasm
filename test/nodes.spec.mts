@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { parseXmlString } from '../lib/index.mjs';
-import { XmlAttribute, XmlElement } from '../lib/nodes.mjs';
+import { XmlAttribute, XmlElement, XmlText } from '../lib/nodes.mjs';
 
 const doc = parseXmlString(`<?xml version="1.0" encoding="UTF-8"?>
 <bookstore>
@@ -18,13 +18,31 @@ const doc = parseXmlString(`<?xml version="1.0" encoding="UTF-8"?>
 describe('XmlNode', () => {
     describe('get', () => {
         it('should query the first element', () => {
-            const book = doc.get('book');
+            const book = doc.root.get('book');
             expect(book).to.be.an.instanceOf(XmlElement);
             expect(book!.name).to.equal('book');
         });
 
         it('should return null if not found', () => {
             expect(doc.get('bookstore')).to.be.null;
+        });
+
+        it('should be able to return XmlAttribute', () => {
+            const attr = doc.root.get('book/title/@lang');
+            expect(attr).to.be.instanceOf(XmlAttribute);
+            expect(attr!.name).to.equal('lang');
+            expect((attr as XmlAttribute).value).to.equal('en');
+        });
+
+        it('should be able to return XmlText', () => {
+            const text = doc.get('/bookstore/book/title/text()');
+            expect(text).to.be.instanceOf(XmlText);
+        });
+    });
+
+    describe('doc property', () => {
+        it('should return its document', () => {
+            expect(doc.get('book')?.doc).to.equal(doc);
         });
     });
 });
