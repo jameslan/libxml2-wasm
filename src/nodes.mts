@@ -71,6 +71,9 @@ export class XmlComment extends XmlNode {
 }
 
 export class XmlText extends XmlNode {
+    get content(): string {
+        return XmlNodeStruct.content(this._nodePtr);
+    }
 }
 
 export class XmlAttribute extends XmlNode {

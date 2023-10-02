@@ -57,3 +57,11 @@ describe('XmlAttribute', () => {
         });
     });
 });
+
+describe('XmlText', () => {
+    describe('content getter', () => {
+        it('should get the text of XmlText', () => {
+            expect((doc.get('book/title/text()') as XmlText).content).to.equal('Harry Potter');
+        });
+    });
+});
