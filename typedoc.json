@@ -1,4 +1,11 @@
 {
     "$schema": "https://typedoc.org/schema.json",
-    "entryPoints": ["./src/index.mts"]
+    "entryPoints": ["./src/index.mts"],
+    "visibilityFilters": {
+        "protected": false,
+        "private": false,
+        "inherited": true,
+        "external": false,
+        "@internal": false
+    }
 }

@@ -55,6 +55,10 @@ describe('XmlAttribute', () => {
             expect(attr!.name).to.equal('lang');
             expect((attr as XmlAttribute).value).to.equal('en');
         });
+
+        it('should return text for XmlText', () => {
+            expect(doc.get('book/title/text()')!.name).to.equal('text');
+        });
     });
 });
 

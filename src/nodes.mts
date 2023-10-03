@@ -21,14 +21,27 @@ export abstract class XmlNode {
         this._nodePtr = nodePtr;
     }
 
+    /**
+     * The {@link XmlDocument} containing this node.
+     */
     get doc(): XmlDocument {
         return this._doc;
     }
 
+    /**
+     * The name of the current node.
+     * For some subclasses it returns fixed name.
+     * For example, {@link XmlText} returns `text`.
+     */
     get name(): string {
         return XmlNodeStruct.name_(this._nodePtr);
     }
 
+    /**
+     * Find the first descendant node matching the given xpath selector
+     * @param xpath XPath selector
+     * @returns null if not found, otherwise an instance of {@link XmlNode}'s subclass.
+     */
     get(xpath: string): XmlNode | null {
         const context = xmlXPathNewContext(this._doc._docPtr);
         const xpathObj = xmlXPathNodeEval(this._nodePtr, xpath, context);
@@ -60,6 +73,7 @@ export abstract class XmlNode {
                 throw new XmlError(`Unsupported node type ${nodeType}`);
         }
     }
+
     // parent(): Element | Document {
     // }
 }
@@ -71,12 +85,18 @@ export class XmlComment extends XmlNode {
 }
 
 export class XmlText extends XmlNode {
+    /**
+     * The content string of the text node.
+     */
     get content(): string {
         return XmlNodeStruct.content(this._nodePtr);
     }
 }
 
 export class XmlAttribute extends XmlNode {
+    /**
+     * The text string of the attribute node.
+     */
     get value(): string {
         const children = XmlNodeStruct.children(this._nodePtr);
         if (children) {
