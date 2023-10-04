@@ -5,12 +5,12 @@ import { XmlAttribute, XmlElement, XmlText } from '../lib/nodes.mjs';
 const doc = parseXmlString(`<?xml version="1.0" encoding="UTF-8"?>
 <bookstore>
     <book>
-        <title lang="en">Harry Potter</title>
+        <title lang="en" author="J.K. Rowling">Harry Potter</title>
         <price>29.99</price>
     </book>
 
     <book>
-        <title lang="en">Learning XML</title>
+        <title lang="en" author="Erik Ray">Learning XML</title>
         <price>39.95</price>
     </book>
 </bookstore>`);
@@ -43,6 +43,43 @@ describe('XmlNode', () => {
     describe('doc property', () => {
         it('should return its document', () => {
             expect(doc.get('book')?.doc).to.equal(doc);
+        });
+    });
+});
+
+describe('XmlElement', () => {
+    describe('attrs getter', () => {
+        it('should return all attributes', () => {
+            const { attrs } = doc.get('book/title') as XmlElement;
+
+            expect(attrs.length).to.equal(2);
+            expect(attrs[0].name).to.equal('lang');
+            expect(attrs[0].value).to.equal('en');
+            expect(attrs[1].name).to.equal('author');
+            expect(attrs[1].value).to.equal('J.K. Rowling');
+        });
+    });
+
+    describe('attr', () => {
+        it('should return null if not found', () => {
+            expect((doc.get('book/title') as XmlElement).attr('language')).to.be.null;
+        });
+
+        it('should return the attribute', () => {
+            const lang = (doc.get('book/title') as XmlElement).attr('lang');
+            expect(lang).is.not.null;
+            expect(lang!.name).to.equal('lang');
+            expect(lang!.value).to.equal('en');
+        });
+    });
+
+    describe('attrVal', () => {
+        it('should return null if not found', () => {
+            expect((doc.get('book/title') as XmlElement).attrVal('language')).to.be.null;
+        });
+
+        it('should return the valueof the attribute', () => {
+            expect((doc.get('book/title') as XmlElement).attrVal('lang')).to.equal('en');
         });
     });
 });

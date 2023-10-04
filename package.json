@@ -4,11 +4,13 @@
     "description": "Bring libxml2 to browsers using WebAssembly",
     "scripts": {
         "wasm": "gulp rebuild",
-        "test": "mocha && npm run lint",
-        "cov": "c8 mocha",
+        "unit": "mocha",
+        "test": "npm run cov && npm run lint",
+        "cov": "c8 npm run unit",
         "build": "npm run wasm && tsc --declaration",
         "lint": "eslint src/* test/*",
         "doc": "typedoc",
+        "docwatch": "typedoc --watch",
         "watch": "tsc --declaration --watch"
     },
     "repository": {

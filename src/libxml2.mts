@@ -1,4 +1,5 @@
 import type {
+    XmlAttrPtr,
     XmlDocPtr,
     XmlNodePtr,
     XmlXPathContextPtr,
@@ -37,6 +38,10 @@ export function xmlXPathNodeEval(
 
 export function xmlFreeDoc(doc: XmlDocPtr) {
     libxml2._xmlFreeDoc(doc);
+}
+
+export function xmlHasProp(node: XmlNodePtr, name: string): XmlAttrPtr {
+    return withStringUTF8(name, (buf /* , len */) => libxml2._xmlHasProp(node, buf));
 }
 
 function getValueFunc(offset: number, type: string): (ptr: number) => number {
@@ -86,7 +91,13 @@ export class XmlNodeStruct {
 
     static parent = getValueFunc(20, '*');
 
+    static next = getValueFunc(24, '*');
+
+    static prev = getValueFunc(28, '*');
+
     static content = getStringValueFunc(40);
+
+    static properties = getValueFunc(44, '*');
 }
 
 export module XmlNodeStruct {
@@ -96,6 +107,18 @@ export module XmlNodeStruct {
         XML_TEXT_NODE = 3,
         XML_COMMENT_NODE = 8,
     }
+}
+
+export class XmlAttrStruct {
+    static name_ = getStringValueFunc(8);
+
+    static children = getValueFunc(12, '*');
+
+    static parent = getValueFunc(20, '*');
+
+    static next = getValueFunc(24, '*');
+
+    static prev = getValueFunc(28, '*');
 }
 
 export const xmlNewDoc = libxml2._xmlNewDoc;

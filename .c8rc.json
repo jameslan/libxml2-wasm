@@ -1,5 +1,9 @@
 {
   "exclude": [
     "lib/libxml2raw.js"
+  ],
+  "reporter": [
+    "text",
+    "html"
   ]
 }

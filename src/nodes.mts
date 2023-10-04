@@ -1,8 +1,10 @@
 import {
+    XmlAttrStruct,
     XmlError,
     XmlNodeSetStruct,
     XmlNodeStruct,
     XmlXPathObjectStruct,
+    xmlHasProp,
     xmlXPathFreeContext,
     xmlXPathNewContext,
     xmlXPathNodeEval,
@@ -29,7 +31,7 @@ export abstract class XmlNode {
     }
 
     /**
-     * The name of the current node.
+     * The name of this node.
      * For some subclasses it returns fixed name.
      * For example, {@link XmlText} returns `text`.
      */
@@ -79,6 +81,52 @@ export abstract class XmlNode {
 }
 
 export class XmlElement extends XmlNode {
+    /**
+     * All attributes of this element.
+     */
+    get attrs(): XmlAttribute[] {
+        const attrs: XmlAttribute[] = [];
+        for (
+            let attr = XmlNodeStruct.properties(this._nodePtr);
+            attr;
+            attr = XmlNodeStruct.next(attr)
+        ) {
+            attrs.push(new XmlAttribute(this._doc, attr));
+        }
+
+        return attrs;
+    }
+
+    /**
+     * Get the attribute of this element.
+     * Return null if the attribute doesn't exist.
+     * @param name The name of the attribute
+     */
+    attr(name: string): XmlAttribute | null {
+        const attrPtr = xmlHasProp(this._nodePtr, name);
+        if (!attrPtr) {
+            return null;
+        }
+        return new XmlAttribute(this._doc, attrPtr);
+    }
+
+    /**
+     * Get the string value of the attribute of this element
+     * Return null if the attribute doesn't exist.
+     * @param name The name of the attribute
+     */
+    attrVal(name: string): string | null {
+        const attrPtr = xmlHasProp(this._nodePtr, name);
+        if (!attrPtr) {
+            return null;
+        }
+
+        const text = XmlAttrStruct.children(attrPtr);
+        if (!text) {
+            return '';
+        }
+        return XmlNodeStruct.content(text);
+    }
 }
 
 export class XmlComment extends XmlNode {
@@ -98,9 +146,9 @@ export class XmlAttribute extends XmlNode {
      * The text string of the attribute node.
      */
     get value(): string {
-        const children = XmlNodeStruct.children(this._nodePtr);
-        if (children) {
-            return XmlNodeStruct.content(children);
+        const text = XmlNodeStruct.children(this._nodePtr);
+        if (text) {
+            return XmlNodeStruct.content(text);
         }
         return '';
     }

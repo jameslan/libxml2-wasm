@@ -9,3 +9,4 @@ _xmlXPathNewContext
 _xmlXPathFreeContext
 _xmlXPathNodeEval
 _xmlDocGetRootElement
+_xmlHasProp
