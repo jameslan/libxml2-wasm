@@ -1,5 +1,4 @@
 import {
-    XmlAttrStruct,
     XmlError,
     XmlNodeSetStruct,
     XmlNodeStruct,
@@ -109,24 +108,6 @@ export class XmlElement extends XmlNode {
         }
         return new XmlAttribute(this._doc, attrPtr);
     }
-
-    /**
-     * Get the string value of the attribute of this element
-     * Return null if the attribute doesn't exist.
-     * @param name The name of the attribute
-     */
-    attrVal(name: string): string | null {
-        const attrPtr = xmlHasProp(this._nodePtr, name);
-        if (!attrPtr) {
-            return null;
-        }
-
-        const text = XmlAttrStruct.children(attrPtr);
-        if (!text) {
-            return '';
-        }
-        return XmlNodeStruct.content(text);
-    }
 }
 
 export class XmlComment extends XmlNode {
@@ -146,6 +127,9 @@ export class XmlAttribute extends XmlNode {
      * The text string of the attribute node.
      */
     get value(): string {
+        // TODO: should it be xmlNode or xmlAttribute?
+        // xmlNode: xmlXPathObject?
+        // xmlAttribute: children/next/prev?
         const text = XmlNodeStruct.children(this._nodePtr);
         if (text) {
             return XmlNodeStruct.content(text);

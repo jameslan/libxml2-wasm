@@ -72,16 +72,6 @@ describe('XmlElement', () => {
             expect(lang!.value).to.equal('en');
         });
     });
-
-    describe('attrVal', () => {
-        it('should return null if not found', () => {
-            expect((doc.get('book/title') as XmlElement).attrVal('language')).to.be.null;
-        });
-
-        it('should return the valueof the attribute', () => {
-            expect((doc.get('book/title') as XmlElement).attrVal('lang')).to.equal('en');
-        });
-    });
 });
 
 describe('XmlAttribute', () => {
