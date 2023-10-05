@@ -1,0 +1,43 @@
+name: Release and Publish
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version of the release, need to be identical to the version in package.json
+      title:
+        description: Title of the release
+      note:
+        description: Release note in Markdown format
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: verify version
+        run: test $(jq -r .version package.json) = ${{ env.version }}
+  build:
+    uses: ./.github/workflows/build.yml
+    needs: check
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v3
+      - name: create release
+        uses: ncipollo/release-action@v1
+        with:
+          name: ${{ github.event.inputs.title }}
+          body: ${{ github.event.inputs.note }}
+          tag: v${{ github.event.inputs.version }}
+          artifacts: ./artifact/*
+      - run: cp artifact/* .
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
