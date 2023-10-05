@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: verify version
-        run: test $(jq -r .version package.json) = ${{ env.version }}
+        run: test $(jq -r .version package.json) = ${{ github.event.inputs.version }}
   build:
     uses: ./.github/workflows/build.yml
     needs: check
