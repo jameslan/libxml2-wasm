@@ -4,6 +4,12 @@
 
 Bring libxml2 to browsers using WebAssembly
 
+**Current version is for feasibility/performance evaluation only**, its api may have breaking changes in patch version.
+
+## Documentation
+
+https://jameslan.github.io/libxml2-wasm/index.html
+
 ## Supported Environments
 
 This library uses ES Module and [top level await](https://caniuse.com/?search=top%20level%20await), so it require the following environment.
@@ -27,7 +33,7 @@ Then run test in `benchmark` directory,
 
 ```sh
 cd benchmark && npm ci
-npm run test
+npm test
 ```
 
 `libxmljs2` is js binding to native library libxml2; while `fast-xml` and `xmldoc` are pure javascript implementations.
