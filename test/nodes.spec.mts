@@ -45,6 +45,30 @@ describe('XmlNode', () => {
             expect(doc.get('book')?.doc).to.equal(doc);
         });
     });
+
+    describe('parent getter', () => {
+        it('should return null on root', () => {
+            expect(doc.root.parent).to.be.null;
+        });
+
+        it('should return parent element of an element', () => {
+            const parent = doc.root.get('book')?.parent;
+            expect(parent).to.be.instanceOf(XmlElement);
+            expect((parent as XmlElement).name).to.equal('bookstore');
+        });
+
+        it('should return parent element of an attribute', () => {
+            const parent = doc.root.get('book/title/@lang')?.parent;
+            expect(parent).to.be.instanceOf(XmlElement);
+            expect((parent as XmlElement).name).to.equal('title');
+        });
+
+        it('should return parent element of a text', () => {
+            const parent = doc.root.get('book/title/text()')?.parent;
+            expect(parent).to.be.instanceOf(XmlElement);
+            expect((parent as XmlElement).name).to.equal('title');
+        });
+    });
 });
 
 describe('XmlElement', () => {

@@ -1,5 +1,6 @@
 import {
     XmlError,
+    XmlTreeCommonStruct,
     XmlNodeSetStruct,
     XmlNodeStruct,
     XmlXPathObjectStruct,
@@ -75,8 +76,18 @@ export abstract class XmlNode {
         }
     }
 
-    // parent(): Element | Document {
-    // }
+    /**
+     * The parent node of this node.
+     *
+     * For root node, it's parent is null.
+     */
+    get parent(): XmlNode | null { // TODO: should it return XmlElement?
+        const parent = XmlNodeStruct.parent(this._nodePtr);
+        if (!parent || parent === this._doc._docPtr) {
+            return null;
+        }
+        return this.create(parent);
+    }
 }
 
 export class XmlElement extends XmlNode {
@@ -130,7 +141,7 @@ export class XmlAttribute extends XmlNode {
         // TODO: should it be xmlNode or xmlAttribute?
         // xmlNode: xmlXPathObject?
         // xmlAttribute: children/next/prev?
-        const text = XmlNodeStruct.children(this._nodePtr);
+        const text = XmlTreeCommonStruct.children(this._nodePtr);
         if (text) {
             return XmlNodeStruct.content(text);
         }

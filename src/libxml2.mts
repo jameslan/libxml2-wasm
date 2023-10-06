@@ -82,7 +82,7 @@ export class XmlNodeSetStruct {
     }
 }
 
-export class XmlNodeStruct {
+export class XmlTreeCommonStruct {
     static type = getValueFunc(4, 'i32');
 
     static name_ = getStringValueFunc(8);
@@ -94,7 +94,9 @@ export class XmlNodeStruct {
     static next = getValueFunc(24, '*');
 
     static prev = getValueFunc(28, '*');
+}
 
+export class XmlNodeStruct extends XmlTreeCommonStruct {
     static content = getStringValueFunc(40);
 
     static properties = getValueFunc(44, '*');
@@ -109,16 +111,7 @@ export module XmlNodeStruct {
     }
 }
 
-export class XmlAttrStruct {
-    static name_ = getStringValueFunc(8);
-
-    static children = getValueFunc(12, '*');
-
-    static parent = getValueFunc(20, '*');
-
-    static next = getValueFunc(24, '*');
-
-    static prev = getValueFunc(28, '*');
+export class XmlAttrStruct extends XmlTreeCommonStruct {
 }
 
 export const xmlNewDoc = libxml2._xmlNewDoc;
