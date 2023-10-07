@@ -33,11 +33,10 @@ jobs:
           body: ${{ github.event.inputs.note }}
           tag: v${{ github.event.inputs.version }}
           artifacts: ./artifact/*
-      - run: cp artifact/* .
       - uses: actions/setup-node@v3
         with:
-          node-version: '20.x'
-          registry-url: 'https://registry.npmjs.org'
-      - run: npm publish libxml2-wasm-*.tgz
+          node-version: 20.x
+          registry-url: https://registry.npmjs.org
+      - run: npm publish ./artifact/libxml2-wasm-*.tgz
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
