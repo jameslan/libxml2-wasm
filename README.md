@@ -1,6 +1,6 @@
 # libxml2-wasm
 
-![CI Build on master](https://github.com/jameslan/libxml2-wasm/actions/workflows/build.yml/badge.svg)
+[![CI Build on master](https://github.com/jameslan/libxml2-wasm/actions/workflows/build.yml/badge.svg)](https://github.com/jameslan/libxml2-wasm/actions/workflows/build.yml)
 
 Bring libxml2 to browsers using WebAssembly
 

@@ -7,5 +7,6 @@
         "inherited": true,
         "external": false,
         "@internal": false
-    }
+    },
+    "out": "./_site"
 }
