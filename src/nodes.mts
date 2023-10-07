@@ -40,6 +40,83 @@ export abstract class XmlNode {
     }
 
     /**
+     * The parent node of this node.
+     *
+     * For root node, it's parent is null.
+     */
+    get parent(): XmlNode | null { // TODO: should it return XmlElement?
+        const parent = XmlNodeStruct.parent(this._nodePtr);
+        if (!parent || parent === this._doc._docPtr) {
+            return null;
+        }
+        return this.create(parent);
+    }
+
+    /**
+     * The node of first child.
+     *
+     * Note that children of an element won't include attributes
+     *
+     * Return null if this node has no child
+     *
+     * @see
+     *  - {@link lastChild}
+     *  - {@link next}
+     *  - {@link prev}
+     */
+    get firstChild(): XmlNode | null {
+        const child = XmlNodeStruct.children(this._nodePtr);
+        return this.createNullable(child);
+    }
+
+    /**
+     * The node of last child.
+     *
+     * Note that children of an element won't include attributes
+     *
+     * Return null if this node has no child
+     *
+     * @see
+     *  - {@link firstChild}
+     *  - {@link next}
+     *  - {@link prev}
+     */
+    get lastChild(): XmlNode | null {
+        const child = XmlNodeStruct.last(this._nodePtr);
+        return this.createNullable(child);
+    }
+
+    /**
+     * The node of next sibling.
+     *
+     * Return null if this node is the last one.
+     *
+     * @see
+     *  - {@link firstChild}
+     *  - {@link lastChild}
+     *  - {@link prev}
+     */
+    get next(): XmlNode | null {
+        const child = XmlNodeStruct.next(this._nodePtr);
+        return this.createNullable(child);
+    }
+
+    /**
+     * The node of previous sibling.
+     *
+     * Return null if this node is the first one.
+     *
+     * @see
+     *  - {@link firstChild}
+     *  - {@link lastChild}
+     *  - {@link next}
+     */
+    get prev(): XmlNode | null {
+        const child = XmlNodeStruct.prev(this._nodePtr);
+        return this.createNullable(child);
+    }
+
+    /**
      * Find the first descendant node matching the given xpath selector
      * @param xpath XPath selector
      * @returns null if not found, otherwise an instance of {@link XmlNode}'s subclass.
@@ -60,6 +137,10 @@ export abstract class XmlNode {
         );
     }
 
+    private createNullable(nodePtr: XmlNodePtr): XmlNode | null {
+        return nodePtr ? this.create(nodePtr) : null;
+    }
+
     private create(nodePtr: XmlNodePtr): XmlNode {
         const nodeType = XmlNodeStruct.type(nodePtr);
         switch (nodeType) {
@@ -74,19 +155,6 @@ export abstract class XmlNode {
             default:
                 throw new XmlError(`Unsupported node type ${nodeType}`);
         }
-    }
-
-    /**
-     * The parent node of this node.
-     *
-     * For root node, it's parent is null.
-     */
-    get parent(): XmlNode | null { // TODO: should it return XmlElement?
-        const parent = XmlNodeStruct.parent(this._nodePtr);
-        if (!parent || parent === this._doc._docPtr) {
-            return null;
-        }
-        return this.create(parent);
     }
 }
 

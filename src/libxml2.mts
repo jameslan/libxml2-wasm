@@ -89,6 +89,8 @@ export class XmlTreeCommonStruct {
 
     static children = getValueFunc(12, '*');
 
+    static last = getValueFunc(16, '*');
+
     static parent = getValueFunc(20, '*');
 
     static next = getValueFunc(24, '*');

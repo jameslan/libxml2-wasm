@@ -1,19 +1,17 @@
 import { expect } from 'chai';
 import { parseXmlString } from '../lib/index.mjs';
-import { XmlAttribute, XmlElement, XmlText } from '../lib/nodes.mjs';
+import {
+    XmlAttribute,
+    XmlComment,
+    XmlElement,
+    XmlText,
+} from '../lib/nodes.mjs';
 
 const doc = parseXmlString(`<?xml version="1.0" encoding="UTF-8"?>
-<bookstore>
-    <book>
-        <title lang="en" author="J.K. Rowling">Harry Potter</title>
-        <price>29.99</price>
-    </book>
-
-    <book>
-        <title lang="en" author="Erik Ray">Learning XML</title>
-        <price>39.95</price>
-    </book>
-</bookstore>`);
+<bookstore><!--comment1-->
+    <book><title lang="en" author="J.K. Rowling">Harry Potter</title><price>29.99</price></book>
+    <book><title lang="en" author="Erik Ray">Learning XML</title><price>39.95</price></book>
+<!--comment2--></bookstore>`);
 
 describe('XmlNode', () => {
     describe('get', () => {
@@ -67,6 +65,92 @@ describe('XmlNode', () => {
             const parent = doc.root.get('book/title/text()')?.parent;
             expect(parent).to.be.instanceOf(XmlElement);
             expect((parent as XmlElement).name).to.equal('title');
+        });
+    });
+
+    describe('firstChild getter', () => {
+        it('should return null for a leaf node', () => {
+            const titleText = doc.get('book/title/text()');
+            expect(titleText?.firstChild).to.be.null;
+        });
+
+        it('should return text if has not sub element', () => {
+            const text = doc.get('book/title')?.firstChild;
+            expect(text).to.be.instanceOf(XmlText);
+            expect((text as XmlText).content).to.equal('Harry Potter');
+        });
+
+        it('should return first sub-element', () => {
+            const title = doc.get('book')?.firstChild;
+            expect(title).to.be.instanceOf(XmlElement);
+            expect((title as XmlElement).name).to.equal('title');
+        });
+
+        it('should be able to return comment node', () => {
+            const comment = doc.root.firstChild;
+            expect(comment).to.be.instanceOf(XmlComment);
+        });
+    });
+
+    describe('lastChild getter', () => {
+        it('should return null for a leaf node', () => {
+            const titleText = doc.get('book/title/text()');
+            expect(titleText?.lastChild).to.be.null;
+        });
+
+        it('should return text if has not sub element', () => {
+            const text = doc.get('book/title')?.lastChild;
+            expect(text).to.be.instanceOf(XmlText);
+            expect((text as XmlText).content).to.equal('Harry Potter');
+        });
+
+        it('should return last sub-element', () => {
+            const price = doc.get('book')?.lastChild;
+            expect(price).to.be.instanceOf(XmlElement);
+            expect((price as XmlElement).name).to.equal('price');
+        });
+
+        it('should be able to return comment node', () => {
+            const comment = doc.root.lastChild;
+            expect(comment).to.be.instanceOf(XmlComment);
+        });
+    });
+
+    describe('next getter', () => {
+        it('should return null for the last node', () => {
+            const price = doc.get('book')?.lastChild;
+            expect(price?.next).to.be.null;
+        });
+
+        it('should return next sibling element', () => {
+            const price = doc.get('book/title')?.next;
+            expect(price).to.be.instanceOf(XmlElement);
+            expect((price as XmlElement).name).to.equal('price');
+        });
+
+        it('should return next attribute', () => {
+            const author = doc.get('book/title/@lang')?.next;
+            expect(author).to.be.instanceOf(XmlAttribute);
+            expect((author as XmlAttribute).name).to.equal('author');
+        });
+    });
+
+    describe('prev getter', () => {
+        it('should return null for the first node', () => {
+            const price = doc.get('book')?.firstChild;
+            expect(price?.prev).to.be.null;
+        });
+
+        it('should return previous sibling element', () => {
+            const title = doc.get('book/price')?.prev;
+            expect(title).to.be.instanceOf(XmlElement);
+            expect((title as XmlElement).name).to.equal('title');
+        });
+
+        it('should return previous attribute', () => {
+            const lang = doc.get('book/title/@author')?.prev;
+            expect(lang).to.be.instanceOf(XmlAttribute);
+            expect((lang as XmlAttribute).name).to.equal('lang');
         });
     });
 });
