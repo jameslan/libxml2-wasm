@@ -31,6 +31,7 @@ export class LibXml2 {
     ): XmlXPathObjectPtr;
     _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
     _xmlHasProp(node: XmlNodePtr, name: CString): XmlAttrPtr;
+    _xmlNodeGetContent(node: XmlNodePtr): CString;
 }
 
 export default function moduleLoader(): Promise<LibXml2>;

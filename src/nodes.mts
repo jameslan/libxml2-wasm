@@ -1,6 +1,5 @@
 import {
     XmlError,
-    XmlTreeCommonStruct,
     XmlNodeSetStruct,
     XmlNodeStruct,
     XmlXPathObjectStruct,
@@ -8,6 +7,7 @@ import {
     xmlXPathFreeContext,
     xmlXPathNewContext,
     xmlXPathNodeEval,
+    xmlNodeGetContent,
 } from './libxml2.mjs';
 import type XmlDocument from './document.mjs';
 import type { XmlNodePtr } from './libxml2raw';
@@ -117,6 +117,13 @@ export abstract class XmlNode {
     }
 
     /**
+     * The content string of the node.
+     */
+    get content(): string {
+        return xmlNodeGetContent(this._nodePtr);
+    }
+
+    /**
      * Find the first descendant node matching the given xpath selector
      * @param xpath XPath selector
      * @returns null if not found, otherwise an instance of {@link XmlNode}'s subclass.
@@ -193,26 +200,7 @@ export class XmlComment extends XmlNode {
 }
 
 export class XmlText extends XmlNode {
-    /**
-     * The content string of the text node.
-     */
-    get content(): string {
-        return XmlNodeStruct.content(this._nodePtr);
-    }
 }
 
 export class XmlAttribute extends XmlNode {
-    /**
-     * The text string of the attribute node.
-     */
-    get value(): string {
-        // TODO: should it be xmlNode or xmlAttribute?
-        // xmlNode: xmlXPathObject?
-        // xmlAttribute: children/next/prev?
-        const text = XmlTreeCommonStruct.children(this._nodePtr);
-        if (text) {
-            return XmlNodeStruct.content(text);
-        }
-        return '';
-    }
 }

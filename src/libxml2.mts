@@ -1,4 +1,5 @@
 import type {
+    CString,
     XmlAttrPtr,
     XmlDocPtr,
     XmlNodePtr,
@@ -19,6 +20,12 @@ function withStringUTF8<R>(str: string, process: (buf: number, len: number) => R
     const ret = process(buf, len);
     libxml2._free(buf);
     return ret;
+}
+
+function moveUtf8ToString(cstr: CString): string {
+    const str = libxml2.UTF8ToString(cstr);
+    libxml2._free(cstr);
+    return str;
 }
 
 export function xmlReadMemory(xmlString: string): XmlDocPtr {
@@ -42,6 +49,10 @@ export function xmlFreeDoc(doc: XmlDocPtr) {
 
 export function xmlHasProp(node: XmlNodePtr, name: string): XmlAttrPtr {
     return withStringUTF8(name, (buf /* , len */) => libxml2._xmlHasProp(node, buf));
+}
+
+export function xmlNodeGetContent(node: XmlNodePtr): string {
+    return moveUtf8ToString(libxml2._xmlNodeGetContent(node));
 }
 
 function getValueFunc(offset: number, type: string): (ptr: number) => number {

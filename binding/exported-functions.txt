@@ -10,3 +10,4 @@ _xmlXPathFreeContext
 _xmlXPathNodeEval
 _xmlDocGetRootElement
 _xmlHasProp
+_xmlNodeGetContent

@@ -29,7 +29,7 @@ describe('XmlNode', () => {
             const attr = doc.root.get('book/title/@lang');
             expect(attr).to.be.instanceOf(XmlAttribute);
             expect(attr!.name).to.equal('lang');
-            expect((attr as XmlAttribute).value).to.equal('en');
+            expect(attr!.content).to.equal('en');
         });
 
         it('should be able to return XmlText', () => {
@@ -153,6 +153,40 @@ describe('XmlNode', () => {
             expect((lang as XmlAttribute).name).to.equal('lang');
         });
     });
+
+    describe('content getter', () => {
+        it('should get the text of XmlText', () => {
+            expect(doc.get('book/title/text()')?.content).to.equal('Harry Potter');
+        });
+
+        it('should return value of XmlAttribute', () => {
+            const attr = doc.get('/bookstore/book/title/@lang');
+            expect(attr).to.be.an.instanceOf(XmlAttribute);
+            expect(attr?.content).to.equal('en');
+        });
+
+        it('should get the text of XmlElement', () => {
+            const title = doc.get('book/title');
+            expect(title).to.be.instanceOf(XmlElement);
+            expect(title?.content).to.equal('Harry Potter');
+        });
+    });
+
+    describe('name getter', () => {
+        it('should return name of XmlAttribute', () => {
+            const attr = doc.get('/bookstore/book/title/@lang');
+            expect(attr).to.be.an.instanceOf(XmlAttribute);
+            expect(attr!.name).to.equal('lang');
+        });
+
+        it('should return text for XmlText', () => {
+            expect(doc.get('book/title/text()')!.name).to.equal('text');
+        });
+
+        it('should return name of the XmlElement', () => {
+            expect(doc.get('book/title')!.name).to.equal('title');
+        });
+    });
 });
 
 describe('XmlElement', () => {
@@ -162,9 +196,9 @@ describe('XmlElement', () => {
 
             expect(attrs.length).to.equal(2);
             expect(attrs[0].name).to.equal('lang');
-            expect(attrs[0].value).to.equal('en');
+            expect(attrs[0].content).to.equal('en');
             expect(attrs[1].name).to.equal('author');
-            expect(attrs[1].value).to.equal('J.K. Rowling');
+            expect(attrs[1].content).to.equal('J.K. Rowling');
         });
     });
 
@@ -177,30 +211,7 @@ describe('XmlElement', () => {
             const lang = (doc.get('book/title') as XmlElement).attr('lang');
             expect(lang).is.not.null;
             expect(lang!.name).to.equal('lang');
-            expect(lang!.value).to.equal('en');
-        });
-    });
-});
-
-describe('XmlAttribute', () => {
-    describe('name value getter', () => {
-        it('should return name and value', () => {
-            const attr = doc.get('/bookstore/book/title/@lang');
-            expect(attr).to.be.an.instanceOf(XmlAttribute);
-            expect(attr!.name).to.equal('lang');
-            expect((attr as XmlAttribute).value).to.equal('en');
-        });
-
-        it('should return text for XmlText', () => {
-            expect(doc.get('book/title/text()')!.name).to.equal('text');
-        });
-    });
-});
-
-describe('XmlText', () => {
-    describe('content getter', () => {
-        it('should get the text of XmlText', () => {
-            expect((doc.get('book/title/text()') as XmlText).content).to.equal('Harry Potter');
+            expect(lang!.content).to.equal('en');
         });
     });
 });
