@@ -8,6 +8,7 @@ import {
     xmlXPathNewContext,
     xmlXPathNodeEval,
     xmlNodeGetContent,
+    xmlXPathFreeObject,
 } from './libxml2.mjs';
 import type XmlDocument from './document.mjs';
 import type { XmlNodePtr } from './libxml2raw';
@@ -124,6 +125,13 @@ export abstract class XmlNode {
     }
 
     /**
+     * The line number of the node.
+     */
+    get line(): number {
+        return XmlNodeStruct.line(this._nodePtr);
+    }
+
+    /**
      * Find the first descendant node matching the given xpath selector
      * @param xpath XPath selector
      * @returns null if not found, otherwise an instance of {@link XmlNode}'s subclass.
@@ -132,16 +140,22 @@ export abstract class XmlNode {
         const context = xmlXPathNewContext(this._doc._docPtr);
         const xpathObj = xmlXPathNodeEval(this._nodePtr, xpath, context);
         xmlXPathFreeContext(context);
+        if (!xpathObj) {
+            return null;
+        }
+        let ret: XmlNode | null;
         if (XmlXPathObjectStruct.type(xpathObj) !== XmlXPathObjectStruct.Type.XPATH_NODESET) {
-            return null;
+            ret = null;
+        } else {
+            const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
+            if (XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
+                ret = null;
+            } else {
+                ret = this.create(XmlNodeSetStruct.nodeTable(nodeSet));
+            }
         }
-        const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
-        if (XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
-            return null;
-        }
-        return this.create(
-            XmlNodeSetStruct.nodeTable(nodeSet),
-        );
+        xmlXPathFreeObject(xpathObj);
+        return ret;
     }
 
     private createNullable(nodePtr: XmlNodePtr): XmlNode | null {

@@ -29,6 +29,7 @@ export class LibXml2 {
         xpath: CString,
         context: XmlXPathContextPtr,
     ): XmlXPathObjectPtr;
+    _xmlXPathFreeObject(obj: XmlXPathObjectPtr);
     _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
     _xmlHasProp(node: XmlNodePtr, name: CString): XmlAttrPtr;
     _xmlNodeGetContent(node: XmlNodePtr): CString;

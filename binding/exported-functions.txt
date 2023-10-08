@@ -8,6 +8,7 @@ _xmlFreeDoc
 _xmlXPathNewContext
 _xmlXPathFreeContext
 _xmlXPathNodeEval
+_xmlXPathFreeObject
 _xmlDocGetRootElement
 _xmlHasProp
 _xmlNodeGetContent

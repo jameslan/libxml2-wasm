@@ -14,6 +14,9 @@ export class XmlError extends Error {}
 export class XmlParseError extends XmlError {}
 
 function withStringUTF8<R>(str: string, process: (buf: number, len: number) => R): R {
+    if (!str) {
+        return process(0, 0);
+    }
     const len = libxml2.lengthBytesUTF8(str);
     const buf = libxml2._malloc(len + 1);
     libxml2.stringToUTF8(str, buf, len + 1);
@@ -113,6 +116,8 @@ export class XmlNodeStruct extends XmlTreeCommonStruct {
     static content = getStringValueFunc(40);
 
     static properties = getValueFunc(44, '*');
+
+    static line = getValueFunc(56, 'i32');
 }
 
 export module XmlNodeStruct {
@@ -130,4 +135,5 @@ export class XmlAttrStruct extends XmlTreeCommonStruct {
 export const xmlNewDoc = libxml2._xmlNewDoc;
 export const xmlXPathNewContext = libxml2._xmlXPathNewContext;
 export const xmlXPathFreeContext = libxml2._xmlXPathFreeContext;
+export const xmlXPathFreeObject = libxml2._xmlXPathFreeObject;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;

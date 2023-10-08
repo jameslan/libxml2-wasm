@@ -25,6 +25,10 @@ describe('XmlNode', () => {
             expect(doc.get('bookstore')).to.be.null;
         });
 
+        it('should return null for invalid xpath', () => {
+            expect(doc.get('doc[@lang')).to.be.null;
+        });
+
         it('should be able to return XmlAttribute', () => {
             const attr = doc.root.get('book/title/@lang');
             expect(attr).to.be.instanceOf(XmlAttribute);
@@ -185,6 +189,13 @@ describe('XmlNode', () => {
 
         it('should return name of the XmlElement', () => {
             expect(doc.get('book/title')!.name).to.equal('title');
+        });
+    });
+
+    describe('line getter', () => {
+        it('returns line number', () => {
+            expect(doc.root.line).to.equal(2);
+            expect(doc.get('book')?.line).to.equal(3);
         });
     });
 });
