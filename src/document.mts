@@ -1,4 +1,3 @@
-// @ts-ignore
 import {
     XmlError, xmlDocGetRootElement, xmlFreeDoc, xmlNewDoc,
 } from './libxml2.mjs';
@@ -31,13 +30,27 @@ export default class XmlDocument {
     }
 
     /**
-     * Find the first descendant node of root element matching the given xpath selector,
+     * Find the first descendant node of root element matching the given xpath selector.
      * @param xpath XPath selector
      * @returns null if not found, otherwise an instance of {@link XmlNode}'s subclass.
-     * @see {@link XmlNode#get | XmlNode.get}
+     * @see
+     *  - {@link XmlNode#get | XmlNode.get}
+     *  - {@link find}
      */
     get(xpath: string): XmlNode | null {
         return this.root.get(xpath);
+    }
+
+    /**
+     * Find all the descendant nodes of root element matching the given xpath selector.
+     * @param xpath XPath selector
+     * @returns Empty array if invalid xpath or not found any node.
+     * @see
+     *  - {@link XmlNode#find | XmlNode.find}
+     *  - {@link get}
+     */
+    find(xpath: string): XmlNode[] {
+        return this.root.find(xpath);
     }
 
     /**

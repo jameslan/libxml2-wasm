@@ -29,6 +29,10 @@ describe('XmlNode', () => {
             expect(doc.get('doc[@lang')).to.be.null;
         });
 
+        it('should return null for null xpath(accidentally)', () => {
+            expect(doc.get(null!)).to.be.null;
+        });
+
         it('should be able to return XmlAttribute', () => {
             const attr = doc.root.get('book/title/@lang');
             expect(attr).to.be.instanceOf(XmlAttribute);
@@ -196,6 +200,30 @@ describe('XmlNode', () => {
         it('returns line number', () => {
             expect(doc.root.line).to.equal(2);
             expect(doc.get('book')?.line).to.equal(3);
+        });
+    });
+
+    describe('find', () => {
+        it('return empty array if not found', () => {
+            expect(doc.find('book[title/@lang="de"]')).to.be.empty;
+        });
+
+        it('should return [] for null xpath(accidentally)', () => {
+            expect(doc.find(null!)).to.be.empty;
+        });
+
+        it('should return [] for invalid xpath', () => {
+            expect(doc.find('doc[@lang')).to.be.empty;
+        });
+
+        it('should return multiple elements', () => {
+            const nodes = doc.find('book/title');
+            expect(nodes.map(node => node.content)).to.deep.equal(['Harry Potter', 'Learning XML']);
+        });
+
+        it('should return multiple attributes', () => {
+            const nodes = doc.find('book/title/@author');
+            expect(nodes.map(node => node.content)).to.deep.equal(['J.K. Rowling', 'Erik Ray']);
         });
     });
 });

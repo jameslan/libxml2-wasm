@@ -7,6 +7,7 @@ type XmlXPathContextPtr = Pointer;
 type XmlXPathObjectPtr = Pointer;
 
 export class LibXml2 {
+    HEAP32: Int32Array;
     getValue(ptr: Pointer, type: string): number;
     lengthBytesUTF8(str: string): number;
     stringToUTF8(str: string, outPtr: CString, maxBytesToWrite: number): CStrng;

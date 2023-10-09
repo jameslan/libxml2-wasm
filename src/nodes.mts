@@ -133,8 +133,11 @@ export abstract class XmlNode {
 
     /**
      * Find the first descendant node matching the given xpath selector
+     *
      * @param xpath XPath selector
      * @returns null if not found, otherwise an instance of {@link XmlNode}'s subclass.
+     * @see
+     *  - {@link get}
      */
     get(xpath: string): XmlNode | null {
         const context = xmlXPathNewContext(this._doc._docPtr);
@@ -151,11 +154,42 @@ export abstract class XmlNode {
             if (XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
                 ret = null;
             } else {
-                ret = this.create(XmlNodeSetStruct.nodeTable(nodeSet));
+                ret = this.create(XmlNodeSetStruct.nodeTable(nodeSet, 1)[0]);
             }
         }
         xmlXPathFreeObject(xpathObj);
         return ret;
+    }
+
+    /**
+     * Find all the descendant nodes matching the given xpath selector.
+     * @param xpath XPath selector
+     * @returns Empty array if invalid xpath or not found any node.
+     * @see
+     *  - {@link get}
+     */
+    find(xpath: string): XmlNode[] {
+        const context = xmlXPathNewContext(this._doc._docPtr);
+        const xpathObj = xmlXPathNodeEval(this._nodePtr, xpath, context);
+        xmlXPathFreeContext(context);
+
+        if (!xpathObj) {
+            return [];
+        }
+
+        const nodes: XmlNode[] = [];
+
+        if (XmlXPathObjectStruct.type(xpathObj) === XmlXPathObjectStruct.Type.XPATH_NODESET) {
+            const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
+            const nodeCount = XmlNodeSetStruct.nodeCount(nodeSet);
+            const nodeTable = XmlNodeSetStruct.nodeTable(nodeSet, nodeCount);
+            for (let i = 0; i < nodeCount; i++) {
+                nodes.push(this.create(nodeTable[i]));
+            }
+        }
+
+        xmlXPathFreeObject(xpathObj);
+        return nodes;
     }
 
     private createNullable(nodePtr: XmlNodePtr): XmlNode | null {

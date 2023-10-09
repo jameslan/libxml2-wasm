@@ -1,4 +1,5 @@
 import type {
+    Pointer,
     CString,
     XmlAttrPtr,
     XmlDocPtr,
@@ -90,9 +91,10 @@ export module XmlXPathObjectStruct {
 export class XmlNodeSetStruct {
     static nodeCount = getValueFunc(0, 'i32');
 
-    static nodeTable(ptr: number) {
-        // pointer to a pointer to an array
-        return libxml2.getValue(libxml2.getValue(ptr + 8, '*'), '*');
+    static nodeTable(nodeSetPtr: Pointer, size: number) {
+        // pointer to a pointer array, return the pointer array
+        const nodeTablePtr = libxml2.getValue(nodeSetPtr + 8, '*') / 4;
+        return libxml2.HEAP32.subarray(nodeTablePtr, nodeTablePtr + size);
     }
 }
 
