@@ -2,9 +2,21 @@
 
 [![CI Build on master](https://github.com/jameslan/libxml2-wasm/actions/workflows/build.yml/badge.svg)](https://github.com/jameslan/libxml2-wasm/actions/workflows/build.yml)
 
-Bring libxml2 to browsers using WebAssembly
+# Disclaimer
 
-**Current version is for feasibility/performance evaluation only**, its api may have breaking changes in patch version.
+### Current version is for feasibility/performance evaluation only
+
+The api may have breaking changes in patch versions.
+
+# Why another xml lib?
+
+Compiling C library libxml2 to WebAssembly brings benefits of both pure javascript implementation or native addons,
+and avoided their drawbacks:
+
+- Good performance: roughly same as the native addons, and much better than pure javascript implementations
+- Better compatibility: don't need to compile to every platform, nodeJs version, or dependency libraries(e.g. glibc).
+- Comprehensive functionality(To be finished): backed by libxml2, we just need the wrapper.
+
 
 ## Documentation
 
