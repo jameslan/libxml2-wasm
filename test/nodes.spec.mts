@@ -218,12 +218,12 @@ describe('XmlNode', () => {
 
         it('should return multiple elements', () => {
             const nodes = doc.find('book/title');
-            expect(nodes.map(node => node.content)).to.deep.equal(['Harry Potter', 'Learning XML']);
+            expect(nodes.map((node) => node.content)).to.deep.equal(['Harry Potter', 'Learning XML']);
         });
 
         it('should return multiple attributes', () => {
             const nodes = doc.find('book/title/@author');
-            expect(nodes.map(node => node.content)).to.deep.equal(['J.K. Rowling', 'Erik Ray']);
+            expect(nodes.map((node) => node.content)).to.deep.equal(['J.K. Rowling', 'Erik Ray']);
         });
     });
 });

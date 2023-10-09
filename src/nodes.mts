@@ -183,7 +183,7 @@ export abstract class XmlNode {
             const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
             const nodeCount = XmlNodeSetStruct.nodeCount(nodeSet);
             const nodeTable = XmlNodeSetStruct.nodeTable(nodeSet, nodeCount);
-            for (let i = 0; i < nodeCount; i++) {
+            for (let i = 0; i < nodeCount; i += 1) {
                 nodes.push(this.create(nodeTable[i]));
             }
         }
