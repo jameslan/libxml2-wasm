@@ -10,12 +10,15 @@ The api may have breaking changes in patch versions.
 
 ## Why another xml lib?
 
-Compiling C library libxml2 to WebAssembly brings benefits of both pure javascript implementation or native addons,
+Compiling C library [libxml2](https://gitlab.gnome.org/GNOME/libxml2) to WebAssembly
+brings benefits of both pure javascript implementation or native addons,
 and avoided their drawbacks:
 
 - Good performance: roughly same as the native addons, and much better than pure javascript implementations
-- Better compatibility: don't need to compile to every platform, nodeJs version, or dependency libraries(e.g. glibc).
-- Comprehensive functionality(To be finished): backed by libxml2, we just need the wrapper.
+- Better compatibility: don't need to compile to every platform, nodeJs version,
+or dependency libraries(e.g. glibc); and supports browsers too.
+- Comprehensive functionality(To be finished): backed by libxml2,
+we just need some wrappers being callable by javascript.
 
 ## Documentation
 

@@ -7,7 +7,7 @@ import { argv } from 'yargs';
 const libxmlSrc = 'libxml2';
 const libxmlBin = 'out';
 const destDir = 'lib';
-const generated = 'libxml2raw.js';
+const generated = 'libxml2raw';
 const libxmlExportListFile = 'binding/exported-functions.txt';
 const libxmlExportRuntimeListFile = 'binding/exported-runtime-functions.txt';
 
@@ -58,7 +58,7 @@ export function bind(cb) {
         'emcc',
         '-L.libs',
         '-lxml2',
-        '-o', generated,
+        '-o', `${generated}.js`,
         '--no-entry',
         '-s', 'MODULARIZE',
         '-s', 'ALLOW_MEMORY_GROWTH',
@@ -80,7 +80,7 @@ export function bind(cb) {
 }
 
 export function dist() {
-    return src(['./out/libxml2raw.*', './src/libxml2raw.*'])
+    return src([`./${libxmlBin}/${generated}.*`, `./src/${generated}.*`])
         .pipe(dest(destDir));
 }
 
