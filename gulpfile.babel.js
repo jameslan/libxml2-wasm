@@ -80,7 +80,7 @@ export function bind(cb) {
 }
 
 export function dist() {
-    return src('./out/libxml2raw.*')
+    return src(['./out/libxml2raw.*', './src/libxml2raw.*'])
         .pipe(dest(destDir));
 }
 
