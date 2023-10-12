@@ -1,6 +1,6 @@
 {
     "name": "libxml2-wasm",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "Bring libxml2 to browsers using WebAssembly",
     "scripts": {
         "wasm": "gulp rebuild",
