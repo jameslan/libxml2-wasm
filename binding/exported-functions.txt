@@ -12,3 +12,4 @@ _xmlXPathFreeObject
 _xmlDocGetRootElement
 _xmlHasProp
 _xmlNodeGetContent
+_xmlGetLastError

@@ -5,7 +5,7 @@ type XmlNodePtr = Pointer;
 type XmlAttrPtr = Pointer;
 type XmlXPathContextPtr = Pointer;
 type XmlXPathObjectPtr = Pointer;
-
+type XmlErrorPtr = Pointer;
 export class LibXml2 {
     HEAP32: Int32Array;
     getValue(ptr: Pointer, type: string): number;
@@ -34,6 +34,7 @@ export class LibXml2 {
     _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
     _xmlHasProp(node: XmlNodePtr, name: CString): XmlAttrPtr;
     _xmlNodeGetContent(node: XmlNodePtr): CString;
+    _xmlGetLastError(): XmlErrorPtr;
 }
 
 export default function moduleLoader(): Promise<LibXml2>;

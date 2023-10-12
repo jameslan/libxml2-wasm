@@ -134,8 +134,14 @@ export module XmlNodeStruct {
 export class XmlAttrStruct extends XmlTreeCommonStruct {
 }
 
+export class XmlErrorStruct {
+    static message = getStringValueFunc(8);
+}
+
 export const xmlNewDoc = libxml2._xmlNewDoc;
 export const xmlXPathNewContext = libxml2._xmlXPathNewContext;
 export const xmlXPathFreeContext = libxml2._xmlXPathFreeContext;
 export const xmlXPathFreeObject = libxml2._xmlXPathFreeObject;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
+
+export const xmlGetLastError = libxml2._xmlGetLastError;

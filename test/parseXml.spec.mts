@@ -12,6 +12,9 @@ describe('parseXmlString', () => {
     });
 
     it('should throw exception on invalid xml string', () => {
-        expect(() => parseXmlString('<doc>')).to.throw(XmlParseError);
+        expect(() => parseXmlString('<doc>')).to.throw(
+            XmlParseError,
+            'Premature end of data in tag doc line 1\n',
+        );
     });
 });
