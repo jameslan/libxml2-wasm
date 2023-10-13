@@ -13,3 +13,4 @@ _xmlDocGetRootElement
 _xmlHasProp
 _xmlNodeGetContent
 _xmlGetLastError
+_xmlResetLastError

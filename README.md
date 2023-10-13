@@ -15,7 +15,9 @@ Compiling C library [libxml2](https://gitlab.gnome.org/GNOME/libxml2) to WebAsse
 brings benefits of both pure javascript implementation or native addons,
 and avoided their drawbacks:
 
-- Good performance: roughly same as the native addons, and much better than pure javascript implementations
+- Good performance: the string api has a comparable performance to the native addons,
+and much better than pure javascript implementations;
+the buffer api(no string conversion) has an impressive performance in the benchmark.
 - Better compatibility: don't need to compile to every platform, nodeJs version,
 or dependency libraries(e.g. glibc); and supports browsers too.
 - Comprehensive functionality(To be finished): backed by libxml2,
@@ -56,48 +58,57 @@ npm test
 ```
 Environment: NodeJs v18.17.1 on Darwin x64 Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz
 
-Running "fixtures/small.xml: 787 chars" suite...
+Running "fixtures/small.xml: 787 bytes" suite...
 Progress: 100%
 
   libxml2-wasm:
-    59 122 ops/s, ±3.49%   | fastest
+    64 645 ops/s, ±1.22%    | 44.35% slower
+
+  libxml2-wasm(buffer api):
+    116 157 ops/s, ±0.67%   | fastest
 
   libxmljs2:
-    20 392 ops/s, ±10.93%   | 65.51% slower
+    28 240 ops/s, ±9.20%    | 75.69% slower
 
   fast-xml-parser:
-    15 433 ops/s, ±6.45%   | 73.9% slower
+    18 091 ops/s, ±7.90%    | 84.43% slower
 
   xmldoc:
-    12 842 ops/s, ±4.01%   | slowest, 78.28% slower
+    14 310 ops/s, ±1.88%    | slowest, 87.68% slower
 
-Running "fixtures/medium.xml: 35562 chars" suite...
+Running "fixtures/medium.xml: 35562 bytes" suite...
 Progress: 100%
 
   libxml2-wasm:
-    2 294 ops/s, ±3.21%   | 32.75% slower
+    2 706 ops/s, ±0.79%    | 73.57% slower
+
+  libxml2-wasm(buffer api):
+    10 237 ops/s, ±0.48%   | fastest
 
   libxmljs2:
-    3 411 ops/s, ±10.12%   | fastest
+    4 779 ops/s, ±8.57%    | 53.32% slower
 
   fast-xml-parser:
-    845 ops/s, ±3.29%     | 75.23% slower
+    995 ops/s, ±2.09%      | 90.28% slower
 
   xmldoc:
-    720 ops/s, ±2.75%     | slowest, 78.89% slower
+    844 ops/s, ±1.33%      | slowest, 91.76% slower
 
-Running "fixtures/large.xml: 2337522 chars" suite...
+Running "fixtures/large.xml: 2337522 bytes" suite...
 Progress: 100%
 
   libxml2-wasm:
-    18 ops/s, ±3.66%   | fastest
+    22 ops/s, ±1.29%   | 37.14% slower
+
+  libxml2-wasm(buffer api):
+    35 ops/s, ±0.88%   | fastest
 
   libxmljs2:
-    12 ops/s, ±28.60%   | 33.33% slower
+    21 ops/s, ±14.92%   | 40% slower
 
   fast-xml-parser:
-    6 ops/s, ±6.83%    | 66.67% slower
+    6 ops/s, ±5.99%    | 82.86% slower
 
   xmldoc:
-    4 ops/s, ±8.64%    | slowest, 77.78% slower
+    4 ops/s, ±3.67%    | slowest, 88.57% slower
 ```

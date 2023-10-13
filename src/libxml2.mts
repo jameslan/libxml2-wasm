@@ -32,8 +32,25 @@ function moveUtf8ToString(cstr: CString): string {
     return str;
 }
 
-export function xmlReadMemory(xmlString: string): XmlDocPtr {
+function withCString<R>(str: Uint8Array, process: (buf: number, len: number) => R): R {
+    if (!str) {
+        return process(0, 0);
+    }
+
+    const buf = libxml2._malloc(str.length + 1);
+    libxml2.HEAPU8.set(str, buf);
+    libxml2.HEAPU8[buf + str.length] = 0;
+    const ret = process(buf, str.length);
+    libxml2._free(buf);
+    return ret;
+}
+
+export function xmlReadString(xmlString: string): XmlDocPtr {
     return withStringUTF8(xmlString, (buf, len) => libxml2._xmlReadMemory(buf, len, 0, 0, 0));
+}
+
+export function xmlReadMemory(xmlBuffer: Uint8Array): XmlDocPtr {
+    return withCString(xmlBuffer, (buf, len) => libxml2._xmlReadMemory(buf, len, 0, 0, 0));
 }
 
 export function xmlXPathNodeEval(
@@ -145,3 +162,4 @@ export const xmlXPathFreeObject = libxml2._xmlXPathFreeObject;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
 
 export const xmlGetLastError = libxml2._xmlGetLastError;
+export const xmlResetLastError = libxml2._xmlResetLastError;

@@ -4,7 +4,10 @@ import {
     xmlGetLastError,
     XmlParseError,
     xmlReadMemory,
+    xmlReadString,
+    xmlResetLastError,
 } from './libxml2.mjs';
+import type { XmlDocPtr } from './libxml2raw';
 
 export {
     XmlNode,
@@ -19,11 +22,20 @@ export { XmlParseError, XmlError } from './libxml2.mjs';
 export interface ParserOptions {
 }
 
-export function parseXmlString(source: string /* , options?: ParserOptions */): XmlDocument {
-    const docPtr = xmlReadMemory(source);
+function toXmlDocument(docPtr: XmlDocPtr): XmlDocument {
     if (!docPtr) {
         const err = xmlGetLastError();
         throw new XmlParseError(XmlErrorStruct.message(err));
     }
     return new XmlDocument(docPtr);
+}
+
+export function parseXmlString(source: string /* , options?: ParserOptions */): XmlDocument {
+    xmlResetLastError();
+    return toXmlDocument(xmlReadString(source));
+}
+
+export function parseXmlBuffer(source: Uint8Array /* , options? ParserOptions */): XmlDocument {
+    xmlResetLastError();
+    return toXmlDocument(xmlReadMemory(source));
 }

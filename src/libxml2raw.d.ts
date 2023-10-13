@@ -8,6 +8,9 @@ type XmlXPathObjectPtr = Pointer;
 type XmlErrorPtr = Pointer;
 export class LibXml2 {
     HEAP32: Int32Array;
+
+    HEAPU8: Uint8Array;
+
     getValue(ptr: Pointer, type: string): number;
     lengthBytesUTF8(str: string): number;
     stringToUTF8(str: string, outPtr: CString, maxBytesToWrite: number): CString;
@@ -35,6 +38,7 @@ export class LibXml2 {
     _xmlHasProp(node: XmlNodePtr, name: CString): XmlAttrPtr;
     _xmlNodeGetContent(node: XmlNodePtr): CString;
     _xmlGetLastError(): XmlErrorPtr;
+    _xmlResetLastError(): void;
 }
 
 export default function moduleLoader(): Promise<LibXml2>;
