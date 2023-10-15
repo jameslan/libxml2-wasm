@@ -11,7 +11,7 @@ import {
     xmlXPathFreeObject,
 } from './libxml2.mjs';
 import type XmlDocument from './document.mjs';
-import type { XmlNodePtr } from './libxml2raw';
+import type { XmlNodePtr } from './libxml2raw.js';
 
 export abstract class XmlNode {
     protected _doc: XmlDocument;
@@ -151,7 +151,7 @@ export abstract class XmlNode {
             ret = null;
         } else {
             const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
-            if (XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
+            if (nodeSet === 0 || XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
                 ret = null;
             } else {
                 ret = this.create(XmlNodeSetStruct.nodeTable(nodeSet, 1)[0]);

@@ -23,6 +23,7 @@ describe('XmlNode', () => {
 
         it('should return null if not found', () => {
             expect(doc.get('bookstore')).to.be.null;
+            expect(doc.get('/books/book/title[@author="Erik Ray"]')).to.be.null;
         });
 
         it('should return null for invalid xpath', () => {
