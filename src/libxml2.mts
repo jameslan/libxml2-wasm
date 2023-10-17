@@ -144,6 +144,7 @@ export module XmlNodeStruct {
         XML_ELEMENT_NODE = 1,
         XML_ATTRIBUTE_NODE = 2,
         XML_TEXT_NODE = 3,
+        XML_CDATA_SECTION_NODE = 4,
         XML_COMMENT_NODE = 8,
     }
 }

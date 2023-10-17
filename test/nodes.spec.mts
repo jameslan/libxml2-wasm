@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { parseXmlString } from '../lib/index.mjs';
 import {
-    XmlAttribute,
+    XmlAttribute, XmlCData,
     XmlComment,
     XmlElement,
     XmlText,
@@ -9,7 +9,7 @@ import {
 
 const doc = parseXmlString(`<?xml version="1.0" encoding="UTF-8"?>
 <bookstore><!--comment1-->
-    <book><title lang="en" author="J.K. Rowling">Harry Potter</title><price>29.99</price></book>
+    <book><title lang="en" author="J.K. Rowling">Harry Potter</title><price><![CDATA[29.99]]></price></book>
     <book><title lang="en" author="Erik Ray">Learning XML</title><price>39.95</price></book>
 <!--comment2--></bookstore>`);
 
@@ -98,6 +98,13 @@ describe('XmlNode', () => {
         it('should be able to return comment node', () => {
             const comment = doc.root.firstChild;
             expect(comment).to.be.instanceOf(XmlComment);
+            expect(comment?.content).to.equal('comment1');
+        });
+
+        it('should be able to return cdata node', () => {
+            const cdata = doc.get('book/price')?.firstChild;
+            expect(cdata).to.be.instanceOf(XmlCData);
+            expect(cdata?.content).to.equal('29.99');
         });
     });
 

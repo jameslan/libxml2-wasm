@@ -207,6 +207,8 @@ export abstract class XmlNode {
                 return new XmlText(this._doc, nodePtr);
             case XmlNodeStruct.Type.XML_COMMENT_NODE:
                 return new XmlComment(this._doc, nodePtr);
+            case XmlNodeStruct.Type.XML_CDATA_SECTION_NODE:
+                return new XmlCData(this._doc, nodePtr);
             default:
                 throw new XmlError(`Unsupported node type ${nodeType}`);
         }
@@ -251,4 +253,7 @@ export class XmlText extends XmlNode {
 }
 
 export class XmlAttribute extends XmlNode {
+}
+
+export class XmlCData extends XmlNode {
 }
