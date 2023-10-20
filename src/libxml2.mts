@@ -131,9 +131,11 @@ export class XmlTreeCommonStruct {
     static prev = getValueFunc(28, '*');
 }
 
-export class XmlNodeStruct extends XmlTreeCommonStruct {
-    static content = getStringValueFunc(40);
+export class XmlNamedNodeStruct extends XmlTreeCommonStruct {
+    static namespace = getValueFunc(36, '*');
+}
 
+export class XmlNodeStruct extends XmlNamedNodeStruct {
     static properties = getValueFunc(44, '*');
 
     static line = getValueFunc(56, 'i32');
@@ -147,6 +149,12 @@ export module XmlNodeStruct {
         XML_CDATA_SECTION_NODE = 4,
         XML_COMMENT_NODE = 8,
     }
+}
+
+export class XmlNsStruct {
+    static href = getStringValueFunc(8);
+
+    static prefix = getStringValueFunc(12);
 }
 
 export class XmlAttrStruct extends XmlTreeCommonStruct {

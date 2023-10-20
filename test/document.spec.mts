@@ -23,8 +23,8 @@ describe('XmlDocument', () => {
     describe('get', () => {
         it('should query based on root element', () => {
             expect(doc.get('docs')).to.be.null;
-            expect(doc.get('doc')?.name).to.equal('doc');
-            expect(doc.get('/docs/doc')?.name).to.equal('doc');
+            expect((doc.get('doc') as XmlElement).name).to.equal('doc');
+            expect((doc.get('/docs/doc') as XmlElement).name).to.equal('doc');
         });
     });
 });

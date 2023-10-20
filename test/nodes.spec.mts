@@ -8,9 +8,9 @@ import {
 } from '../lib/nodes.mjs';
 
 const doc = parseXmlString(`<?xml version="1.0" encoding="UTF-8"?>
-<bookstore><!--comment1-->
-    <book><title lang="en" author="J.K. Rowling">Harry Potter</title><price><![CDATA[29.99]]></price></book>
-    <book><title lang="en" author="Erik Ray">Learning XML</title><price>39.95</price></book>
+<bookstore xmlns:m="http://www.federalreserve.gov"><!--comment1-->
+    <book><title lang="en" author="J.K. Rowling">Harry Potter</title><price m:currency="USD"><![CDATA[29.99]]></price></book>
+    <book><title lang="en" author="Erik Ray">Learning XML</title><price m:currency="USD">39.95</price></book>
 <!--comment2--></bookstore>`);
 
 describe('XmlNode', () => {
@@ -18,7 +18,7 @@ describe('XmlNode', () => {
         it('should query the first element', () => {
             const book = doc.root.get('book');
             expect(book).to.be.an.instanceOf(XmlElement);
-            expect(book!.name).to.equal('book');
+            expect((book as XmlElement).name).to.equal('book');
         });
 
         it('should return null if not found', () => {
@@ -37,13 +37,14 @@ describe('XmlNode', () => {
         it('should be able to return XmlAttribute', () => {
             const attr = doc.root.get('book/title/@lang');
             expect(attr).to.be.instanceOf(XmlAttribute);
-            expect(attr!.name).to.equal('lang');
+            expect((attr as XmlAttribute).name).to.equal('lang');
             expect(attr!.content).to.equal('en');
         });
 
         it('should be able to return XmlText', () => {
             const text = doc.get('/bookstore/book/title/text()');
             expect(text).to.be.instanceOf(XmlText);
+            expect(text?.content).to.equal('Harry Potter');
         });
     });
 
@@ -192,15 +193,15 @@ describe('XmlNode', () => {
         it('should return name of XmlAttribute', () => {
             const attr = doc.get('/bookstore/book/title/@lang');
             expect(attr).to.be.an.instanceOf(XmlAttribute);
-            expect(attr!.name).to.equal('lang');
-        });
-
-        it('should return text for XmlText', () => {
-            expect(doc.get('book/title/text()')!.name).to.equal('text');
+            expect((attr as XmlAttribute).name).to.equal('lang');
         });
 
         it('should return name of the XmlElement', () => {
-            expect(doc.get('book/title')!.name).to.equal('title');
+            expect((doc.get('book/title') as XmlElement).name).to.equal('title');
+        });
+
+        it('should return name without namespace', () => {
+            expect((doc.get('book/price') as XmlElement).attrs[0].name).to.equal('currency');
         });
     });
 
@@ -232,6 +233,20 @@ describe('XmlNode', () => {
         it('should return multiple attributes', () => {
             const nodes = doc.find('book/title/@author');
             expect(nodes.map((node) => node.content)).to.deep.equal(['J.K. Rowling', 'Erik Ray']);
+        });
+    });
+
+    describe('namespace getter', () => {
+        it('should return the namespace of the node', () => {
+            const attr = (doc.get('book/price') as XmlElement).attrs[0];
+            expect(attr.name).to.equal('currency');
+            expect(attr.namespacePrefix).to.equal('m');
+            expect(attr.namespaceUri).to.equal('http://www.federalreserve.gov');
+        });
+
+        it('should return empty  if has no namespace', () => {
+            expect(doc.root.namespacePrefix).to.equal('');
+            expect(doc.root.namespaceUri).to.equal('');
         });
     });
 });

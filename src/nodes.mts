@@ -9,6 +9,8 @@ import {
     xmlXPathNodeEval,
     xmlNodeGetContent,
     xmlXPathFreeObject,
+    XmlNamedNodeStruct,
+    XmlNsStruct,
 } from './libxml2.mjs';
 import type XmlDocument from './document.mjs';
 import type { XmlNodePtr } from './libxml2raw.js';
@@ -29,15 +31,6 @@ export abstract class XmlNode {
      */
     get doc(): XmlDocument {
         return this._doc;
-    }
-
-    /**
-     * The name of this node.
-     * For some subclasses it returns fixed name.
-     * For example, {@link XmlText} returns `text`.
-     */
-    get name(): string {
-        return XmlNodeStruct.name_(this._nodePtr);
     }
 
     /**
@@ -215,7 +208,32 @@ export abstract class XmlNode {
     }
 }
 
-export class XmlElement extends XmlNode {
+class XmlNamedNode extends XmlNode {
+    /**
+     * The name of this node.
+     */
+    get name(): string {
+        return XmlNodeStruct.name_(this._nodePtr);
+    }
+
+    get namespaceUri(): string {
+        const namespace = XmlNamedNodeStruct.namespace(this._nodePtr);
+        if (namespace) {
+            return XmlNsStruct.href(namespace);
+        }
+        return '';
+    }
+
+    get namespacePrefix(): string {
+        const namespace = XmlNamedNodeStruct.namespace(this._nodePtr);
+        if (namespace) {
+            return XmlNsStruct.prefix(namespace);
+        }
+        return '';
+    }
+}
+
+export class XmlElement extends XmlNamedNode {
     /**
      * All attributes of this element.
      */
@@ -252,7 +270,7 @@ export class XmlComment extends XmlNode {
 export class XmlText extends XmlNode {
 }
 
-export class XmlAttribute extends XmlNode {
+export class XmlAttribute extends XmlNamedNode {
 }
 
 export class XmlCData extends XmlNode {
