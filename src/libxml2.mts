@@ -53,6 +53,13 @@ export function xmlReadMemory(xmlBuffer: Uint8Array): XmlDocPtr {
     return withCString(xmlBuffer, (buf, len) => libxml2._xmlReadMemory(buf, len, 0, 0, 0));
 }
 
+export function xmlXPathRegisterNs(ctx: XmlXPathContextPtr, prefix: string, uri: string): number {
+    return withStringUTF8(prefix, (bufPrefix) => withStringUTF8(
+        uri,
+        (bufUri) => libxml2._xmlXPathRegisterNs(ctx, bufPrefix, bufUri),
+    ));
+}
+
 export function xmlXPathNodeEval(
     node: XmlNodePtr,
     xpath: string,
@@ -60,7 +67,7 @@ export function xmlXPathNodeEval(
 ): XmlXPathObjectPtr {
     return withStringUTF8(
         xpath,
-        (buf /* , len */) => libxml2._xmlXPathNodeEval(node, buf, context),
+        (buf) => libxml2._xmlXPathNodeEval(node, buf, context),
     );
 }
 
@@ -69,7 +76,7 @@ export function xmlFreeDoc(doc: XmlDocPtr) {
 }
 
 export function xmlHasProp(node: XmlNodePtr, name: string): XmlAttrPtr {
-    return withStringUTF8(name, (buf /* , len */) => libxml2._xmlHasProp(node, buf));
+    return withStringUTF8(name, (buf) => libxml2._xmlHasProp(node, buf));
 }
 
 export function xmlNodeGetContent(node: XmlNodePtr): string {

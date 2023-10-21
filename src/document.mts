@@ -1,7 +1,7 @@
 import {
     XmlError, xmlDocGetRootElement, xmlFreeDoc, xmlNewDoc,
 } from './libxml2.mjs';
-import { XmlElement, XmlNode } from './nodes.mjs';
+import { NamespaceMap, XmlElement, XmlNode } from './nodes.mjs';
 
 export default class XmlDocument {
     /** @internal */
@@ -32,25 +32,27 @@ export default class XmlDocument {
     /**
      * Find the first descendant node of root element matching the given xpath selector.
      * @param xpath XPath selector
+     * @param namespaces mapping between prefix and uri, used in the XPath
      * @returns null if not found, otherwise an instance of {@link XmlNode}'s subclass.
      * @see
      *  - {@link XmlNode#get | XmlNode.get}
      *  - {@link find}
      */
-    get(xpath: string): XmlNode | null {
-        return this.root.get(xpath);
+    get(xpath: string, namespaces?: NamespaceMap): XmlNode | null {
+        return this.root.get(xpath, namespaces);
     }
 
     /**
      * Find all the descendant nodes of root element matching the given xpath selector.
      * @param xpath XPath selector
+     * @param namespaces mapping between prefix and uri, used in the XPath
      * @returns Empty array if invalid xpath or not found any node.
      * @see
      *  - {@link XmlNode#find | XmlNode.find}
      *  - {@link get}
      */
-    find(xpath: string): XmlNode[] {
-        return this.root.find(xpath);
+    find(xpath: string, namespaces?: NamespaceMap): XmlNode[] {
+        return this.root.find(xpath, namespaces);
     }
 
     /**

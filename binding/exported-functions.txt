@@ -14,3 +14,4 @@ _xmlHasProp
 _xmlNodeGetContent
 _xmlGetLastError
 _xmlResetLastError
+_xmlXPathRegisterNs

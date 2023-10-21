@@ -46,6 +46,28 @@ describe('XmlNode', () => {
             expect(text).to.be.instanceOf(XmlText);
             expect(text?.content).to.equal('Harry Potter');
         });
+
+        it('should handle namespace in xpath', () => {
+            const currency = doc.root.get(
+                'book/price/@m:currency',
+                { m: 'http://www.federalreserve.gov' },
+            );
+            expect(currency).to.not.be.null;
+            expect(currency).to.be.instanceOf(XmlAttribute);
+            expect((currency as XmlAttribute).name).to.equal('currency');
+            expect((currency as XmlAttribute).content).to.equal('USD');
+        });
+
+        it('should handle namespace in xpath with different prefix', () => {
+            const currency = doc.root.get(
+                'book/price/@c:currency',
+                { c: 'http://www.federalreserve.gov' },
+            );
+            expect(currency).to.not.be.null;
+            expect(currency).to.be.instanceOf(XmlAttribute);
+            expect((currency as XmlAttribute).name).to.equal('currency');
+            expect((currency as XmlAttribute).content).to.equal('USD');
+        });
     });
 
     describe('doc property', () => {
@@ -233,6 +255,22 @@ describe('XmlNode', () => {
         it('should return multiple attributes', () => {
             const nodes = doc.find('book/title/@author');
             expect(nodes.map((node) => node.content)).to.deep.equal(['J.K. Rowling', 'Erik Ray']);
+        });
+
+        it('should handle namespace in xpath', () => {
+            const currencies = doc.root.find(
+                'book/price/@m:currency',
+                { m: 'http://www.federalreserve.gov' },
+            );
+            expect(currencies.map((attr) => attr.content)).to.deep.equal(['USD', 'USD']);
+        });
+
+        it('should handle namespace in xpath with different prefix', () => {
+            const currencies = doc.root.find(
+                'book/price/@c:currency',
+                { c: 'http://www.federalreserve.gov' },
+            );
+            expect(currencies.map((attr) => attr.content)).to.deep.equal(['USD', 'USD']);
         });
     });
 

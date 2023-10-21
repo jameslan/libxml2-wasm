@@ -39,6 +39,7 @@ export class LibXml2 {
     _xmlNodeGetContent(node: XmlNodePtr): CString;
     _xmlGetLastError(): XmlErrorPtr;
     _xmlResetLastError(): void;
+    _xmlXPathRegisterNs(ctx: XmlXPathContextPtr, prefix: CString, uri: CString): number;
 }
 
 export default function moduleLoader(): Promise<LibXml2>;

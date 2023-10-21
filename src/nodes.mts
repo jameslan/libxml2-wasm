@@ -10,10 +10,17 @@ import {
     xmlNodeGetContent,
     xmlXPathFreeObject,
     XmlNamedNodeStruct,
-    XmlNsStruct,
+    XmlNsStruct, xmlXPathRegisterNs,
 } from './libxml2.mjs';
 import type XmlDocument from './document.mjs';
 import type { XmlNodePtr } from './libxml2raw.js';
+
+/**
+ * Map between the prefix and the uri of the namespace
+ */
+export interface NamespaceMap {
+    [prefix: string]: string;
+}
 
 export abstract class XmlNode {
     protected _doc: XmlDocument;
@@ -128,14 +135,13 @@ export abstract class XmlNode {
      * Find the first descendant node matching the given xpath selector
      *
      * @param xpath XPath selector
+     * @param namespaces mapping between prefix and uri, used in the XPath
      * @returns null if not found, otherwise an instance of {@link XmlNode}'s subclass.
      * @see
      *  - {@link get}
      */
-    get(xpath: string): XmlNode | null {
-        const context = xmlXPathNewContext(this._doc._docPtr);
-        const xpathObj = xmlXPathNodeEval(this._nodePtr, xpath, context);
-        xmlXPathFreeContext(context);
+    get(xpath: string, namespaces?: NamespaceMap): XmlNode | null {
+        const xpathObj = this.xpathEval(xpath, namespaces);
         if (!xpathObj) {
             return null;
         }
@@ -154,18 +160,29 @@ export abstract class XmlNode {
         return ret;
     }
 
+    private xpathEval(xpath: string, namespaces?: NamespaceMap) {
+        const context = xmlXPathNewContext(this._doc._docPtr);
+        if (namespaces) {
+            Object.entries(namespaces)
+                .forEach(([prefix, uri]) => {
+                    xmlXPathRegisterNs(context, prefix, uri);
+                });
+        }
+        const xpathObj = xmlXPathNodeEval(this._nodePtr, xpath, context);
+        xmlXPathFreeContext(context);
+        return xpathObj;
+    }
+
     /**
      * Find all the descendant nodes matching the given xpath selector.
      * @param xpath XPath selector
+     * @param namespaces mapping between prefix and uri, used in the XPath
      * @returns Empty array if invalid xpath or not found any node.
      * @see
      *  - {@link get}
      */
-    find(xpath: string): XmlNode[] {
-        const context = xmlXPathNewContext(this._doc._docPtr);
-        const xpathObj = xmlXPathNodeEval(this._nodePtr, xpath, context);
-        xmlXPathFreeContext(context);
-
+    find(xpath: string, namespaces?: NamespaceMap): XmlNode[] {
+        const xpathObj = this.xpathEval(xpath, namespaces);
         if (!xpathObj) {
             return [];
         }
