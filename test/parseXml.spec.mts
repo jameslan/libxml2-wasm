@@ -1,6 +1,11 @@
 import { expect } from 'chai';
-import { parseXmlString, parseXmlBuffer } from '../lib/index.mjs';
-import { XmlParseError } from '../lib/libxml2.mjs';
+import {
+    ParseOption,
+    parseXmlBuffer,
+    parseXmlString,
+    XmlCData,
+    XmlParseError,
+} from '../lib/index.mjs';
 
 describe('parseXmlString', () => {
     it('should parse valid xml string', () => {
@@ -16,6 +21,15 @@ describe('parseXmlString', () => {
             XmlParseError,
             'Premature end of data in tag doc line 1\n',
         );
+    });
+
+    it('should support parse option', () => {
+        const doc = parseXmlString(
+            '<doc><![CDATA[3>2]]></doc>',
+            { option: ParseOption.XML_PARSE_NOCDATA },
+        );
+        expect(doc.root.firstChild).to.not.be.instanceOf(XmlCData);
+        expect(doc.root.content).to.equal('3>2');
     });
 });
 
@@ -40,5 +54,14 @@ describe('parseXmlBuffer', () => {
             XmlParseError,
             '',
         );
+    });
+
+    it('should support parse option', () => {
+        const doc = parseXmlBuffer(
+            new TextEncoder().encode('<doc><![CDATA[3>2]]></doc>'),
+            { option: ParseOption.XML_PARSE_NOCDATA },
+        );
+        expect(doc.root.firstChild).to.not.be.instanceOf(XmlCData);
+        expect(doc.root.content).to.equal('3>2');
     });
 });

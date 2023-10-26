@@ -14,12 +14,19 @@ rules:
   no-underscore-dangle: off
   max-classes-per-file: off # factory method in abstract base class requires multiple sub-classes in the same file
   '@typescript-eslint/no-use-before-define': off # factory method in abstract base class requires multiple sub-classes in the same file
+  '@typescript-eslint/prefer-literal-enum-member':
+    - error
+    - allowBitwiseExpressions: true
   import/extensions:
     - error
     - never
     - mjs: always # ESM import requires the full name
   '@typescript-eslint/no-unused-expressions': off
   chai-friendly/no-unused-expressions: error
+  no-bitwise:
+    - error
+    - allow:
+        - <<
   eol-last:
     - error
     - always

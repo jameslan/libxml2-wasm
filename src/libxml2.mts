@@ -45,12 +45,22 @@ function withCString<R>(str: Uint8Array, process: (buf: number, len: number) => 
     return ret;
 }
 
-export function xmlReadString(xmlString: string): XmlDocPtr {
-    return withStringUTF8(xmlString, (buf, len) => libxml2._xmlReadMemory(buf, len, 0, 0, 0));
+export function xmlReadString(
+    xmlString: string,
+    url: string,
+    encoding: string,
+    options: number,
+): XmlDocPtr {
+    return withStringUTF8(xmlString, (buf, len) => libxml2._xmlReadMemory(buf, len, 0, 0, options));
 }
 
-export function xmlReadMemory(xmlBuffer: Uint8Array): XmlDocPtr {
-    return withCString(xmlBuffer, (buf, len) => libxml2._xmlReadMemory(buf, len, 0, 0, 0));
+export function xmlReadMemory(
+    xmlBuffer: Uint8Array,
+    url: string,
+    encoding: string,
+    options: number,
+): XmlDocPtr {
+    return withCString(xmlBuffer, (buf, len) => libxml2._xmlReadMemory(buf, len, 0, 0, options));
 }
 
 export function xmlXPathRegisterNs(ctx: XmlXPathContextPtr, prefix: string, uri: string): number {
