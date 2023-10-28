@@ -1,4 +1,4 @@
+UTF8ToString
+getValue
 lengthBytesUTF8
 stringToUTF8
-getValue
-UTF8ToString
