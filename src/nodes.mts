@@ -10,7 +10,9 @@ import {
     xmlNodeGetContent,
     xmlXPathFreeObject,
     XmlNamedNodeStruct,
-    XmlNsStruct, xmlXPathRegisterNs,
+    XmlNsStruct,
+    xmlXPathRegisterNs,
+    xmlGetNsList,
 } from './libxml2.mjs';
 import type XmlDocument from './document.mjs';
 import type { XmlNodePtr } from './libxml2raw.js';
@@ -129,6 +131,17 @@ export abstract class XmlNode {
      */
     get line(): number {
         return XmlNodeStruct.line(this._nodePtr);
+    }
+
+    /**
+     * Namespace definitions on this node, including inherited
+     */
+    get namespaces(): NamespaceMap {
+        return xmlGetNsList(this._doc._docPtr, this._nodePtr).reduce(
+            // convert to object
+            (prev, curr) => ({ ...prev, [XmlNsStruct.prefix(curr)]: XmlNsStruct.href(curr) }),
+            {},
+        );
     }
 
     /**
@@ -265,6 +278,19 @@ export class XmlElement extends XmlNamedNode {
         }
 
         return attrs;
+    }
+
+    /**
+     * Namespace definitions on this element
+     *
+     * @returns Empty object if there's no local namespace definition on this element.
+     */
+    get localNamespaces(): NamespaceMap {
+        const namespaces: NamespaceMap = {};
+        for (let ns = XmlNodeStruct.nsDef(this._nodePtr); ns; ns = XmlNsStruct.next(ns)) {
+            namespaces[XmlNsStruct.prefix(ns)] = XmlNsStruct.href(ns);
+        }
+        return namespaces;
     }
 
     /**

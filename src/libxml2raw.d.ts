@@ -6,6 +6,7 @@ type XmlAttrPtr = Pointer;
 type XmlXPathContextPtr = Pointer;
 type XmlXPathObjectPtr = Pointer;
 type XmlErrorPtr = Pointer;
+type XmlNsPtr = Pointer;
 export class LibXml2 {
     HEAP32: Int32Array;
 
@@ -40,6 +41,7 @@ export class LibXml2 {
     _xmlGetLastError(): XmlErrorPtr;
     _xmlResetLastError(): void;
     _xmlXPathRegisterNs(ctx: XmlXPathContextPtr, prefix: CString, uri: CString): number;
+    _xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): Pointer;
 }
 
 export default function moduleLoader(): Promise<LibXml2>;

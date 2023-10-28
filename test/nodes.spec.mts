@@ -234,6 +234,23 @@ describe('XmlNode', () => {
         });
     });
 
+    describe('namespaces getter', () => {
+        it('should get namespaces inherited for the element', () => {
+            expect(doc.get('book')?.namespaces).to.deep.equal({ m: 'http://www.federalreserve.gov' });
+        });
+
+        it('should return empty if element has no namespace definition', () => {
+            const document = parseXmlString('<doc/>');
+            expect(document.root?.localNamespaces).to.be.empty;
+        });
+
+        it('should get namespaces on an attribute', () => {
+            expect(doc.get('book/title/@lang')?.namespaces).to.deep.equal(
+                { m: 'http://www.federalreserve.gov' },
+            );
+        });
+    });
+
     describe('find', () => {
         it('return empty array if not found', () => {
             expect(doc.find('book[title/@lang="de"]')).to.be.empty;
@@ -312,6 +329,16 @@ describe('XmlElement', () => {
             expect(lang).is.not.null;
             expect(lang!.name).to.equal('lang');
             expect(lang!.content).to.equal('en');
+        });
+    });
+
+    describe('localNamespaces getter', () => {
+        it('should get namespaces declared on the element', () => {
+            expect(doc.root.localNamespaces).to.deep.equal({ m: 'http://www.federalreserve.gov' });
+        });
+
+        it('should return empty if element has no namespace definition', () => {
+            expect((doc.get('book') as XmlElement).localNamespaces).to.be.empty;
         });
     });
 });

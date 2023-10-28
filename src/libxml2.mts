@@ -6,6 +6,7 @@ import type {
     XmlNodePtr,
     XmlXPathContextPtr,
     XmlXPathObjectPtr,
+    XmlNsPtr,
 } from './libxml2raw.js';
 import moduleLoader from './libxml2raw.js';
 
@@ -81,10 +82,6 @@ export function xmlXPathNodeEval(
     );
 }
 
-export function xmlFreeDoc(doc: XmlDocPtr) {
-    libxml2._xmlFreeDoc(doc);
-}
-
 export function xmlHasProp(node: XmlNodePtr, name: string): XmlAttrPtr {
     return withStringUTF8(name, (buf) => libxml2._xmlHasProp(node, buf));
 }
@@ -99,6 +96,26 @@ function getValueFunc(offset: number, type: string): (ptr: number) => number {
 
 function getStringValueFunc(offset: number): (ptr: number) => string {
     return (ptr: number) => libxml2.UTF8ToString(libxml2.getValue(ptr + offset, 'i8*'));
+}
+
+export function xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): XmlNsPtr[] {
+    const nsList = libxml2._xmlGetNsList(doc, node);
+    if (nsList === 0) {
+        return [];
+    }
+
+    const arr: XmlNsPtr[] = [];
+
+    for (
+        let offset = nsList / libxml2.HEAP32.BYTES_PER_ELEMENT;
+        libxml2.HEAP32[offset];
+        offset += 1
+    ) {
+        arr.push(libxml2.HEAP32[offset]);
+    }
+
+    libxml2._free(nsList);
+    return arr;
 }
 
 export class XmlXPathObjectStruct {
@@ -127,8 +144,8 @@ export class XmlNodeSetStruct {
 
     static nodeTable(nodeSetPtr: Pointer, size: number) {
         // pointer to a pointer array, return the pointer array
-        const nodeTablePtr = libxml2.getValue(nodeSetPtr + 8, '*') / 4;
-        return libxml2.HEAP32.subarray(nodeTablePtr, nodeTablePtr + size);
+        const tablePtr = libxml2.getValue(nodeSetPtr + 8, '*') / libxml2.HEAP32.BYTES_PER_ELEMENT;
+        return libxml2.HEAP32.subarray(tablePtr, tablePtr + size);
     }
 }
 
@@ -155,6 +172,8 @@ export class XmlNamedNodeStruct extends XmlTreeCommonStruct {
 export class XmlNodeStruct extends XmlNamedNodeStruct {
     static properties = getValueFunc(44, '*');
 
+    static nsDef = getValueFunc(48, '*');
+
     static line = getValueFunc(56, 'i32');
 }
 
@@ -169,6 +188,8 @@ export module XmlNodeStruct {
 }
 
 export class XmlNsStruct {
+    static next = getValueFunc(0, '*');
+
     static href = getStringValueFunc(8);
 
     static prefix = getStringValueFunc(12);
@@ -180,6 +201,8 @@ export class XmlAttrStruct extends XmlTreeCommonStruct {
 export class XmlErrorStruct {
     static message = getStringValueFunc(8);
 }
+
+export const xmlFreeDoc = libxml2._xmlFreeDoc;
 
 export const xmlNewDoc = libxml2._xmlNewDoc;
 export const xmlXPathNewContext = libxml2._xmlXPathNewContext;

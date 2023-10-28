@@ -15,3 +15,4 @@ _xmlNodeGetContent
 _xmlGetLastError
 _xmlResetLastError
 _xmlXPathRegisterNs
+_xmlGetNsList
