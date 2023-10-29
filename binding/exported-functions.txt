@@ -4,13 +4,14 @@ _xmlDocGetRootElement
 _xmlFreeDoc
 _xmlGetLastError
 _xmlGetNsList
-_xmlHasProp
+_xmlHasNsProp
 _xmlNewDoc
 _xmlNewDocComment
 _xmlNewDocText
 _xmlNodeGetContent
 _xmlReadMemory
 _xmlResetLastError
+_xmlSearchNs
 _xmlXPathFreeContext
 _xmlXPathFreeObject
 _xmlXPathNewContext

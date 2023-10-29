@@ -1,18 +1,19 @@
 import {
     XmlError,
+    xmlHasNsProp,
+    xmlGetNsList,
+    XmlNamedNodeStruct,
+    xmlNodeGetContent,
     XmlNodeSetStruct,
     XmlNodeStruct,
-    XmlXPathObjectStruct,
-    xmlHasProp,
+    XmlNsStruct,
+    xmlSearchNs,
     xmlXPathFreeContext,
+    xmlXPathFreeObject,
     xmlXPathNewContext,
     xmlXPathNodeEval,
-    xmlNodeGetContent,
-    xmlXPathFreeObject,
-    XmlNamedNodeStruct,
-    XmlNsStruct,
+    XmlXPathObjectStruct,
     xmlXPathRegisterNs,
-    xmlGetNsList,
 } from './libxml2.mjs';
 import type XmlDocument from './document.mjs';
 import type { XmlNodePtr } from './libxml2raw.js';
@@ -145,6 +146,15 @@ export abstract class XmlNode {
     }
 
     /**
+     * Find out corresponding namespace uri of a prefix
+     * @param prefix
+     */
+    namespaceForPrefix(prefix: string): string | null {
+        const ns = xmlSearchNs(this._doc._docPtr, this._nodePtr, prefix);
+        return ns ? XmlNsStruct.href(ns) : null;
+    }
+
+    /**
      * Find the first descendant node matching the given xpath selector
      *
      * @param xpath XPath selector
@@ -246,6 +256,9 @@ class XmlNamedNode extends XmlNode {
         return XmlNodeStruct.name_(this._nodePtr);
     }
 
+    /**
+     * The URI of the namespace applied to this node.
+     */
     get namespaceUri(): string {
         const namespace = XmlNamedNodeStruct.namespace(this._nodePtr);
         if (namespace) {
@@ -254,6 +267,9 @@ class XmlNamedNode extends XmlNode {
         return '';
     }
 
+    /**
+     * The prefix representing the namespace applied to this node.
+     */
     get namespacePrefix(): string {
         const namespace = XmlNamedNodeStruct.namespace(this._nodePtr);
         if (namespace) {
@@ -297,9 +313,11 @@ export class XmlElement extends XmlNamedNode {
      * Get the attribute of this element.
      * Return null if the attribute doesn't exist.
      * @param name The name of the attribute
+     * @param prefix The prefix to the namespace
      */
-    attr(name: string): XmlAttribute | null {
-        const attrPtr = xmlHasProp(this._nodePtr, name);
+    attr(name: string, prefix?: string): XmlAttribute | null {
+        const namespace = prefix ? this.namespaceForPrefix(prefix) : null;
+        const attrPtr = xmlHasNsProp(this._nodePtr, name, namespace);
         if (!attrPtr) {
             return null;
         }

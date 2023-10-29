@@ -291,6 +291,19 @@ describe('XmlNode', () => {
         });
     });
 
+    describe('namespaceForPrefix', () => {
+        it('should return uri of a prefix', () => {
+            expect(doc.root.namespaceForPrefix('m')).to.equal('http://www.federalreserve.gov');
+            expect(doc.get('book')?.namespaceForPrefix('m')).to.equal(
+                'http://www.federalreserve.gov',
+            );
+        });
+
+        it('should return null if not found', () => {
+            expect(doc.root.namespaceForPrefix('a')).is.null;
+        });
+    });
+
     describe('namespace getter', () => {
         it('should return the namespace of the node', () => {
             const attr = (doc.get('book/price') as XmlElement).attrs[0];
@@ -329,6 +342,11 @@ describe('XmlElement', () => {
             expect(lang).is.not.null;
             expect(lang!.name).to.equal('lang');
             expect(lang!.content).to.equal('en');
+        });
+
+        it('should handle namespace', () => {
+            const price = doc.get('book/price') as XmlElement;
+            expect(price.attr('currency', 'm')?.content).to.equal('USD');
         });
     });
 

@@ -12,12 +12,15 @@ export class LibXml2 {
 
     HEAPU8: Uint8Array;
 
-    getValue(ptr: Pointer, type: string): number;
-    lengthBytesUTF8(str: string): number;
-    stringToUTF8(str: string, outPtr: CString, maxBytesToWrite: number): CString;
-    UTF8ToString(ptr: CString, maxBytesToRead?: number): string;
-    _xmlNewDoc(): XmlDocPtr;
+    _free(memblock: Pointer): void;
+    _malloc(size: number): Pointer;
+    _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
     _xmlFreeDoc(Doc: XmlDocPtr): void;
+    _xmlGetLastError(): XmlErrorPtr;
+    _xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): Pointer;
+    _xmlHasNsProp(node: XmlNodePtr, name: CString, namespace: CString): XmlAttrPtr;
+    _xmlNewDoc(): XmlDocPtr;
+    _xmlNodeGetContent(node: XmlNodePtr): CString;
     _xmlReadMemory(
         buffer: CString,
         length: number,
@@ -25,23 +28,23 @@ export class LibXml2 {
         encoding: CString,
         options: number,
     ): XmlDocPtr;
-    _malloc(size: number): Pointer;
-    _free(memblock: Pointer): void;
-    _xmlXPathNewContext(doc: XmlDocPtr): XmlXPathContextPtr;
+    _xmlResetLastError(): void;
+    _xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: CString): XmlNsPtr;
     _xmlXPathFreeContext(context: XmlXPathContextPtr): void;
+    _xmlXPathFreeObject(obj: XmlXPathObjectPtr): void;
+    _xmlXPathNewContext(doc: XmlDocPtr): XmlXPathContextPtr;
     _xmlXPathNodeEval(
         node: XmlNodePtr,
         xpath: CString,
         context: XmlXPathContextPtr,
     ): XmlXPathObjectPtr;
-    _xmlXPathFreeObject(obj: XmlXPathObjectPtr): void;
-    _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
-    _xmlHasProp(node: XmlNodePtr, name: CString): XmlAttrPtr;
-    _xmlNodeGetContent(node: XmlNodePtr): CString;
-    _xmlGetLastError(): XmlErrorPtr;
-    _xmlResetLastError(): void;
     _xmlXPathRegisterNs(ctx: XmlXPathContextPtr, prefix: CString, uri: CString): number;
-    _xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): Pointer;
+
+    // runtime functions
+    UTF8ToString(ptr: CString, maxBytesToRead?: number): string;
+    getValue(ptr: Pointer, type: string): number;
+    lengthBytesUTF8(str: string): number;
+    stringToUTF8(str: string, outPtr: CString, maxBytesToWrite: number): CString;
 }
 
 export default function moduleLoader(): Promise<LibXml2>;

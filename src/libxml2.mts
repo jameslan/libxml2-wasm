@@ -15,7 +15,7 @@ const libxml2 = await moduleLoader();
 export class XmlError extends Error {}
 export class XmlParseError extends XmlError {}
 
-function withStringUTF8<R>(str: string, process: (buf: number, len: number) => R): R {
+function withStringUTF8<R>(str: string | null, process: (buf: number, len: number) => R): R {
     if (!str) {
         return process(0, 0);
     }
@@ -82,8 +82,11 @@ export function xmlXPathNodeEval(
     );
 }
 
-export function xmlHasProp(node: XmlNodePtr, name: string): XmlAttrPtr {
-    return withStringUTF8(name, (buf) => libxml2._xmlHasProp(node, buf));
+export function xmlHasNsProp(node: XmlNodePtr, name: string, namespace: string | null): XmlAttrPtr {
+    return withStringUTF8(name, (bufName) => withStringUTF8(
+        namespace,
+        (bufNamespace) => libxml2._xmlHasNsProp(node, bufName, bufNamespace),
+    ));
 }
 
 export function xmlNodeGetContent(node: XmlNodePtr): string {
@@ -116,6 +119,13 @@ export function xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): XmlNsPtr[] {
 
     libxml2._free(nsList);
     return arr;
+}
+
+export function xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: string): XmlNsPtr {
+    return withStringUTF8(
+        prefix,
+        (buf) => libxml2._xmlSearchNs(doc, node, buf),
+    );
 }
 
 export class XmlXPathObjectStruct {
