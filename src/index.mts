@@ -16,6 +16,7 @@ export {
     XmlElement,
     XmlText,
     XmlCData,
+    NamespaceMap,
 } from './nodes.mjs';
 export { default as XmlDocument } from './document.mjs';
 export { XmlParseError, XmlError } from './libxml2.mjs';

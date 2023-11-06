@@ -1,7 +1,7 @@
 {
     "name": "libxml2-wasm",
-    "version": "0.0.6",
-    "description": "Bring libxml2 to browsers using WebAssembly",
+    "version": "0.1.0",
+    "description": "WebAssembly-based libxml2 javascript binding",
     "scripts": {
         "wasm": "gulp rebuild",
         "unit": "mocha",
