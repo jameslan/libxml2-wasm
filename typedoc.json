@@ -8,5 +8,17 @@
         "external": false,
         "@internal": false
     },
-    "out": "./_site"
+    "out": "./_site",
+    "pluginPages": {
+        "source": "docs",
+        "pages": [
+            {
+                "name": "Performance",
+                "source": "performance.md"
+            }
+        ]
+    },
+    "navigationLinks": {
+        "GITHUB": "https://github.com/jameslan/libxml2-wasm"
+    }
 }
