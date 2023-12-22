@@ -9,6 +9,7 @@ import {
 } from './libxml2.mjs';
 import type { XmlDocPtr } from './libxml2raw';
 
+export { default as XmlXPath } from './xpath.mjs';
 export {
     XmlNode,
     XmlAttribute,
