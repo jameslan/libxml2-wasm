@@ -12,8 +12,11 @@ _xmlNodeGetContent
 _xmlReadMemory
 _xmlResetLastError
 _xmlSearchNs
+_xmlXPathCompiledEval
+_xmlXPathCtxtCompile
+_xmlXPathFreeCompExpr
 _xmlXPathFreeContext
 _xmlXPathFreeObject
 _xmlXPathNewContext
-_xmlXPathNodeEval
 _xmlXPathRegisterNs
+_xmlXPathSetContextNode

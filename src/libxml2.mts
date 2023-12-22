@@ -7,6 +7,7 @@ import type {
     XmlXPathContextPtr,
     XmlXPathObjectPtr,
     XmlNsPtr,
+    XmlXPathCompExprPtr,
 } from './libxml2raw.js';
 import moduleLoader from './libxml2raw.js';
 
@@ -71,17 +72,6 @@ export function xmlXPathRegisterNs(ctx: XmlXPathContextPtr, prefix: string, uri:
     ));
 }
 
-export function xmlXPathNodeEval(
-    node: XmlNodePtr,
-    xpath: string,
-    context: XmlXPathContextPtr,
-): XmlXPathObjectPtr {
-    return withStringUTF8(
-        xpath,
-        (buf) => libxml2._xmlXPathNodeEval(node, buf, context),
-    );
-}
-
 export function xmlHasNsProp(node: XmlNodePtr, name: string, namespace: string | null): XmlAttrPtr {
     return withStringUTF8(name, (bufName) => withStringUTF8(
         namespace,
@@ -126,6 +116,10 @@ export function xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: string): X
         prefix,
         (buf) => libxml2._xmlSearchNs(doc, node, buf),
     );
+}
+
+export function xmlXPathCtxtCompile(ctxt: XmlXPathContextPtr, str: string): XmlXPathCompExprPtr {
+    return withStringUTF8(str, (buf) => libxml2._xmlXPathCtxtCompile(ctxt, buf));
 }
 
 export class XmlXPathObjectStruct {
@@ -216,8 +210,11 @@ export const xmlFreeDoc = libxml2._xmlFreeDoc;
 
 export const xmlNewDoc = libxml2._xmlNewDoc;
 export const xmlXPathNewContext = libxml2._xmlXPathNewContext;
+export const xmlXPathCompiledEval = libxml2._xmlXPathCompiledEval;
+export const xmlXPathFreeCompExpr = libxml2._xmlXPathFreeCompExpr;
 export const xmlXPathFreeContext = libxml2._xmlXPathFreeContext;
 export const xmlXPathFreeObject = libxml2._xmlXPathFreeObject;
+export const xmlXPathSetContextNode = libxml2._xmlXPathSetContextNode;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
 
 export const xmlGetLastError = libxml2._xmlGetLastError;

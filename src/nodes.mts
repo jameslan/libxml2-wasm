@@ -11,12 +11,14 @@ import {
     xmlXPathFreeContext,
     xmlXPathFreeObject,
     xmlXPathNewContext,
-    xmlXPathNodeEval,
     XmlXPathObjectStruct,
     xmlXPathRegisterNs,
+    xmlXPathCompiledEval,
+    xmlXPathSetContextNode,
 } from './libxml2.mjs';
 import type XmlDocument from './document.mjs';
 import type { XmlNodePtr } from './libxml2raw.js';
+import XmlXPath from "./xpath.mjs";
 
 /**
  * Map between the prefix and the uri of the namespace
@@ -163,7 +165,7 @@ export abstract class XmlNode {
      * @see
      *  - {@link get}
      */
-    get(xpath: string, namespaces?: NamespaceMap): XmlNode | null {
+    get(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode | null {
         const xpathObj = this.xpathEval(xpath, namespaces);
         if (!xpathObj) {
             return null;
@@ -183,7 +185,16 @@ export abstract class XmlNode {
         return ret;
     }
 
-    private xpathEval(xpath: string, namespaces?: NamespaceMap) {
+    private xpathEval(xpath: string | XmlXPath, namespaces?: NamespaceMap) {
+        const xpathCompiled = xpath instanceof XmlXPath ? xpath : new XmlXPath(xpath);
+        const ret = this.compiledXPathEval(xpathCompiled, namespaces);
+        if (!(xpath instanceof XmlXPath)) {
+            xpathCompiled.dispose();
+        }
+        return ret;
+    }
+
+    private compiledXPathEval(xpath: XmlXPath, namespaces?: NamespaceMap) {
         const context = xmlXPathNewContext(this._doc._docPtr);
         if (namespaces) {
             Object.entries(namespaces)
@@ -191,7 +202,8 @@ export abstract class XmlNode {
                     xmlXPathRegisterNs(context, prefix, uri);
                 });
         }
-        const xpathObj = xmlXPathNodeEval(this._nodePtr, xpath, context);
+        xmlXPathSetContextNode(this._nodePtr, context);
+        const xpathObj = xmlXPathCompiledEval(xpath._xpath, context);
         xmlXPathFreeContext(context);
         return xpathObj;
     }
@@ -204,7 +216,7 @@ export abstract class XmlNode {
      * @see
      *  - {@link get}
      */
-    find(xpath: string, namespaces?: NamespaceMap): XmlNode[] {
+    find(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode[] {
         const xpathObj = this.xpathEval(xpath, namespaces);
         if (!xpathObj) {
             return [];

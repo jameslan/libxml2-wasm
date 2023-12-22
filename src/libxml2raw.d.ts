@@ -3,10 +3,12 @@ type CString = Pointer;
 type XmlDocPtr = Pointer;
 type XmlNodePtr = Pointer;
 type XmlAttrPtr = Pointer;
+type XmlXPathCompExprPtr = Pointer;
 type XmlXPathContextPtr = Pointer;
 type XmlXPathObjectPtr = Pointer;
 type XmlErrorPtr = Pointer;
 type XmlNsPtr = Pointer;
+
 export class LibXml2 {
     HEAP32: Int32Array;
 
@@ -30,15 +32,15 @@ export class LibXml2 {
     ): XmlDocPtr;
     _xmlResetLastError(): void;
     _xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: CString): XmlNsPtr;
+    _xmlXPathCompile(str: CString): XmlXPathCompExprPtr;
+    _xmlXPathCompiledEval(comp: XmlXPathCompExprPtr, ctx: XmlXPathContextPtr): XmlXPathObjectPtr;
+    _xmlXPathCtxtCompile(ctxt: XmlXPathContextPtr, str: CString): XmlXPathCompExprPtr;
+    _xmlXPathFreeCompExpr(comp: XmlXPathCompExprPtr): void;
     _xmlXPathFreeContext(context: XmlXPathContextPtr): void;
     _xmlXPathFreeObject(obj: XmlXPathObjectPtr): void;
     _xmlXPathNewContext(doc: XmlDocPtr): XmlXPathContextPtr;
-    _xmlXPathNodeEval(
-        node: XmlNodePtr,
-        xpath: CString,
-        context: XmlXPathContextPtr,
-    ): XmlXPathObjectPtr;
     _xmlXPathRegisterNs(ctx: XmlXPathContextPtr, prefix: CString, uri: CString): number;
+    _xmlXPathSetContextNode(node: XmlNodePtr, ctx: XmlXPathContextPtr): number;
 
     // runtime functions
     UTF8ToString(ptr: CString, maxBytesToRead?: number): string;

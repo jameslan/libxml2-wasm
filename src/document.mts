@@ -2,6 +2,7 @@ import {
     XmlError, xmlDocGetRootElement, xmlFreeDoc, xmlNewDoc,
 } from './libxml2.mjs';
 import { NamespaceMap, XmlElement, XmlNode } from './nodes.mjs';
+import XmlXPath from "./xpath.mjs";
 
 export default class XmlDocument {
     /** @internal */
@@ -38,7 +39,7 @@ export default class XmlDocument {
      *  - {@link XmlNode#get | XmlNode.get}
      *  - {@link find}
      */
-    get(xpath: string, namespaces?: NamespaceMap): XmlNode | null {
+    get(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode | null {
         return this.root.get(xpath, namespaces);
     }
 
@@ -51,7 +52,7 @@ export default class XmlDocument {
      *  - {@link XmlNode#find | XmlNode.find}
      *  - {@link get}
      */
-    find(xpath: string, namespaces?: NamespaceMap): XmlNode[] {
+    find(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode[] {
         return this.root.find(xpath, namespaces);
     }
 

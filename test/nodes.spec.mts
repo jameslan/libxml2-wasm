@@ -241,7 +241,7 @@ describe('XmlNode', () => {
 
         it('should return empty if element has no namespace definition', () => {
             const document = parseXmlString('<doc/>');
-            expect(document.root?.localNamespaces).to.be.empty;
+            expect(document.root.namespaces).to.be.empty;
         });
 
         it('should get namespaces on an attribute', () => {
