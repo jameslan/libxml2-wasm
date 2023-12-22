@@ -1,6 +1,6 @@
-import { parseXmlString } from "../lib/index.mjs";
-import XmlXPath from "../lib/xpath.mjs";
-import { expect } from "chai";
+import { expect } from 'chai';
+import { parseXmlString } from '../lib/index.mjs';
+import XmlXPath from '../lib/xpath.mjs';
 
 describe('XPath', () => {
     const doc1 = parseXmlString('<book><title>Harry Potter</title></book>');

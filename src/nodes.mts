@@ -18,7 +18,7 @@ import {
 } from './libxml2.mjs';
 import type XmlDocument from './document.mjs';
 import type { XmlNodePtr } from './libxml2raw.js';
-import XmlXPath from "./xpath.mjs";
+import XmlXPath from './xpath.mjs';
 
 /**
  * Map between the prefix and the uri of the namespace

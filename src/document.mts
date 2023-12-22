@@ -2,7 +2,7 @@ import {
     XmlError, xmlDocGetRootElement, xmlFreeDoc, xmlNewDoc,
 } from './libxml2.mjs';
 import { NamespaceMap, XmlElement, XmlNode } from './nodes.mjs';
-import XmlXPath from "./xpath.mjs";
+import XmlXPath from './xpath.mjs';
 
 export default class XmlDocument {
     /** @internal */

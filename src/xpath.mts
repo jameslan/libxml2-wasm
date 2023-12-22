@@ -1,7 +1,7 @@
 import {
     xmlXPathCtxtCompile,
     xmlXPathFreeCompExpr,
-} from "./libxml2.mjs";
+} from './libxml2.mjs';
 import type { XmlXPathCompExprPtr } from './libxml2raw.js';
 
 export default class XmlXPath {

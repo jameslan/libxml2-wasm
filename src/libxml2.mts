@@ -5,7 +5,6 @@ import type {
     XmlDocPtr,
     XmlNodePtr,
     XmlXPathContextPtr,
-    XmlXPathObjectPtr,
     XmlNsPtr,
     XmlXPathCompExprPtr,
 } from './libxml2raw.js';
