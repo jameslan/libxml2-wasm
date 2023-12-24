@@ -9,7 +9,7 @@ import {
 } from './libxml2.mjs';
 import type { XmlDocPtr } from './libxml2raw';
 
-export { default as XmlXPath } from './xpath.mjs';
+export { XmlXPath, NamespaceMap } from './xpath.mjs';
 export {
     XmlNode,
     XmlAttribute,
@@ -17,7 +17,6 @@ export {
     XmlElement,
     XmlText,
     XmlCData,
-    NamespaceMap,
 } from './nodes.mjs';
 export { default as XmlDocument } from './document.mjs';
 export { XmlParseError, XmlError } from './libxml2.mjs';

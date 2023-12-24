@@ -4,11 +4,21 @@ import {
 } from './libxml2.mjs';
 import type { XmlXPathCompExprPtr } from './libxml2raw.js';
 
-export default class XmlXPath {
+/**
+ * Map between the prefix and the uri of the namespace
+ */
+export interface NamespaceMap {
+    [prefix: string]: string;
+}
+
+export class XmlXPath {
     _xpath: XmlXPathCompExprPtr;
 
-    constructor(xpath: string) {
+    _namespaces: NamespaceMap | undefined;
+
+    constructor(xpath: string, namespaces?: NamespaceMap) {
         this._xpath = xmlXPathCtxtCompile(0, xpath);
+        this._namespaces = namespaces;
     }
 
     dispose() {

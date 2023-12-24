@@ -1,31 +1,24 @@
 import {
     XmlError,
-    xmlHasNsProp,
     xmlGetNsList,
+    xmlHasNsProp,
     XmlNamedNodeStruct,
     xmlNodeGetContent,
     XmlNodeSetStruct,
     XmlNodeStruct,
     XmlNsStruct,
     xmlSearchNs,
+    xmlXPathCompiledEval,
     xmlXPathFreeContext,
     xmlXPathFreeObject,
     xmlXPathNewContext,
     XmlXPathObjectStruct,
     xmlXPathRegisterNs,
-    xmlXPathCompiledEval,
     xmlXPathSetContextNode,
 } from './libxml2.mjs';
 import type XmlDocument from './document.mjs';
 import type { XmlNodePtr } from './libxml2raw.js';
-import XmlXPath from './xpath.mjs';
-
-/**
- * Map between the prefix and the uri of the namespace
- */
-export interface NamespaceMap {
-    [prefix: string]: string;
-}
+import { XmlXPath, NamespaceMap } from './xpath.mjs';
 
 export abstract class XmlNode {
     protected _doc: XmlDocument;
@@ -156,6 +149,9 @@ export abstract class XmlNode {
         return ns ? XmlNsStruct.href(ns) : null;
     }
 
+    get(xpath: XmlXPath): XmlNode | null;
+    get(xpath: string, namespaces?: NamespaceMap): XmlNode | null;
+    get(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode | null;
     /**
      * Find the first descendant node matching the given xpath selector
      *
@@ -186,18 +182,18 @@ export abstract class XmlNode {
     }
 
     private xpathEval(xpath: string | XmlXPath, namespaces?: NamespaceMap) {
-        const xpathCompiled = xpath instanceof XmlXPath ? xpath : new XmlXPath(xpath);
-        const ret = this.compiledXPathEval(xpathCompiled, namespaces);
+        const xpathCompiled = xpath instanceof XmlXPath ? xpath : new XmlXPath(xpath, namespaces);
+        const ret = this.compiledXPathEval(xpathCompiled);
         if (!(xpath instanceof XmlXPath)) {
             xpathCompiled.dispose();
         }
         return ret;
     }
 
-    private compiledXPathEval(xpath: XmlXPath, namespaces?: NamespaceMap) {
+    private compiledXPathEval(xpath: XmlXPath) {
         const context = xmlXPathNewContext(this._doc._docPtr);
-        if (namespaces) {
-            Object.entries(namespaces)
+        if (xpath._namespaces) {
+            Object.entries(xpath._namespaces)
                 .forEach(([prefix, uri]) => {
                     xmlXPathRegisterNs(context, prefix, uri);
                 });
@@ -208,6 +204,9 @@ export abstract class XmlNode {
         return xpathObj;
     }
 
+    find(xpath: XmlXPath): XmlNode[];
+    find(xpath: string, namespaces?: NamespaceMap): XmlNode[];
+    find(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode[];
     /**
      * Find all the descendant nodes matching the given xpath selector.
      * @param xpath XPath selector
