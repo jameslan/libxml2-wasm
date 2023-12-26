@@ -32,5 +32,24 @@ describe('XPath', () => {
         const xpath = new XmlXPath('/book/m:title', { m: 'http://foo' });
         expect(doc.get(xpath)?.content).to.equal('Harry Potter');
         expect(doc.find(xpath).map((node) => node.content)).to.deep.equal(['Harry Potter']);
+        xpath.dispose();
+    });
+
+    it('should return undefined if namespace is not provided', () => {
+        const xpath = new XmlXPath(('/book'));
+        expect(xpath.namespaces).to.be.undefined;
+        xpath.dispose();
+    });
+
+    it('should return namespaces passed in', () => {
+        const xpath = new XmlXPath('/book/m:title', { m: 'http://foo' });
+        expect(xpath.namespaces).to.deep.equal({ m: 'http://foo' });
+        xpath.dispose();
+    });
+
+    it('should return xpath string by toString', () => {
+        const xpath = new XmlXPath(('/book'));
+        expect(xpath.toString()).to.equal('/book');
+        xpath.dispose();
     });
 });

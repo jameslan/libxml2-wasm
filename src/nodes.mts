@@ -192,8 +192,8 @@ export abstract class XmlNode {
 
     private compiledXPathEval(xpath: XmlXPath) {
         const context = xmlXPathNewContext(this._doc._docPtr);
-        if (xpath._namespaces) {
-            Object.entries(xpath._namespaces)
+        if (xpath.namespaces) {
+            Object.entries(xpath.namespaces)
                 .forEach(([prefix, uri]) => {
                     xmlXPathRegisterNs(context, prefix, uri);
                 });
