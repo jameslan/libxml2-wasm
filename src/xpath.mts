@@ -20,6 +20,7 @@ export interface NamespaceMap {
  * Note: This object requires to be {@link dispose}d explicitly.
  */
 export class XmlXPath {
+    /** @internal */
     _xpath: XmlXPathCompExprPtr;
 
     private readonly _xpathSource;

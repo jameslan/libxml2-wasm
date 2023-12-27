@@ -1,10 +1,10 @@
 import { expect } from 'chai';
-import { parseXmlString } from '../lib/index.mjs';
+import { XmlDocument } from '../lib/index.mjs';
 import { XmlXPath } from '../lib/xpath.mjs';
 
 describe('XPath', () => {
-    const doc1 = parseXmlString('<book><title>Harry Potter</title></book>');
-    const doc2 = parseXmlString('<book><title>Learning XML</title></book>');
+    const doc1 = XmlDocument.fromString('<book><title>Harry Potter</title></book>');
+    const doc2 = XmlDocument.fromString('<book><title>Learning XML</title></book>');
 
     it('could be used in get method of multiple docs', () => {
         const xpath = new XmlXPath('/book/title');
@@ -26,7 +26,7 @@ describe('XPath', () => {
     });
 
     it('handles namespace', () => {
-        const doc = parseXmlString(
+        const doc = XmlDocument.fromString(
             '<book xmlns:t="http://foo"><t:title>Harry Potter</t:title></book>',
         );
         const xpath = new XmlXPath('/book/m:title', { m: 'http://foo' });

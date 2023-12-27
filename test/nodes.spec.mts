@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { parseXmlString } from '../lib/index.mjs';
+import { XmlDocument } from '../lib/index.mjs';
 import {
     XmlAttribute, XmlCData,
     XmlComment,
@@ -7,7 +7,7 @@ import {
     XmlText,
 } from '../lib/nodes.mjs';
 
-const doc = parseXmlString(`<?xml version="1.0" encoding="UTF-8"?>
+const doc = XmlDocument.fromString(`<?xml version="1.0" encoding="UTF-8"?>
 <bookstore xmlns:m="http://www.federalreserve.gov"><!--comment1-->
     <book><title lang="en" author="J.K. Rowling">Harry Potter</title><price m:currency="USD"><![CDATA[29.99]]></price></book>
     <book><title lang="en" author="Erik Ray">Learning XML</title><price m:currency="USD">39.95</price></book>
@@ -240,7 +240,7 @@ describe('XmlNode', () => {
         });
 
         it('should return empty if element has no namespace definition', () => {
-            const document = parseXmlString('<doc/>');
+            const document = XmlDocument.fromString('<doc/>');
             expect(document.root.namespaces).to.be.empty;
         });
 

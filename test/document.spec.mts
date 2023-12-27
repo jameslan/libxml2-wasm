@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { XmlElement } from '../lib/nodes.mjs';
-import { XmlDocument, XmlError, parseXmlString } from '../lib/index.mjs';
+import { XmlDocument, XmlError } from '../lib/index.mjs';
 
 describe('XmlDocument', () => {
-    const doc = parseXmlString('<docs><doc></doc></docs>');
+    const doc = XmlDocument.fromString('<docs><doc></doc></docs>');
     after(() => doc.dispose());
 
     describe('root property', () => {
@@ -14,7 +14,7 @@ describe('XmlDocument', () => {
         });
 
         it('return null if root doesn\'t exist', () => {
-            const d = new XmlDocument();
+            const d = XmlDocument.create();
             expect(() => d.root).to.throw(XmlError);
             d.dispose();
         });

@@ -1,15 +1,14 @@
 import { expect } from 'chai';
 import {
     ParseOption,
-    parseXmlBuffer,
-    parseXmlString,
     XmlCData,
+    XmlDocument,
     XmlParseError,
 } from '../lib/index.mjs';
 
 describe('parseXmlString', () => {
     it('should parse valid xml string', () => {
-        const doc = parseXmlString('<doc/>');
+        const doc = XmlDocument.fromString('<doc/>');
 
         expect(doc.root.name).equals('doc');
 
@@ -17,14 +16,14 @@ describe('parseXmlString', () => {
     });
 
     it('should throw exception on invalid xml string', () => {
-        expect(() => parseXmlString('<doc>')).to.throw(
+        expect(() => XmlDocument.fromString('<doc>')).to.throw(
             XmlParseError,
             'Premature end of data in tag doc line 1\n',
         );
     });
 
     it('should support parse option', () => {
-        const doc = parseXmlString(
+        const doc = XmlDocument.fromString(
             '<doc><![CDATA[3>2]]></doc>',
             { option: ParseOption.XML_PARSE_NOCDATA },
         );
@@ -35,7 +34,7 @@ describe('parseXmlString', () => {
 
 describe('parseXmlBuffer', () => {
     it('should parse valid xml buffer', () => {
-        const doc = parseXmlBuffer(new TextEncoder().encode('<doc/>'));
+        const doc = XmlDocument.fromBuffer(new TextEncoder().encode('<doc/>'));
 
         expect(doc.root.name).equals('doc');
 
@@ -43,21 +42,21 @@ describe('parseXmlBuffer', () => {
     });
 
     it('should throw exception on invalid xml buffer', () => {
-        expect(() => parseXmlBuffer(new TextEncoder().encode('<doc>'))).to.throw(
+        expect(() => XmlDocument.fromBuffer(new TextEncoder().encode('<doc>'))).to.throw(
             XmlParseError,
             'Premature end of data in tag doc line 1\n',
         );
     });
 
     it('should throw if input buffer is null', () => {
-        expect(() => parseXmlBuffer(null!)).to.throw(
+        expect(() => XmlDocument.fromBuffer(null!)).to.throw(
             XmlParseError,
             '',
         );
     });
 
     it('should support parse option', () => {
-        const doc = parseXmlBuffer(
+        const doc = XmlDocument.fromBuffer(
             new TextEncoder().encode('<doc><![CDATA[3>2]]></doc>'),
             { option: ParseOption.XML_PARSE_NOCDATA },
         );
