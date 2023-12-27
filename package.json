@@ -1,6 +1,6 @@
 {
     "name": "libxml2-wasm",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "WebAssembly-based libxml2 javascript binding",
     "scripts": {
         "wasm": "gulp rebuild",
@@ -52,6 +52,7 @@
     "keywords": [
         "xml",
         "xml parser",
+        "libxml",
         "WebAssembly"
     ],
     "engines": {
