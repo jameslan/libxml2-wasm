@@ -1,11 +1,12 @@
 import { expect } from 'chai';
-import { XmlDocument } from '../lib/index.mjs';
 import {
-    XmlAttribute, XmlCData,
+    XmlAttribute,
+    XmlCData,
     XmlComment,
+    XmlDocument,
     XmlElement,
     XmlText,
-} from '../lib/nodes.mjs';
+} from '../lib/index.mjs';
 
 const doc = XmlDocument.fromString(`<?xml version="1.0" encoding="UTF-8"?>
 <bookstore xmlns:m="http://www.federalreserve.gov"><!--comment1-->

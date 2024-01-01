@@ -1,6 +1,5 @@
 import { expect } from 'chai';
-import { XmlDocument } from '../lib/index.mjs';
-import { XmlXPath } from '../lib/xpath.mjs';
+import { XmlDocument, XmlXPath } from '../lib/index.mjs';
 
 describe('XPath', () => {
     const doc1 = XmlDocument.fromString('<book><title>Harry Potter</title></book>');

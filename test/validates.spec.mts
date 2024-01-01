@@ -1,7 +1,10 @@
 import { expect } from 'chai';
-import { XsdValidator, XmlValidateError } from '../lib/validates.mjs';
-import { XmlDocument } from '../lib/document.mjs';
-import { XmlError } from '../lib/libxml2.mjs';
+import {
+    XmlDocument,
+    XmlError,
+    XmlValidateError,
+    XsdValidator,
+} from '../lib/index.mjs';
 
 describe('XsdValidator', () => {
     const xsd = `<?xml version="1.0"?>
