@@ -31,6 +31,10 @@ export class XsdValidator {
 
     private constructor(ctx: XmlSchemaParserCtxtPtr) {
         this._schemaPtr = xmlSchemaParse(ctx);
+        if (this._schemaPtr === 0) {
+            const err = xmlGetLastError();
+            throw new XmlError(XmlErrorStruct.message(err));
+        }
     }
 
     /**
@@ -46,11 +50,10 @@ export class XsdValidator {
     /**
      * Validate the XmlDocument.
      *
-     * This function throws {@link XmlValidateError} if the document is invalid;
-     * throws {@link XmlError} if something wrong,
-     * such as validating a document already disposed, etc.
-     *
      * @param doc the XmlDocument to be validated.
+     * @throws {@link XmlValidateError} if the document is invalid;
+     * @throws {@link XmlError} if something wrong,
+     * such as validating a document already disposed, etc.
      */
     validate(doc: XmlDocument): void {
         const ctx = xmlSchemaNewValidCtxt(this._schemaPtr);
