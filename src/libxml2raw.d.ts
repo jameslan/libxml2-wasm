@@ -1,13 +1,16 @@
 type Pointer = number;
 type CString = Pointer;
-type XmlDocPtr = Pointer;
-type XmlNodePtr = Pointer;
 type XmlAttrPtr = Pointer;
+type XmlDocPtr = Pointer;
+type XmlErrorPtr = Pointer;
+type XmlNodePtr = Pointer;
+type XmlNsPtr = Pointer;
+type XmlSchemaParserCtxtPtr = Pointer;
+type XmlSchemaPtr = Pointer;
+type XmlSchemaValidCtxtPtr = Pointer;
 type XmlXPathCompExprPtr = Pointer;
 type XmlXPathContextPtr = Pointer;
 type XmlXPathObjectPtr = Pointer;
-type XmlErrorPtr = Pointer;
-type XmlNsPtr = Pointer;
 
 export class LibXml2 {
     HEAP32: Int32Array;
@@ -41,7 +44,13 @@ export class LibXml2 {
     _xmlXPathNewContext(doc: XmlDocPtr): XmlXPathContextPtr;
     _xmlXPathRegisterNs(ctx: XmlXPathContextPtr, prefix: CString, uri: CString): number;
     _xmlXPathSetContextNode(node: XmlNodePtr, ctx: XmlXPathContextPtr): number;
-
+    _xmlSchemaNewDocParserCtxt(doc: XmlDocPtr): XmlSchemaParserCtxtPtr;
+    _xmlSchemaFree(schema: XmlSchemaPtr): void;
+    _xmlSchemaFreeParserCtxt(ctx: XmlSchemaParserCtxtPtr): void;
+    _xmlSchemaFreeValidCtxt(ctx: XmlSchemaValidCtxtPtr): void;
+    _xmlSchemaNewValidCtxt(schema: XmlSchemaPtr): XmlSchemaValidCtxtPtr;
+    _xmlSchemaParse(ctx: XmlSchemaParserCtxtPtr): XmlSchemaPtr;
+    _xmlSchemaValidateDoc(ctx: XmlSchemaValidCtxtPtr, doc: XmlDocPtr): number;
     // runtime functions
     UTF8ToString(ptr: CString, maxBytesToRead?: number): string;
     getValue(ptr: Pointer, type: string): number;

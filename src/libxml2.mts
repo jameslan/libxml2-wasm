@@ -205,16 +205,21 @@ export class XmlErrorStruct {
     static message = getStringValueFunc(8);
 }
 
+export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
 export const xmlFreeDoc = libxml2._xmlFreeDoc;
-
+export const xmlGetLastError = libxml2._xmlGetLastError;
 export const xmlNewDoc = libxml2._xmlNewDoc;
-export const xmlXPathNewContext = libxml2._xmlXPathNewContext;
+export const xmlResetLastError = libxml2._xmlResetLastError;
+export const xmlSchemaFree = libxml2._xmlSchemaFree;
+export const xmlSchemaFreeParserCtxt = libxml2._xmlSchemaFreeParserCtxt;
+export const xmlSchemaFreeValidCtxt = libxml2._xmlSchemaFreeValidCtxt;
+export const xmlSchemaNewDocParserCtxt = libxml2._xmlSchemaNewDocParserCtxt;
+export const xmlSchemaNewValidCtxt = libxml2._xmlSchemaNewValidCtxt;
+export const xmlSchemaParse = libxml2._xmlSchemaParse;
+export const xmlSchemaValidateDoc = libxml2._xmlSchemaValidateDoc;
 export const xmlXPathCompiledEval = libxml2._xmlXPathCompiledEval;
 export const xmlXPathFreeCompExpr = libxml2._xmlXPathFreeCompExpr;
 export const xmlXPathFreeContext = libxml2._xmlXPathFreeContext;
 export const xmlXPathFreeObject = libxml2._xmlXPathFreeObject;
+export const xmlXPathNewContext = libxml2._xmlXPathNewContext;
 export const xmlXPathSetContextNode = libxml2._xmlXPathSetContextNode;
-export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
-
-export const xmlGetLastError = libxml2._xmlGetLastError;
-export const xmlResetLastError = libxml2._xmlResetLastError;

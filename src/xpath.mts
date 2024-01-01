@@ -40,6 +40,7 @@ export class XmlXPath {
      */
     dispose() {
         xmlXPathFreeCompExpr(this._xpath);
+        this._xpath = 0;
     }
 
     /**

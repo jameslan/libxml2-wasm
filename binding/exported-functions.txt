@@ -11,6 +11,13 @@ _xmlNewDocText
 _xmlNodeGetContent
 _xmlReadMemory
 _xmlResetLastError
+_xmlSchemaNewDocParserCtxt
+_xmlSchemaFree
+_xmlSchemaFreeParserCtxt
+_xmlSchemaFreeValidCtxt
+_xmlSchemaNewValidCtxt
+_xmlSchemaParse
+_xmlSchemaValidateDoc
 _xmlSearchNs
 _xmlXPathCompiledEval
 _xmlXPathCtxtCompile

@@ -93,6 +93,7 @@ export class XmlDocument {
      */
     dispose() {
         xmlFreeDoc(this._docPtr);
+        this._docPtr = 0;
     }
 
     /** Create a new document from scratch.
