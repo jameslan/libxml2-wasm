@@ -51,6 +51,8 @@ it requires the minimum version of the following environments,
 
 ## Getting Started
 
+Install `lbixml2-wasm` package:
+
 ```shell
 npm i libxml2-wasm
 ```
@@ -63,9 +65,9 @@ Import it directly.
 
 ```js
 import fs from 'node:fs';
-import { parseXmlBuffer, parseXmlString } from 'libxml2-wasm';
-const doc1 = parseXmlString('<note><to>Tove</to></note>');
-const doc2 = parseXmlBuffer(fs.readFileSync('doc.xml'));
+import { XmlDocument } from 'libxml2-wasm';
+const doc1 = XmlDocument.fromString('<note><to>Tove</to></note>');
+const doc2 = XmlDocument.fromBuffer(fs.readFileSync('doc.xml'));
 doc1.dispose();
 doc2.dispose();
 ```
@@ -76,9 +78,9 @@ Dynamic import is needed:
 
 ```js
 const fs = require('node:fs');
-import('libxml2-wasm').then(({ parseXmlBuffer, parseXmlString }) => {
-    const doc1 = parseXmlString('<note><to>Tove</to></note>');
-    const doc2 = parseXmlBuffer(fs.readFileSync('doc.xml'));
+import('libxml2-wasm').then(({ XmlDocument }) => {
+    const doc1 = XmlDocument.fromString('<note><to>Tove</to></note>');
+    const doc2 = XmlDocument.fromBuffer(fs.readFileSync('doc.xml'));
     doc1.dispose();
     doc2.dispose();
 });
