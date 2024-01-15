@@ -1,6 +1,6 @@
 extension:
   - ts
   - mts
-spec:
-  - test/**.spec.{ts,mts}
-loader: ts-node/esm
+recursive: true
+loader:
+  - ts-paths-esm-loader

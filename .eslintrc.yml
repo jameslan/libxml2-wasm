@@ -5,7 +5,7 @@ extends:
 parserOptions:
   project:
     - ./tsconfig.json
-    - ./tsconfig.test.json
+    - ./tsconfig.lint.json
 plugins:
   - import
   - chai-friendly
@@ -34,6 +34,6 @@ settings:
   import/resolver: typescript
 overrides:
   - files:
-    - test/*
+    - test/**
     env:
       mocha: true

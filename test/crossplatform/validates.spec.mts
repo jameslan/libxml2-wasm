@@ -4,7 +4,7 @@ import {
     XmlError,
     XmlValidateError,
     XsdValidator,
-} from '../lib/index.mjs';
+} from '@libxml2-wasm/lib/index.mjs';
 
 describe('XsdValidator', () => {
     const xsd = `<?xml version="1.0"?>

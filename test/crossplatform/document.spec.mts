@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { XmlDocument, XmlElement, XmlError } from '../lib/index.mjs';
+import { XmlDocument, XmlElement, XmlError } from '@libxml2-wasm/lib/index.mjs';
 
 describe('XmlDocument', () => {
     const doc = XmlDocument.fromString('<docs><doc></doc></docs>');

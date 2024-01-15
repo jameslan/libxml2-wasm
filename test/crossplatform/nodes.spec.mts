@@ -6,7 +6,7 @@ import {
     XmlDocument,
     XmlElement,
     XmlText,
-} from '../lib/index.mjs';
+} from '@libxml2-wasm/lib/index.mjs';
 
 const doc = XmlDocument.fromString(`<?xml version="1.0" encoding="UTF-8"?>
 <bookstore xmlns:m="http://www.federalreserve.gov"><!--comment1-->

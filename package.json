@@ -8,7 +8,7 @@
         "test": "npm run cov && npm run lint",
         "cov": "c8 npm run unit",
         "build": "npm run wasm && tsc --declaration",
-        "lint": "eslint src/* test/*",
+        "lint": "eslint 'src/**' 'test/**'",
         "doc": "typedoc",
         "docwatch": "typedoc --watch",
         "watch": "tsc --declaration --watch"
@@ -44,7 +44,8 @@
         "eslint-plugin-import": "^2.28.1",
         "gulp": "^4.0.2",
         "mocha": "^10.2.0",
-        "ts-node": "^10.9.1",
+        "ts-node": "^10.9.2",
+        "ts-paths-esm-loader": "^1.4.3",
         "typedoc": "^0.23.28",
         "typescript": "5.0",
         "yargs": "^17.7.2"

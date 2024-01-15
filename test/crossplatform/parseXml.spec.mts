@@ -4,7 +4,7 @@ import {
     XmlCData,
     XmlDocument,
     XmlParseError,
-} from '../lib/index.mjs';
+} from '@libxml2-wasm/lib/index.mjs';
 
 describe('parseXmlString', () => {
     it('should parse valid xml string', () => {
