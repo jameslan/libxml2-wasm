@@ -44,7 +44,7 @@ it requires the minimum version of the following environments,
 
 |Environment|Version|
 |:---:|:---:|
-|NodeJs|v14.8+|
+|NodeJs|v16+|
 |Chrome|V89+|
 |Edge|V89+|
 |Safari|v15+|

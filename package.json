@@ -4,7 +4,8 @@
     "description": "WebAssembly-based libxml2 javascript binding",
     "scripts": {
         "wasm": "gulp rebuild",
-        "unit": "mocha",
+        "unit": "TS_NODE_PROJECT=tsconfig.unit.json mocha",
+        "integ": "TS_NODE_PROJECT=tsconfig.integ.json mocha",
         "test": "npm run cov && npm run lint",
         "cov": "c8 npm run unit",
         "build": "npm run wasm && tsc --declaration",
@@ -57,6 +58,6 @@
         "WebAssembly"
     ],
     "engines": {
-        "node": ">=14.8.0"
+        "node": ">=16"
     }
 }

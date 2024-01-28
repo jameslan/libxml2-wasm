@@ -5,7 +5,7 @@ extends:
 parserOptions:
   project:
     - ./tsconfig.json
-    - ./tsconfig.lint.json
+    - ./tsconfig.unit.json
 plugins:
   - import
   - chai-friendly
@@ -31,7 +31,11 @@ rules:
     - error
     - always
 settings:
-  import/resolver: typescript
+  import/resolver:
+    typescript:
+      project:
+        - tsconfig.json
+        - tsconfig.unit.json
 overrides:
   - files:
     - test/**
