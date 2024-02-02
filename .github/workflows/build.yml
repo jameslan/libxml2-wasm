@@ -18,12 +18,12 @@ jobs:
           submodules: true
       - name: Setup cache
         id: cache-system-libraries
-        uses: actions/cache@v3.3.2
+        uses: actions/cache@v4
         with:
           path: ${{ env.EM_CACHE_FOLDER }}
           key: ${{ env.EM_VERSION }}-${{ runner.os }}
       - name: Setup Emcripten
-        uses: mymindstorm/setup-emsdk@v12
+        uses: mymindstorm/setup-emsdk@v14
         with:
           version: ${{ env.EM_VERSION }}
           actions-cache-folder: ${{ env.EM_CACHE_FOLDER }}
@@ -36,7 +36,7 @@ jobs:
       - name: Pack
         run: npm pack
       - name: Upload package
-        uses: actions/upload-artifact@v3.1.3
+        uses: actions/upload-artifact@v4
         with:
           path: libxml2-wasm-*.tgz
   Node_Compatibility_Test:
@@ -50,13 +50,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4 # Run test only, don't need C source
       - name: Install nodeJs
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - name: Install npm packages
         run: npm ci
       - name: Download libxml2-wasm
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Install libxml2-wasm
         run: npm install ./artifact/libxml2-wasm-*.tgz
       - name: Run Integration Test
