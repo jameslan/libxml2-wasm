@@ -8,21 +8,10 @@
         "external": false,
         "@internal": false
     },
-    "out": "./_site",
-    "pluginPages": {
-        "source": "docs",
-        "pages": [
-            {
-                "name": "Performance",
-                "source": "performance.md"
-            },
-            {
-                "name": "Memory Management",
-                "source": "mem.md"
-            }
-        ]
-    },
+    "out": "./docs/api",
     "navigationLinks": {
+        "DOC": "/",
         "GITHUB": "https://github.com/jameslan/libxml2-wasm"
-    }
+    },
+    "readme": "none"
 }

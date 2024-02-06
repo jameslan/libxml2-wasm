@@ -1,4 +1,8 @@
-# Memory Management
+---
+layout: page
+title: Memory Management
+permalink: /docs/mem.html
+---
 
 The architecture of libxml2-wasm is shown as the following diagram.
 
