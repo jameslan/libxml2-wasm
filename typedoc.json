@@ -10,7 +10,7 @@
     },
     "out": "./docs/api",
     "navigationLinks": {
-        "DOC": "/",
+        "DOC": "/libxml2-wasm/",
         "GITHUB": "https://github.com/jameslan/libxml2-wasm"
     },
     "readme": "none"
