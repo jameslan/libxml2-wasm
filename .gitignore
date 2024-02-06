@@ -4,3 +4,4 @@ node_modules
 /libxml2-wasm-*.tgz
 /_site
 /coverage
+/docs/api/

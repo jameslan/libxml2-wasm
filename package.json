@@ -10,8 +10,9 @@
         "cov": "c8 npm run unit",
         "build": "npm run wasm && tsc --declaration",
         "lint": "eslint 'src/**' 'test/**'",
-        "doc": "typedoc",
-        "docwatch": "typedoc --watch",
+        "apidoc": "typedoc",
+        "doc": "typedoc && sed -i.bak '1 i\\\n---\\\ntitle: API\\\n---\\\n' docs/api/index.html && rm docs/api/index.html.bak",
+        "site": "jekyll serve --source ./docs",
         "watch": "tsc --declaration --watch"
     },
     "repository": {
@@ -28,7 +29,6 @@
         "@babel/core": "^7.22.15",
         "@babel/preset-env": "^7.22.15",
         "@babel/register": "^7.22.15",
-        "@knodes/typedoc-plugin-pages": "^0.23.4",
         "@types/chai": "^4.3.6",
         "@types/chai-sorted": "^0.2.2",
         "@types/mocha": "^10.0.1",
