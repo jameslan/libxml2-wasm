@@ -51,7 +51,7 @@ it requires the minimum version of the following environments,
 
 ## Getting Started
 
-Install `lbixml2-wasm` package:
+Install `libxml2-wasm` package:
 
 ```shell
 npm i libxml2-wasm

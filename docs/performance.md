@@ -1,7 +1,6 @@
 ---
 layout: page
 title: Performance
-permalink: /docs/perf.html
 ---
 
 One of the challenges of working with Javascript and libxml is that they use different encodings for strings.
