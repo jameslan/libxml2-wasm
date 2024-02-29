@@ -243,6 +243,7 @@ describe('XmlNode', () => {
         it('should return empty if element has no namespace definition', () => {
             const document = XmlDocument.fromString('<doc/>');
             expect(document.root.namespaces).to.be.empty;
+            document.dispose();
         });
 
         it('should get namespaces on an attribute', () => {
