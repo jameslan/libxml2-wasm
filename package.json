@@ -4,7 +4,7 @@
     "description": "WebAssembly-based libxml2 javascript binding",
     "scripts": {
         "wasm": "gulp rebuild",
-        "unit": "TS_NODE_PROJECT=tsconfig.unit.json mocha",
+        "unit": "TS_NODE_PROJECT=tsconfig.unit.json mocha --v8-expose-gc",
         "integ": "TS_NODE_PROJECT=tsconfig.integ.json mocha",
         "test": "npm run cov && npm run lint",
         "cov": "c8 npm run unit",
@@ -26,7 +26,7 @@
         "lib/*"
     ],
     "devDependencies": {
-        "@babel/core": "^7.22.15",
+        "@babel/core": "^7.23.9",
         "@babel/preset-env": "^7.22.15",
         "@babel/register": "^7.22.15",
         "@types/chai": "^4.3.6",
@@ -35,7 +35,7 @@
         "@types/node": "^20.4.5",
         "@types/yargs": "^17.0.24",
         "c8": "^8.0.1",
-        "chai": "^4.3.8",
+        "chai": "^4.4.1",
         "chai-sorted": "^0.2.0",
         "eslint": "^8.50.0",
         "eslint-config-airbnb-base": "^15.0.0",
@@ -47,8 +47,8 @@
         "mocha": "^10.2.0",
         "ts-node": "^10.9.2",
         "ts-paths-esm-loader": "^1.4.3",
-        "typedoc": "^0.23.28",
-        "typescript": "5.0",
+        "typedoc": "^0.25.7",
+        "typescript": "^5.3.3",
         "yargs": "^17.7.2"
     },
     "keywords": [
