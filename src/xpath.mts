@@ -3,6 +3,7 @@ import {
     xmlXPathFreeCompExpr,
 } from './libxml2.mjs';
 import type { XmlXPathCompExprPtr } from './libxml2raw.js';
+import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 /**
  * Map between the prefix and the uri of the namespace
@@ -19,28 +20,20 @@ export interface NamespaceMap {
  *
  * Note: This object requires to be {@link dispose}d explicitly.
  */
-export class XmlXPath {
+export class XmlXPath extends XmlDisposable {
     /** @internal */
-    _xpath: XmlXPathCompExprPtr;
+    @disposeBy(xmlXPathFreeCompExpr)
+    accessor _xpath: XmlXPathCompExprPtr;
 
     private readonly _xpathSource;
 
     private readonly _namespaces: NamespaceMap | undefined;
 
     constructor(xpath: string, namespaces?: NamespaceMap) {
+        super();
         this._xpathSource = xpath;
         this._xpath = xmlXPathCtxtCompile(0, xpath);
         this._namespaces = namespaces;
-    }
-
-    /**
-     * Dispose the XmlXPath.
-     *
-     * This needs to be called explicitly to avoid resource leak.
-     */
-    dispose() {
-        xmlXPathFreeCompExpr(this._xpath);
-        this._xpath = 0;
     }
 
     /**

@@ -5,6 +5,11 @@ describe('XPath', () => {
     const doc1 = XmlDocument.fromString('<book><title>Harry Potter</title></book>');
     const doc2 = XmlDocument.fromString('<book><title>Learning XML</title></book>');
 
+    after(() => {
+        doc1.dispose();
+        doc2.dispose();
+    });
+
     it('could be used in get method of multiple docs', () => {
         const xpath = new XmlXPath('/book/title');
         expect(doc1.get(xpath)?.content).to.equal('Harry Potter');
@@ -25,7 +30,7 @@ describe('XPath', () => {
     });
 
     it('handles namespace', () => {
-        const doc = XmlDocument.fromString(
+        using doc = XmlDocument.fromString(
             '<book xmlns:t="http://foo"><t:title>Harry Potter</t:title></book>',
         );
         const xpath = new XmlXPath('/book/m:title', { m: 'http://foo' });

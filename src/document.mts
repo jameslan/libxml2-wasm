@@ -10,6 +10,7 @@ import {
 import { XmlElement, XmlNode } from './nodes.mjs';
 import { XmlXPath, NamespaceMap } from './xpath.mjs';
 import type { XmlDocPtr } from './libxml2raw';
+import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 export enum ParseOption {
     XML_PARSE_DEFAULT = 0,
@@ -70,30 +71,22 @@ export interface ParseOptions {
     option?: ParseOption;
 }
 
-export class XmlDocument {
+export class XmlDocument extends XmlDisposable {
     /** @internal */
-    _docPtr: number;
+    @disposeBy(xmlFreeDoc)
+    accessor _docPtr: number;
 
     /** Create a document object wrapping document parsed by libxml2.
      * @see {@link parseXmlString}
      * @internal
      */
     private constructor(xmlDocPtr: XmlDocPtr) {
+        super();
         if (!xmlDocPtr) {
             const err = xmlGetLastError();
             throw new XmlParseError(XmlErrorStruct.message(err));
         }
         this._docPtr = xmlDocPtr;
-    }
-
-    /**
-     * Dispose the XmlDocument as well as its underlying libxml2 data.
-     *
-     * This needs to be called explicitly to avoid resource leak.
-     */
-    dispose() {
-        xmlFreeDoc(this._docPtr);
-        this._docPtr = 0;
     }
 
     /** Create a new document from scratch.

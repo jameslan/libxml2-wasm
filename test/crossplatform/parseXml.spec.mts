@@ -29,6 +29,7 @@ describe('parseXmlString', () => {
         );
         expect(doc.root.firstChild).to.not.be.instanceOf(XmlCData);
         expect(doc.root.content).to.equal('3>2');
+        doc.dispose();
     });
 });
 
@@ -62,5 +63,6 @@ describe('parseXmlBuffer', () => {
         );
         expect(doc.root.firstChild).to.not.be.instanceOf(XmlCData);
         expect(doc.root.content).to.equal('3>2');
+        doc.dispose();
     });
 });
