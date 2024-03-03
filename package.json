@@ -5,7 +5,7 @@
     "scripts": {
         "wasm": "gulp rebuild",
         "unit": "TS_NODE_PROJECT=tsconfig.unit.json mocha --v8-expose-gc",
-        "integ": "TS_NODE_PROJECT=tsconfig.integ.json mocha",
+        "integ": "TS_NODE_PROJECT=tsconfig.integ.json mocha test/crossplatform",
         "test": "npm run cov && npm run lint",
         "cov": "c8 npm run unit",
         "build": "npm run wasm && tsc --declaration",

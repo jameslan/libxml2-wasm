@@ -12,6 +12,7 @@ import {
     xmlSchemaValidateDoc,
 } from './libxml2.mjs';
 import type { XmlSchemaPtr, XmlSchemaParserCtxtPtr } from './libxml2raw';
+import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 export class XmlValidateError extends XmlError {}
 
@@ -26,25 +27,17 @@ export class RelaxNGValidator {
  *
  * NOTE: This validator needs to be disposed explicitly.
  */
-export class XsdValidator {
-    private _schemaPtr: XmlSchemaPtr;
+export class XsdValidator extends XmlDisposable {
+    @disposeBy(xmlSchemaFree)
+    private accessor _schemaPtr: XmlSchemaPtr;
 
-    private constructor(ctx: XmlSchemaParserCtxtPtr) {
+    constructor(ctx: XmlSchemaParserCtxtPtr) {
+        super();
         this._schemaPtr = xmlSchemaParse(ctx);
         if (this._schemaPtr === 0) {
             const err = xmlGetLastError();
             throw new XmlError(XmlErrorStruct.message(err));
         }
-    }
-
-    /**
-     * Dispose the XsdValidator.
-     *
-     * This needs to be called explicitly to avoid resource leak.
-     */
-    dispose() {
-        xmlSchemaFree(this._schemaPtr);
-        this._schemaPtr = 0;
     }
 
     /**

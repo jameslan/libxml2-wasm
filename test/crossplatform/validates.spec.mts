@@ -41,26 +41,22 @@ describe('XsdValidator', () => {
     });
 
     it('should fail on invalid xml', () => {
-        const schema = XmlDocument.fromString(xsd);
-        const validator = XsdValidator.fromDoc(schema);
-        schema.dispose();
+        using schema = XmlDocument.fromString(xsd);
+        using validator = XsdValidator.fromDoc(schema);
 
-        const xml = XmlDocument.fromString(
+        using xml = XmlDocument.fromString(
             '<bookstore><book><title>Harry Potter</title></book></bookstore>',
         );
 
         expect(() => validator.validate(xml)).to.throw(XmlValidateError, 'Missing child element');
-
-        xml.dispose();
-        validator.dispose();
     });
 
     it('should fail on invalid input', () => {
-        const schema = XmlDocument.fromString(xsd);
+        using schema = XmlDocument.fromString(xsd);
         const validator = XsdValidator.fromDoc(schema);
 
         const xml = XmlDocument.create();
-        xml.dispose();
+        xml.dispose(); // dispose XmlDocument to make it invalid input of validation
 
         expect(() => validator.validate(xml)).to.throw(XmlError, 'Invalid input or internal error');
 

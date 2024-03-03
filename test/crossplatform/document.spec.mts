@@ -13,9 +13,8 @@ describe('XmlDocument', () => {
         });
 
         it('return null if root doesn\'t exist', () => {
-            const d = XmlDocument.create();
+            using d = XmlDocument.create();
             expect(() => d.root).to.throw(XmlError);
-            d.dispose();
         });
     });
 
