@@ -9,4 +9,8 @@ export {
 } from './nodes.mjs';
 export { XmlDocument, ParseOption, ParseOptions } from './document.mjs';
 export { XmlParseError, XmlError } from './libxml2.mjs';
-export { XsdValidator, XmlValidateError } from './validates.mjs';
+export {
+    RelaxNGValidator,
+    XsdValidator,
+    XmlValidateError,
+} from './validates.mjs';
