@@ -10,6 +10,13 @@ _xmlNewDocComment
 _xmlNewDocText
 _xmlNodeGetContent
 _xmlReadMemory
+_xmlRelaxNGFree
+_xmlRelaxNGFreeParserCtxt
+_xmlRelaxNGFreeValidCtxt
+_xmlRelaxNGNewDocParserCtxt
+_xmlRelaxNGNewValidCtxt
+_xmlRelaxNGParse
+_xmlRelaxNGValidateDoc
 _xmlResetLastError
 _xmlSchemaNewDocParserCtxt
 _xmlSchemaFree

@@ -5,6 +5,9 @@ type XmlDocPtr = Pointer;
 type XmlErrorPtr = Pointer;
 type XmlNodePtr = Pointer;
 type XmlNsPtr = Pointer;
+type XmlRelaxNGParserCtxtPtr = Pointer;
+type XmlRelaxNGPtr = Pointer;
+type XmlRelaxNGValidCtxtPtr = Pointer;
 type XmlSchemaParserCtxtPtr = Pointer;
 type XmlSchemaPtr = Pointer;
 type XmlSchemaValidCtxtPtr = Pointer;
@@ -33,6 +36,13 @@ export class LibXml2 {
         encoding: CString,
         options: number,
     ): XmlDocPtr;
+    _xmlRelaxNGFree(schema: XmlRelaxNGPtr): void;
+    _xmlRelaxNGFreeParserCtxt(ctxt: XmlRelaxNGParserCtxtPtr): void;
+    _xmlRelaxNGFreeValidCtxt(ctxt: XmlRelaxNGValidCtxtPtr): void;
+    _xmlRelaxNGNewDocParserCtxt(doc: XmlDocPtr): XmlRelaxNGParserCtxtPtr;
+    _xmlRelaxNGNewValidCtxt(schema: XmlRelaxNGPtr): XmlRelaxNGValidCtxtPtr;
+    _xmlRelaxNGParse(ctxt: XmlRelaxNGParserCtxtPtr): XmlRelaxNGPtr;
+    _xmlRelaxNGValidateDoc(ctxt: XmlRelaxNGValidCtxtPtr, doc: XmlDocPtr): number;
     _xmlResetLastError(): void;
     _xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: CString): XmlNsPtr;
     _xmlXPathCompile(str: CString): XmlXPathCompExprPtr;
