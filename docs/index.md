@@ -1,5 +1,6 @@
 ---
 layout: home
+title: libxml2-wasm
 ---
 
 # Why Another Xml Lib?
