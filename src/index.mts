@@ -1,3 +1,4 @@
+export * as disposable from './disposable.mjs';
 export { XmlXPath, NamespaceMap } from './xpath.mjs';
 export {
     XmlNode,

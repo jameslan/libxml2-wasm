@@ -1,6 +1,7 @@
 {
     "$schema": "https://typedoc.org/schema.json",
     "entryPoints": ["./src/index.mts"],
+    "preserveLinkText": false,
     "visibilityFilters": {
         "protected": false,
         "private": false,

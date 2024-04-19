@@ -5,33 +5,18 @@
 
 ## Why another xml lib?
 
-There are two common ways to implement an xml library for nodeJs:
+Comparing to the previous two main approaches,
+pure javascript implementation as well as traditional C implementation binding,
+using WebAssembly combines the pros from both sides,
+providing good performance while keeping best compatibility with modern Javascript runtime.
 
-- Use a native xml library, such as [libxml2](https://gitlab.gnome.org/GNOME/libxml2),
-and wrap it as a runtime plugin.
-- Write a pure javascript library that parses and manipulates xml.
-
-Both of these methods have advantages and disadvantages:
-
-- A native plugin can offer the best performance and functionality,
-but it is not easy to distribute.
-It requires either compiling the plugin on the user's machine,
-or providing prebuilt binaries for different environments.
-- A pure javascript library can run on any platform and does not need compilation,
-but it may have lower performance and less features.
-Some javascript libraries sacrifice some functionality to improve their speed.
-
-Now we have a third way to implement an xml library for nodeJs:
-compile libxml2 to WebAssembly and use it as a javascript module.
-This approach has several benefits:
-
-- Good performance: the string api of this library has a comparable performance to the native plugin,
-and much better than pure javascript implementations;
-the buffer api(no string conversion) has an impressive performance in the benchmark,
-which defeats the plugin easily.
-- Better compatibility: no compilation by the user, and supports browsers too.
-- Comprehensive functionality (To be finished): backed by libxml2,
-we just need some wrappers that can be called by javascript.
+| | Javascript Implementation | Traditional C Binding | WebAssembly |
+|-|:---:|:---:|:---:|
+| Parsing Speed[^1] | Average | Fast | Fast |
+| C/C++ Toolchain | Not required | Required[^2] | Not Required |
+| Prebuilt Binaries | N/A | One for each OS/Runtime version | Universal for all OS/Runtime versions |
+| Prebuilt Binary Compatibility | N/A | May broke across libc versions | Very Good |
+| Browser Compatibility | Yes | No | Yes |
 
 ## Documentation
 
@@ -39,7 +24,7 @@ https://jameslan.github.io/libxml2-wasm/index.html
 
 ## Supported Environments
 
-This library is an ES module and uses [top level await](https://caniuse.com/?search=top%20level%20await),
+Due to the usage of WebAssembly, ES module and [top level await](https://caniuse.com/?search=top%20level%20await) etc,
 it requires the minimum version of the following environments,
 
 |Environment|Version|
@@ -49,7 +34,7 @@ it requires the minimum version of the following environments,
 |Edge|V89+|
 |Safari|v15+|
 
-## Getting Started
+## Getting started
 
 Install `lbixml2-wasm` package:
 
@@ -86,6 +71,9 @@ import('libxml2-wasm').then(({ XmlDocument }) => {
 });
 ```
 
-**Note**: `dispose()` is required to avoid memory leak.
+**IMPORTANT**: `dispose()` is required to avoid memory leak.
 
-For more detail, see the [API Doc](https://jameslan.github.io/libxml2-wasm/index.html).
+For more detail, see the [Doc](https://jameslan.github.io/libxml2-wasm/index.html).
+
+[^1]: The speed of different libraries varies a lot, see [benchmark](performance.md).
+[^2]: The requirement of C/C++ toolchain may be waived if prebuilt binary is available.

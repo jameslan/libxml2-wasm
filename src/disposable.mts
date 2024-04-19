@@ -2,7 +2,18 @@ import type { Pointer } from './libxml2raw';
 import './disposeShim.mjs';
 import './metadataShim.mjs';
 
-export class XmlDisposable implements Disposable {
+/**
+ * Base implementation of interface Disposable to handle wasm memory.
+ *
+ * Remember to call `dispose()` for any subclass object.
+ */
+export abstract class XmlDisposable implements Disposable {
+    /**
+     * Alias of {@link "[dispose]"}.
+     *
+     * @see {@link "[dispose]"}
+     * @see {@link disposeBy}
+     */
     dispose(): void {
         const metadata = (this.constructor as any)[Symbol.metadata];
         const propsToRelease = metadata[Symbol.dispose] as Array<string | symbol>;
@@ -13,11 +24,14 @@ export class XmlDisposable implements Disposable {
      * Dispose the object.
      *
      * It releases the managed resource and unregisters them from FinalizationRegistry.
+     * So the release of the managed resource won't need to wait until
+     * this object is garbage collected.
      *
      * This needs to be called explicitly to avoid resource leak,
-     * or use the object in `using` statement.
+     * or declare the object with `using` declaration.
      *
      * @see {@link dispose}
+     * @see {@link disposeBy}
      */
     [Symbol.dispose](): void {
         this.dispose();
@@ -25,9 +39,10 @@ export class XmlDisposable implements Disposable {
 }
 
 /**
- * Decorator of disposable accessor
+ * Decorator factory of disposable accessor
  *
- * @param free
+ * @param free function to release the managed wasm resource
+ * @returns the decorator
  */
 export function disposeBy<This extends object>(free: (value: Pointer) => void) {
     return function decorator(
