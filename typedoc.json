@@ -9,6 +9,7 @@
         "external": false,
         "@internal": false
     },
+    "tsconfig": "./tsconfig.prod.json",
     "out": "./docs/api",
     "navigationLinks": {
         "DOC": "/libxml2-wasm/",
