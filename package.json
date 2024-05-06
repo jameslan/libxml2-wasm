@@ -12,16 +12,16 @@
         "libxml": "npm run init && npm run config && npm run compile",
         "link": "npm run bind && npm run dist",
         "wasm": "npm run clean && npm run libxml && npm run link",
-        "unit": "TS_NODE_PROJECT=tsconfig.unit.json mocha --v8-expose-gc",
+        "unit": "mocha --v8-expose-gc",
         "integ": "TS_NODE_PROJECT=tsconfig.integ.json mocha test/crossplatform",
         "test": "npm run cov && npm run lint",
         "cov": "c8 npm run unit",
-        "build": "npm run wasm && tsc --declaration",
+        "build": "npm run wasm && tsc -p tsconfig.prod.json --declaration",
         "lint": "eslint 'src/**' 'test/**'",
         "apidoc": "typedoc",
         "doc": "typedoc && sed -i.bak '1 i\\\n---\\\ntitle: API\\\n---\\\n' docs/api/index.html && rm docs/api/index.html.bak",
         "site": "jekyll serve --source ./docs",
-        "watch": "tsc --declaration --watch"
+        "watch": "tsc -p tsconfig.prod.json --declaration --watch"
     },
     "repository": {
         "type": "git",
