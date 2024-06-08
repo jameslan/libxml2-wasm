@@ -1,8 +1,8 @@
-import chai, { expect } from 'chai';
+import { use as chaiUse, expect } from 'chai';
 import chaiSorted from 'chai-sorted';
 import { readFileSync } from 'fs';
 
-chai.use(chaiSorted);
+chaiUse(chaiSorted);
 
 describe('bindings', () => {
     it('has sorted exported-functions file', () => {
