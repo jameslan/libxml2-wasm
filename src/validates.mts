@@ -23,7 +23,7 @@ import type {
     XmlRelaxNGPtr,
     XmlSchemaParserCtxtPtr,
     XmlSchemaPtr,
-} from './libxml2raw';
+} from './libxml2raw.js';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 export class XmlValidateError extends XmlError {}
