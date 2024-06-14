@@ -1,4 +1,4 @@
-import type { Pointer } from './libxml2raw';
+import type { Pointer } from './libxml2raw.js';
 import './disposeShim.mjs';
 import './metadataShim.mjs';
 
