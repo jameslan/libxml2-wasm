@@ -9,7 +9,7 @@ import {
 } from './libxml2.mjs';
 import { XmlElement, XmlNode } from './nodes.mjs';
 import { XmlXPath, NamespaceMap } from './xpath.mjs';
-import type { XmlDocPtr } from './libxml2raw';
+import type { XmlDocPtr } from './libxml2raw.js';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 export enum ParseOption {
