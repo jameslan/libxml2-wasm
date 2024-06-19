@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xsd:include schemaLocation="author.xsd" />
+    <xsd:complexType name="book">
+        <xsd:element name="title" type="xsd:string" />
+        <xsd:element name="author" type="author" />
+    </xsd:complexType>
+    <xsd:element name="author">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="name" type="xsd:string" />
+            <xsd:element minOccurs="0" name="first-name" type="xsd:string" />
+            <xsd:element minOccurs="0" name="last-name" type="xsd:string" />
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>
