@@ -22,6 +22,19 @@ const noopTracker: MemTracker = {
 interface MemTrackingInfo {
     object: WeakRef<XmlDisposable>;
     classname: string;
+    callstack?: string;
+}
+
+function callstack(numSkip: number): string | undefined {
+    const { stack } = new Error();
+    if (!stack) return undefined;
+    let pos = 0;
+    // each line is one function call
+    // remove two extract lines, error message and call to this function
+    for (let i = numSkip + 2; i > 0; i -= 1) {
+        pos = stack.indexOf('\n', pos) + 1;
+    }
+    return stack.substring(pos);
 }
 
 class MemTrackerImpl implements MemTracker {
@@ -35,7 +48,13 @@ class MemTrackerImpl implements MemTracker {
     // from id to tracking info
     disposableInfo: Map<number, MemTrackingInfo>;
 
-    constructor() {
+    callerDetail: boolean;
+
+    callerStats: boolean;
+
+    constructor(callerDetail: boolean, callerStats: boolean) {
+        this.callerDetail = callerDetail;
+        this.callerStats = callerStats;
         this.idCounter = 0;
         this.disposableId = new WeakMap<XmlDisposable, number>();
         this.disposableInfo = new Map<number, MemTrackingInfo>();
@@ -44,10 +63,14 @@ class MemTrackerImpl implements MemTracker {
     trackAllocate(obj: XmlDisposable): void {
         this.idCounter += 1;
         this.disposableId.set(obj, this.idCounter);
-        this.disposableInfo.set(this.idCounter, {
+        const info: MemTrackingInfo = {
             object: new WeakRef(obj),
             classname: obj.constructor.name,
-        });
+        };
+        if (this.callerDetail || this.callerStats) {
+            info.callstack = callstack(2);
+        }
+        this.disposableInfo.set(this.idCounter, info);
     }
 
     trackDeallocate(obj: XmlDisposable): void {
@@ -69,9 +92,17 @@ class MemTrackerImpl implements MemTracker {
             classReport.totalInstances += 1;
             const obj = info.object.deref();
             if (obj != null) {
-                classReport.instances.push({ instance: obj });
+                const instanceInfo: any = { instance: obj };
+                if (this.callerDetail) {
+                    instanceInfo.caller = info.callstack;
+                }
+                classReport.instances.push(instanceInfo);
             } else {
                 classReport.garbageCollected += 1;
+            }
+            if (this.callerStats) {
+                const callers = (classReport.callers ||= {}); // eslint-disable-line no-multi-assign
+                callers[info.callstack!] = (callers[info.callstack!] || 0) + 1;
             }
         });
         return report;
@@ -87,6 +118,14 @@ export interface MemDiagOptions {
      * Note the tracking information will be lost when it is disabled.
      */
     enabled: boolean;
+    /**
+     * Generate the statistics of point
+     */
+    callerStats?: boolean;
+    /**
+     * Record the callstack of creating each {@link XmlDisposable}.
+     */
+    callerDetail?: boolean;
 }
 
 /**
@@ -103,7 +142,7 @@ export interface MemDiagOptions {
  */
 export function memDiag(options: MemDiagOptions) {
     if (options.enabled) {
-        tracker = new MemTrackerImpl();
+        tracker = new MemTrackerImpl(options.callerDetail === true, options.callerStats === true);
     } else {
         tracker = noopTracker;
     }
