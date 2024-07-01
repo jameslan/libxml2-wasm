@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { readFile } from 'fs/promises';
 import {
     XmlDocument,
     XmlError,
@@ -82,6 +83,14 @@ describe('XsdValidator', () => {
 </xsd:schema>`);
         expect(() => XsdValidator.fromDoc(schema)).to.throw(XmlError, 'attribute \'type\':');
         schema.dispose();
+    });
+
+    it('should be able to handle includes', async () => {
+        const schemafileContent = await readFile('./test/crossplatform/testfiles/book.xsd');
+        const schemaDoc = XmlDocument.fromBuffer(schemafileContent);
+        const validator = XsdValidator.fromDoc(schemaDoc);
+        validator.dispose();
+        schemaDoc.dispose();
     });
 });
 
