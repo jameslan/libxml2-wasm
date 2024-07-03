@@ -1,4 +1,5 @@
 UTF8ToString
+addFunction
 getValue
 lengthBytesUTF8
 stringToUTF8

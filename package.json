@@ -7,7 +7,7 @@
         "init": "mkdir -p out && mkdir -p lib",
         "config": "cd out && emconfigure ../libxml2/autogen.sh --without-python --without-http --without-sax1 --without-modules --without-html --without-threads --without-zlib --without-lzma --disable-shared --enable-static",
         "compile": "cd out && emmake make",
-        "bind": "cd out && emcc -L.libs -lxml2 -o libxml2raw.js --no-entry -s MODULARIZE -s ALLOW_MEMORY_GROWTH -s EXPORTED_RUNTIME_METHODS=@../binding/exported-runtime-functions.txt -s EXPORTED_FUNCTIONS=@../binding/exported-functions.txt -s SINGLE_FILE",
+        "bind": "cd out && emcc -L.libs -lxml2 -o libxml2raw.js --no-entry -s MODULARIZE -s ALLOW_MEMORY_GROWTH -s ALLOW_TABLE_GROWTH -s EXPORTED_RUNTIME_METHODS=@../binding/exported-runtime-functions.txt -s EXPORTED_FUNCTIONS=@../binding/exported-functions.txt -s SINGLE_FILE",
         "dist": "cp out/libxml2raw.* src/libxml2raw.* lib",
         "libxml": "npm run init && npm run config && npm run compile",
         "link": "npm run bind && npm run dist",
