@@ -1,6 +1,7 @@
 type Pointer = number;
 type CString = Pointer;
 type XmlAttrPtr = Pointer;
+type XmlParserCtxtPtr = Pointer;
 type XmlDocPtr = Pointer;
 type XmlErrorPtr = Pointer;
 type XmlNodePtr = Pointer;
@@ -11,6 +12,7 @@ type XmlRelaxNGValidCtxtPtr = Pointer;
 type XmlSchemaParserCtxtPtr = Pointer;
 type XmlSchemaPtr = Pointer;
 type XmlSchemaValidCtxtPtr = Pointer;
+type XmlStructuredErrorFunc = Pointer;
 type XmlXPathCompExprPtr = Pointer;
 type XmlXPathContextPtr = Pointer;
 type XmlXPathObjectPtr = Pointer;
@@ -22,20 +24,29 @@ export class LibXml2 {
 
     _free(memblock: Pointer): void;
     _malloc(size: number): Pointer;
-    _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
-    _xmlFreeDoc(Doc: XmlDocPtr): void;
-    _xmlGetLastError(): XmlErrorPtr;
-    _xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): Pointer;
-    _xmlHasNsProp(node: XmlNodePtr, name: CString, namespace: CString): XmlAttrPtr;
-    _xmlNewDoc(): XmlDocPtr;
-    _xmlNodeGetContent(node: XmlNodePtr): CString;
-    _xmlReadMemory(
+    addFunction(func: Function, sig: string): Pointer;
+    _xmlCtxtReadMemory(
+        ctxt: XmlParserCtxtPtr,
         buffer: CString,
         length: number,
         url: CString,
         encoding: CString,
         options: number,
     ): XmlDocPtr;
+    _xmlCtxtSetErrorHandler(
+        ctxt: XmlParserCtxtPtr,
+        handler: XmlStructuredErrorFunc,
+        data: Pointer,
+    ): void;
+    _xmlFreeParserCtxt(ctxt: XmlParserCtxtPtr): void;
+    _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
+    _xmlFreeDoc(Doc: XmlDocPtr): void;
+    _xmlGetLastError(): XmlErrorPtr;
+    _xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): Pointer;
+    _xmlHasNsProp(node: XmlNodePtr, name: CString, namespace: CString): XmlAttrPtr;
+    _xmlNewDoc(): XmlDocPtr;
+    _xmlNewParserCtxt(): XmlParserCtxtPtr;
+    _xmlNodeGetContent(node: XmlNodePtr): CString;
     _xmlRelaxNGFree(schema: XmlRelaxNGPtr): void;
     _xmlRelaxNGFreeParserCtxt(ctxt: XmlRelaxNGParserCtxtPtr): void;
     _xmlRelaxNGFreeValidCtxt(ctxt: XmlRelaxNGValidCtxtPtr): void;
