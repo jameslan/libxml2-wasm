@@ -49,7 +49,43 @@ describe('XsdValidator', () => {
             '<bookstore><book><title>Harry Potter</title></book></bookstore>',
         );
 
-        expect(() => validator.validate(xml)).to.throw(XmlValidateError, 'Missing child element');
+        expect(() => validator.validate(xml)).to.throw(
+            XmlValidateError,
+            'Missing child element',
+        ).with.deep.property(
+            'details',
+            [{
+                message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
+                line: 1,
+                col: 0,
+            }],
+        );
+    });
+
+    it('should throw exception with all errors on invalid xml', () => {
+        using schema = XmlDocument.fromString(xsd);
+        using validator = XsdValidator.fromDoc(schema);
+
+        using xml = XmlDocument.fromString(
+            `<bookstore><book><title>Harry Potter</title></book>
+            <book><title>Learning XML</title></book></bookstore>`,
+        );
+
+        expect(() => validator.validate(xml)).to.throw(
+            XmlValidateError,
+            'Missing child element',
+            ).with.deep.property(
+                'details',
+            [{
+                message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
+                line: 1,
+                col: 0,
+            }, {
+                message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
+                line: 2,
+                col: 0,
+            }],
+        );
     });
 
     it('should fail on invalid input', () => {
@@ -67,7 +103,7 @@ describe('XsdValidator', () => {
     it('should fail on null schema', () => {
         const schema = XmlDocument.create();
         schema.dispose();
-        expect(() => XsdValidator.fromDoc(schema)).to.throw(XmlError);
+        expect(() => XsdValidator.fromDoc(schema)).to.throw(XmlError, 'Schema is null or failed to allocate memory');
     });
 
     it('should fail on invalid schema', () => {
@@ -80,8 +116,59 @@ describe('XsdValidator', () => {
     </xsd:sequence>
   </xsd:complexType>
 </xsd:schema>`);
-        expect(() => XsdValidator.fromDoc(schema)).to.throw(XmlError, 'attribute \'type\':');
+        expect(() => XsdValidator.fromDoc(schema)).to.throw(
+            XmlValidateError,
+            'attribute \'type\':',
+        ).with.deep.property(
+            'details',
+            [{
+                message: 'element decl. \'book\', attribute \'type\': The QName value \'Book\' does not resolve to a(n) type definition.\n',
+                line: 6,
+                col: 0,
+            }],
+        );
         schema.dispose();
+    });
+
+    it('could validate multiple files', () => {
+        using schema = XmlDocument.fromString(xsd);
+        using validator = XsdValidator.fromDoc(schema);
+
+        using xml1 = XmlDocument.fromString(
+            '<bookstore><book><title>Harry Potter</title></book></bookstore>',
+        );
+
+        expect(() => validator.validate(xml1)).to.throw(
+            XmlValidateError,
+            'Missing child element',
+        ).with.deep.property(
+            'details',
+            [{
+                message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
+                line: 1,
+                col: 0,
+            }],
+        );
+
+        using xml2 = XmlDocument.fromString(
+            `<bookstore><book><title>Harry Potter</title></book>
+            <book><title>Learning XML</title></book></bookstore>`,
+        );
+        expect(() => validator.validate(xml2)).to.throw(
+            XmlValidateError,
+            'Missing child element',
+        ).with.deep.property(
+            'details',
+            [{
+                message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
+                line: 1,
+                col: 0,
+            }, {
+                message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
+                line: 2,
+                col: 0,
+            }],
+        );
     });
 });
 
@@ -110,10 +197,10 @@ describe('RelaxNGValidator', () => {
 `;
 
     it('should succeed with valid xml', () => {
-        const schema = XmlDocument.fromString(rng);
-        const validator = RelaxNGValidator.fromDoc(schema);
+        using schema = XmlDocument.fromString(rng);
+        using validator = RelaxNGValidator.fromDoc(schema);
 
-        const xml = XmlDocument.fromString(`<?xml version="1.0" encoding="UTF-8"?>
+        using xml = XmlDocument.fromString(`<?xml version="1.0" encoding="UTF-8"?>
 <bookstore>
     <book><title>Harry Potter</title><price><![CDATA[29.99]]></price></book>
     <book><title>Learning XML</title><price>39.95</price></book>
@@ -130,7 +217,42 @@ describe('RelaxNGValidator', () => {
             '<bookstore><book><title>Harry Potter</title></book></bookstore>',
         );
 
-        expect(() => validator.validate(xml)).to.throw(XmlValidateError, 'Expecting an element');
+        expect(() => validator.validate(xml)).to.throw(
+            XmlValidateError,
+            'Expecting an element',
+        ).with.deep.property(
+            'details',
+            [{
+                message: 'Expecting an element , got nothing\n',
+                line: 1,
+                col: 0,
+            }],
+        );
+    });
+
+    it('should throw exception with all errors  on invalid xml', () => {
+        using schema = XmlDocument.fromString(rng);
+        using validator = RelaxNGValidator.fromDoc(schema);
+
+        using xml = XmlDocument.fromString(
+            '<bookstore><book><title>Harry Potter</title></book>\n<book><title>Learning XML</title></book></bookstore>',
+        );
+
+        expect(() => validator.validate(xml)).to.throw(
+            XmlValidateError,
+            'Expecting an element',
+            ).with.deep.property(
+                'details',
+            [{
+                message: 'Expecting an element , got nothing\n',
+                line: 1,
+                col: 0,
+            }, {
+                message: 'Expecting an element , got nothing\n',
+                line: 2,
+                col: 0,
+            }],
+        );
     });
 
     it('should fail on invalid input', () => {
@@ -148,7 +270,10 @@ describe('RelaxNGValidator', () => {
     it('should fail on null schema', () => {
         const schema = XmlDocument.create();
         schema.dispose();
-        expect(() => RelaxNGValidator.fromDoc(schema)).to.throw(XmlError);
+        expect(() => RelaxNGValidator.fromDoc(schema)).to.throw(
+            XmlError,
+            'Schema is null or failed to allocate memory',
+        );
     });
 
     it('should fail on invalid schema', () => {
@@ -163,7 +288,58 @@ describe('RelaxNGValidator', () => {
 </xsd:schema>`);
 
         // parse xsd as rng
-        expect(() => RelaxNGValidator.fromDoc(xsd)).to.throw(XmlError, 'schemas is empty');
+        expect(() => RelaxNGValidator.fromDoc(xsd)).to.throw(
+            XmlValidateError,
+            'schemas is empty',
+        ).with.deep.property(
+            'details',
+            [{
+                message: 'xmlRelaxNGParse: schemas is empty\n',
+                line: -1,
+                col: 0,
+            }],
+        );
         xsd.dispose();
+    });
+
+    it('could validate multiple xml', () => {
+        using schema = XmlDocument.fromString(rng);
+        using validator = RelaxNGValidator.fromDoc(schema);
+
+        using xml1 = XmlDocument.fromString(
+            '<bookstore><book><title>Harry Potter</title></book></bookstore>',
+        );
+
+        expect(() => validator.validate(xml1)).to.throw(
+            XmlValidateError,
+            'Expecting an element',
+        ).with.deep.property(
+            'details',
+            [{
+                message: 'Expecting an element , got nothing\n',
+                line: 1,
+                col: 0,
+            }],
+        );
+
+        using xml2 = XmlDocument.fromString(
+            '<bookstore><book><title>Harry Potter</title></book>\n<book><title>Learning XML</title></book></bookstore>',
+        );
+
+        expect(() => validator.validate(xml2)).to.throw(
+            XmlValidateError,
+            'Expecting an element',
+        ).with.deep.property(
+            'details',
+            [{
+                message: 'Expecting an element , got nothing\n',
+                line: 1,
+                col: 0,
+            }, {
+                message: 'Expecting an element , got nothing\n',
+                line: 2,
+                col: 0,
+            }],
+        );
     });
 });
