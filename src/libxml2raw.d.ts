@@ -24,7 +24,6 @@ export class LibXml2 {
 
     _free(memblock: Pointer): void;
     _malloc(size: number): Pointer;
-    addFunction(func: Function, sig: string): Pointer;
     _xmlCtxtReadMemory(
         ctxt: XmlParserCtxtPtr,
         buffer: CString,
@@ -53,10 +52,19 @@ export class LibXml2 {
     _xmlRelaxNGNewDocParserCtxt(doc: XmlDocPtr): XmlRelaxNGParserCtxtPtr;
     _xmlRelaxNGNewValidCtxt(schema: XmlRelaxNGPtr): XmlRelaxNGValidCtxtPtr;
     _xmlRelaxNGParse(ctxt: XmlRelaxNGParserCtxtPtr): XmlRelaxNGPtr;
+    _xmlRelaxNGSetParserStructuredErrors(
+        ctxt: XmlRelaxNGValidCtxtPtr,
+        handler: XmlStructuredErrorFunc,
+        data: Pointer,
+    ): void;
+    _xmlRelaxNGSetValidStructuredErrors(
+        ctxt: XmlRelaxNGValidCtxtPtr,
+        handler: XmlStructuredErrorFunc,
+        data: Pointer,
+    ): void;
     _xmlRelaxNGValidateDoc(ctxt: XmlRelaxNGValidCtxtPtr, doc: XmlDocPtr): number;
     _xmlResetLastError(): void;
     _xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: CString): XmlNsPtr;
-    _xmlXPathCompile(str: CString): XmlXPathCompExprPtr;
     _xmlXPathCompiledEval(comp: XmlXPathCompExprPtr, ctx: XmlXPathContextPtr): XmlXPathObjectPtr;
     _xmlXPathCtxtCompile(ctxt: XmlXPathContextPtr, str: CString): XmlXPathCompExprPtr;
     _xmlXPathFreeCompExpr(comp: XmlXPathCompExprPtr): void;
@@ -71,9 +79,20 @@ export class LibXml2 {
     _xmlSchemaFreeValidCtxt(ctx: XmlSchemaValidCtxtPtr): void;
     _xmlSchemaNewValidCtxt(schema: XmlSchemaPtr): XmlSchemaValidCtxtPtr;
     _xmlSchemaParse(ctx: XmlSchemaParserCtxtPtr): XmlSchemaPtr;
+    _xmlSchemaSetParserStructuredErrors(
+        ctx: XmlSchemaParserCtxtPtr,
+        handler: XmlStructuredErrorFunc,
+        data: Pointer,
+    ): void;
+    _xmlSchemaSetValidStructuredErrors(
+        ctx: XmlSchemaValidCtxtPtr,
+        handler: XmlStructuredErrorFunc,
+        data: Pointer,
+    ): void;
     _xmlSchemaValidateDoc(ctx: XmlSchemaValidCtxtPtr, doc: XmlDocPtr): number;
     // runtime functions
     UTF8ToString(ptr: CString, maxBytesToRead?: number): string;
+    addFunction(func: Function, sig: string): Pointer;
     getValue(ptr: Pointer, type: string): number;
     lengthBytesUTF8(str: string): number;
     stringToUTF8(str: string, outPtr: CString, maxBytesToWrite: number): CString;

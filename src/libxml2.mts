@@ -14,14 +14,31 @@ import moduleLoader from './libxml2raw.js';
 
 const libxml2 = await moduleLoader();
 
+/**
+ * Base class for exceptions.
+ *
+ * All thrown exceptions in this library will be this class or the subclasses of this class.
+ */
 export class XmlError extends Error {}
 
 export interface ErrorDetail {
+    /**
+     * The message of the error during processing.
+     */
     message: string;
+    /**
+     * The line number of the xml file, where the error is occurred.
+     */
     line: number;
+    /**
+     * The column number of the xml file, where the error is occurred.
+     */
     col: number;
 }
 
+/**
+ * An exception class represents the error in libxml2
+ */
 export class XmlLibError extends XmlError {
     details: ErrorDetail[];
 
@@ -273,6 +290,8 @@ export const xmlRelaxNGFreeValidCtxt = libxml2._xmlRelaxNGFreeValidCtxt;
 export const xmlRelaxNGNewDocParserCtxt = libxml2._xmlRelaxNGNewDocParserCtxt;
 export const xmlRelaxNGNewValidCtxt = libxml2._xmlRelaxNGNewValidCtxt;
 export const xmlRelaxNGParse = libxml2._xmlRelaxNGParse;
+export const xmlRelaxNGSetParserStructuredErrors = libxml2._xmlRelaxNGSetParserStructuredErrors;
+export const xmlRelaxNGSetValidStructuredErrors = libxml2._xmlRelaxNGSetValidStructuredErrors;
 export const xmlRelaxNGValidateDoc = libxml2._xmlRelaxNGValidateDoc;
 export const xmlResetLastError = libxml2._xmlResetLastError;
 export const xmlSchemaFree = libxml2._xmlSchemaFree;
@@ -281,6 +300,8 @@ export const xmlSchemaFreeValidCtxt = libxml2._xmlSchemaFreeValidCtxt;
 export const xmlSchemaNewDocParserCtxt = libxml2._xmlSchemaNewDocParserCtxt;
 export const xmlSchemaNewValidCtxt = libxml2._xmlSchemaNewValidCtxt;
 export const xmlSchemaParse = libxml2._xmlSchemaParse;
+export const xmlSchemaSetParserStructuredErrors = libxml2._xmlSchemaSetParserStructuredErrors;
+export const xmlSchemaSetValidStructuredErrors = libxml2._xmlSchemaSetValidStructuredErrors;
 export const xmlSchemaValidateDoc = libxml2._xmlSchemaValidateDoc;
 export const xmlXPathCompiledEval = libxml2._xmlXPathCompiledEval;
 export const xmlXPathFreeCompExpr = libxml2._xmlXPathFreeCompExpr;
