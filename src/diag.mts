@@ -79,9 +79,10 @@ class MemTrackerImpl implements MemTracker {
     }
 
     report(): any {
-        const report: any = {};
+        const memReport: any = {};
         this.disposableInfo.forEach((info) => {
-            const classReport = report[info.classname] ||= { // eslint-disable-line no-multi-assign
+            // eslint-disable-next-line no-multi-assign
+            const classReport = memReport[info.classname] ||= {
                 garbageCollected: 0,
                 totalInstances: 0,
                 instances: [],
@@ -102,21 +103,21 @@ class MemTrackerImpl implements MemTracker {
                 callers[info.callstack!] = (callers[info.callstack!] || 0) + 1;
             }
         });
-        return report;
+        return memReport;
     }
 }
 
 /**
  * Memory Diagnostic options.
  */
-export interface MemDiagOptions {
+export interface DiagOptions {
     /**
      * Enabling the memory diagnostics.
-     * Note the tracking information will be lost when it is disabled.
+     * Note that the tracking information will be lost when it is disabled.
      */
     enabled: boolean;
     /**
-     * Generate the statistics of point
+     * Generate the statistics of the callstack, for {@link disposable!XmlDisposable}.
      */
     callerStats?: boolean;
     /**
@@ -135,9 +136,9 @@ export interface MemDiagOptions {
  * Note that the allocation will not be monitored before memory diagnostics is enabled.
  *
  * @param options
- * @see {@link memReport}
+ * @see {@link report}
  */
-export function memDiag(options: MemDiagOptions) {
+export function configure(options: DiagOptions) {
     if (options.enabled) {
         memTracker = new MemTrackerImpl(
             options.callerDetail === true,
@@ -153,9 +154,9 @@ export function memDiag(options: MemDiagOptions) {
  * @returns The report (JSON) object, whose format may vary according to the settings,
  * and is subject to change.
  * Returns undefined if memory diagnostic is not enabled.
- * @see {@link memDiag}
+ * @see {@link configure}
  */
-export function memReport(): any {
+export function report(): any {
     return memTracker.report();
 }
 
