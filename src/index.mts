@@ -1,3 +1,4 @@
+export * as diag from './diag.mjs';
 export * as disposable from './disposable.mjs';
 export { XmlXPath, NamespaceMap } from './xpath.mjs';
 export {
@@ -8,8 +9,13 @@ export {
     XmlText,
     XmlCData,
 } from './nodes.mjs';
-export { XmlDocument, ParseOption, ParseOptions } from './document.mjs';
-export { XmlParseError, XmlError } from './libxml2.mjs';
+export {
+    ParseOption,
+    ParseOptions,
+    XmlDocument,
+    XmlParseError,
+} from './document.mjs';
+export { ErrorDetail, XmlError, XmlLibError } from './libxml2.mjs';
 export {
     RelaxNGValidator,
     XsdValidator,

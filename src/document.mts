@@ -1,15 +1,19 @@
 import {
-    XmlError,
+    error,
+    xmlCtxtSetErrorHandler,
     xmlDocGetRootElement,
+    XmlError,
     xmlFreeDoc,
+    xmlFreeParserCtxt,
+    XmlLibError,
     xmlNewDoc,
-    xmlResetLastError,
-    xmlGetLastError,
-    XmlErrorStruct, xmlReadString, XmlParseError, xmlReadMemory,
+    xmlNewParserCtxt,
+    xmlReadMemory,
+    xmlReadString,
 } from './libxml2.mjs';
 import { XmlElement, XmlNode } from './nodes.mjs';
-import { XmlXPath, NamespaceMap } from './xpath.mjs';
-import type { XmlDocPtr } from './libxml2raw.js';
+import { NamespaceMap, XmlXPath } from './xpath.mjs';
+import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.js';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 export enum ParseOption {
@@ -71,6 +75,9 @@ export interface ParseOptions {
     option?: ParseOption;
 }
 
+export class XmlParseError extends XmlLibError {
+}
+
 export class XmlDocument extends XmlDisposable {
     /** @internal */
     @disposeBy(xmlFreeDoc)
@@ -82,10 +89,6 @@ export class XmlDocument extends XmlDisposable {
      */
     private constructor(xmlDocPtr: XmlDocPtr) {
         super();
-        if (!xmlDocPtr) {
-            const err = xmlGetLastError();
-            throw new XmlParseError(XmlErrorStruct.message(err));
-        }
         this._docPtr = xmlDocPtr;
     }
 
@@ -105,10 +108,7 @@ export class XmlDocument extends XmlDisposable {
         source: string,
         options: ParseOptions = {},
     ): XmlDocument {
-        xmlResetLastError();
-        return new XmlDocument(
-            xmlReadString(source, '', '', options.option ?? ParseOption.XML_PARSE_DEFAULT),
-        );
+        return XmlDocument.parse(xmlReadString, source, '', options);
     }
 
     /**
@@ -120,10 +120,35 @@ export class XmlDocument extends XmlDisposable {
         source: Uint8Array,
         options: ParseOptions = {},
     ): XmlDocument {
-        xmlResetLastError();
-        return new XmlDocument(
-            xmlReadMemory(source, '', '', options.option ?? ParseOption.XML_PARSE_DEFAULT),
-        );
+        return XmlDocument.parse(xmlReadMemory, source, '', options);
+    }
+
+    private static parse<Input>(
+        parser: (
+            ctxt: XmlParserCtxtPtr,
+            source: Input,
+            url: string,
+            encoding: string,
+            options: number,
+        ) => XmlDocPtr,
+        source: Input,
+        url: string,
+        options: ParseOptions,
+    ): XmlDocument {
+        const ctxt = xmlNewParserCtxt();
+        const errIndex = error.allocErrorInfo();
+        xmlCtxtSetErrorHandler(ctxt, error.errorCollector, errIndex);
+        try {
+            const xml = parser(ctxt, source, url, '', options.option ?? ParseOption.XML_PARSE_DEFAULT);
+            if (!xml) {
+                const errDetails = error.getErrorInfo(errIndex);
+                throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
+            }
+            return new XmlDocument(xml);
+        } finally {
+            error.freeErrorInfo(errIndex);
+            xmlFreeParserCtxt(ctxt);
+        }
     }
 
     get(xpath: XmlXPath): XmlNode | null;

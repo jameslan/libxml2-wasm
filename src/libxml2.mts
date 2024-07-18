@@ -1,19 +1,52 @@
 import type {
-    Pointer,
     CString,
+    Pointer,
     XmlAttrPtr,
     XmlDocPtr,
+    XmlErrorPtr,
     XmlNodePtr,
-    XmlXPathContextPtr,
     XmlNsPtr,
+    XmlParserCtxtPtr,
     XmlXPathCompExprPtr,
+    XmlXPathContextPtr,
 } from './libxml2raw.js';
 import moduleLoader from './libxml2raw.js';
 
 const libxml2 = await moduleLoader();
 
+/**
+ * Base class for exceptions.
+ *
+ * All thrown exceptions in this library will be this class or the subclasses of this class.
+ */
 export class XmlError extends Error {}
-export class XmlParseError extends XmlError {}
+
+export interface ErrorDetail {
+    /**
+     * The message of the error during processing.
+     */
+    message: string;
+    /**
+     * The line number of the xml file, where the error is occurred.
+     */
+    line: number;
+    /**
+     * The column number of the xml file, where the error is occurred.
+     */
+    col: number;
+}
+
+/**
+ * An exception class represents the error in libxml2
+ */
+export class XmlLibError extends XmlError {
+    details: ErrorDetail[];
+
+    constructor(message: string, details: ErrorDetail[]) {
+        super(message);
+        this.details = details;
+    }
+}
 
 function withStringUTF8<R>(str: string | null, process: (buf: number, len: number) => R): R {
     if (!str) {
@@ -47,21 +80,29 @@ function withCString<R>(str: Uint8Array, process: (buf: number, len: number) => 
 }
 
 export function xmlReadString(
+    ctxt: XmlParserCtxtPtr,
     xmlString: string,
     url: string,
     encoding: string,
     options: number,
 ): XmlDocPtr {
-    return withStringUTF8(xmlString, (buf, len) => libxml2._xmlReadMemory(buf, len, 0, 0, options));
+    return withStringUTF8(
+        xmlString,
+        (buf, len) => libxml2._xmlCtxtReadMemory(ctxt, buf, len, 0, 0, options),
+    );
 }
 
 export function xmlReadMemory(
+    ctxt: XmlParserCtxtPtr,
     xmlBuffer: Uint8Array,
     url: string,
     encoding: string,
     options: number,
 ): XmlDocPtr {
-    return withCString(xmlBuffer, (buf, len) => libxml2._xmlReadMemory(buf, len, 0, 0, options));
+    return withCString(
+        xmlBuffer,
+        (buf, len) => libxml2._xmlCtxtReadMemory(ctxt, buf, len, 0, 0, options),
+    );
 }
 
 export function xmlXPathRegisterNs(ctx: XmlXPathContextPtr, prefix: string, uri: string): number {
@@ -119,6 +160,33 @@ export function xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: string): X
 
 export function xmlXPathCtxtCompile(ctxt: XmlXPathContextPtr, str: string): XmlXPathCompExprPtr {
     return withStringUTF8(str, (buf) => libxml2._xmlXPathCtxtCompile(ctxt, buf));
+}
+
+export namespace error {
+    const errorStorage = new Map<number, ErrorDetail[]>();
+    let errIndex = 0;
+
+    export function allocErrorInfo(): number {
+        errIndex += 1;
+        errorStorage.set(errIndex, []);
+        return errIndex;
+    }
+
+    export function freeErrorInfo(index: number) {
+        errorStorage.delete(index);
+    }
+
+    export function getErrorInfo(index: number) {
+        return errorStorage.get(index);
+    }
+
+    export const errorCollector = libxml2.addFunction((index: number, err: XmlErrorPtr) => {
+        errorStorage.get(index)!.push({
+            message: XmlErrorStruct.message(err),
+            line: XmlErrorStruct.line(err),
+            col: XmlErrorStruct.col(err),
+        });
+    }, 'vii');
 }
 
 export class XmlXPathObjectStruct {
@@ -203,18 +271,27 @@ export class XmlAttrStruct extends XmlTreeCommonStruct {
 
 export class XmlErrorStruct {
     static message = getStringValueFunc(8);
+
+    static line = getValueFunc(20, 'i32');
+
+    static col = getValueFunc(40, 'i32');
 }
 
+export const xmlCtxtSetErrorHandler = libxml2._xmlCtxtSetErrorHandler;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
 export const xmlFreeDoc = libxml2._xmlFreeDoc;
+export const xmlFreeParserCtxt = libxml2._xmlFreeParserCtxt;
 export const xmlGetLastError = libxml2._xmlGetLastError;
 export const xmlNewDoc = libxml2._xmlNewDoc;
+export const xmlNewParserCtxt = libxml2._xmlNewParserCtxt;
 export const xmlRelaxNGFree = libxml2._xmlRelaxNGFree;
 export const xmlRelaxNGFreeParserCtxt = libxml2._xmlRelaxNGFreeParserCtxt;
 export const xmlRelaxNGFreeValidCtxt = libxml2._xmlRelaxNGFreeValidCtxt;
 export const xmlRelaxNGNewDocParserCtxt = libxml2._xmlRelaxNGNewDocParserCtxt;
 export const xmlRelaxNGNewValidCtxt = libxml2._xmlRelaxNGNewValidCtxt;
 export const xmlRelaxNGParse = libxml2._xmlRelaxNGParse;
+export const xmlRelaxNGSetParserStructuredErrors = libxml2._xmlRelaxNGSetParserStructuredErrors;
+export const xmlRelaxNGSetValidStructuredErrors = libxml2._xmlRelaxNGSetValidStructuredErrors;
 export const xmlRelaxNGValidateDoc = libxml2._xmlRelaxNGValidateDoc;
 export const xmlResetLastError = libxml2._xmlResetLastError;
 export const xmlSchemaFree = libxml2._xmlSchemaFree;
@@ -223,6 +300,8 @@ export const xmlSchemaFreeValidCtxt = libxml2._xmlSchemaFreeValidCtxt;
 export const xmlSchemaNewDocParserCtxt = libxml2._xmlSchemaNewDocParserCtxt;
 export const xmlSchemaNewValidCtxt = libxml2._xmlSchemaNewValidCtxt;
 export const xmlSchemaParse = libxml2._xmlSchemaParse;
+export const xmlSchemaSetParserStructuredErrors = libxml2._xmlSchemaSetParserStructuredErrors;
+export const xmlSchemaSetValidStructuredErrors = libxml2._xmlSchemaSetValidStructuredErrors;
 export const xmlSchemaValidateDoc = libxml2._xmlSchemaValidateDoc;
 export const xmlXPathCompiledEval = libxml2._xmlXPathCompiledEval;
 export const xmlXPathFreeCompExpr = libxml2._xmlXPathFreeCompExpr;
