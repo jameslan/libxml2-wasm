@@ -8,6 +8,7 @@ import {
     XmlLibError,
     xmlNewDoc,
     xmlNewParserCtxt,
+    xmlReadFile,
     xmlReadMemory,
     xmlReadString,
 } from './libxml2.mjs';
@@ -121,6 +122,18 @@ export class XmlDocument extends XmlDisposable {
         options: ParseOptions = {},
     ): XmlDocument {
         return XmlDocument.parse(xmlReadMemory, source, '', options);
+    }
+
+    /**
+     * Parse and create an {@link XmlDocument} from a file.
+     * @param filePath Path to the XML file
+     * @param options Parsing options
+     */
+    static fromFile(
+        filePath: string,
+        options: ParseOptions = {},
+    ): XmlDocument {
+        return XmlDocument.parse(xmlReadFile, filePath, '', options);
     }
 
     private static parse<Input>(

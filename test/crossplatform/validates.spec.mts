@@ -173,8 +173,7 @@ describe('XsdValidator', () => {
     });
 
     it('should be able to handle includes', async () => {
-        const schemafileContent = await readFile('./test/crossplatform/testfiles/book.xsd');
-        const schemaDoc = XmlDocument.fromBuffer(schemafileContent);
+        const schemaDoc = XmlDocument.fromFile('./test/crossplatform/testfiles/book.xsd');
         const validator = XsdValidator.fromDoc(schemaDoc);
         validator.dispose();
         schemaDoc.dispose();

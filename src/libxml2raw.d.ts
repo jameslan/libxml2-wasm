@@ -24,6 +24,13 @@ export class LibXml2 {
 
     _free(memblock: Pointer): void;
     _malloc(size: number): Pointer;
+
+    _xmlCtxtReadFile(
+        ctxt: XmlParserCtxtPtr,
+        filename: CString,
+        encoding: CString,
+        options: number
+    ): XmlDocPtr;
     _xmlCtxtReadMemory(
         ctxt: XmlParserCtxtPtr,
         buffer: CString,
