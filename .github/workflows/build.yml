@@ -9,8 +9,9 @@ env:
   EM_VERSION: 3.1.44
   EM_CACHE_FOLDER: 'emsdk-cache'
 jobs:
-  Build_Package:
+  build:
     runs-on: ubuntu-latest
+    name: Build Package
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -39,12 +40,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: libxml2-wasm-*.tgz
-  Node_Compatibility_Test:
-    needs: Build_Package
+  compatibility:
+    needs: build
+    name: NodeJS/OS Compatibility Test
     strategy:
       matrix:
-        node: [16.20.2, 18.19.0, 20.10.0]
-        os: [ubuntu-latest, macos-latest] # TODO: add windows-latest
+        node: [16.20.2, 18.20.4, 20.15.1, 22.5.1]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Code
@@ -59,5 +61,19 @@ jobs:
         uses: actions/download-artifact@v4
       - name: Install libxml2-wasm
         run: npm install ./artifact/libxml2-wasm-*.tgz
+        shell: bash
       - name: Run Integration Test
         run: npm run integ
+  result:
+    needs: compatibility
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: Compatibility Test Result
+    steps:
+      - run: exit 1
+        if: >-
+          ${{
+               contains(needs.*.result, 'failure')
+            || contains(needs.*.result, 'cancelled')
+            || contains(needs.*.result, 'skipped')
+          }}
