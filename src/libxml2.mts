@@ -318,7 +318,9 @@ export function xmlRegisterInputProvider<FdType>(
             len: number,
         ) => {
             const nbuf = Uint8Array.from([]);
-            return provider.read(fd as unknown as FdType, nbuf, len);
+            const actuallen = provider.read(fd as unknown as FdType, nbuf, len);
+            libxml2.HEAPU8.set(nbuf, cbuf);
+            return actuallen;
         },
         'iiii',
     );
