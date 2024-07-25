@@ -25,6 +25,7 @@ export class LibXml2 {
     _free(memblock: Pointer): void;
     _malloc(size: number): Pointer;
 
+    _xmlCleanupInputCallbacks(): void;
     _xmlCtxtReadFile(
         ctxt: XmlParserCtxtPtr,
         filename: CString,
@@ -53,6 +54,12 @@ export class LibXml2 {
     _xmlNewDoc(): XmlDocPtr;
     _xmlNewParserCtxt(): XmlParserCtxtPtr;
     _xmlNodeGetContent(node: XmlNodePtr): CString;
+    _xmlRegisterInputCallbacks(
+        xmlInputMatchCallback: number,
+        xmlInputOpenCallback: number,
+        xmlInputReadCallback: number,
+        xmlInputCloseCallback: number,
+    ): number;
     _xmlRelaxNGFree(schema: XmlRelaxNGPtr): void;
     _xmlRelaxNGFreeParserCtxt(ctxt: XmlRelaxNGParserCtxtPtr): void;
     _xmlRelaxNGFreeValidCtxt(ctxt: XmlRelaxNGValidCtxtPtr): void;

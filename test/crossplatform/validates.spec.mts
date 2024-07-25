@@ -1,11 +1,14 @@
 import { expect } from 'chai';
-import { readFile } from 'fs/promises';
+import { openSync, readSync, closeSync } from 'fs';
 import {
     XmlDocument,
     XmlError,
     XmlValidateError,
     XsdValidator,
     RelaxNGValidator,
+    xmlCleanupInputProvider,
+    XmlInputProvider,
+    xmlRegisterInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
 
 describe('XsdValidator', () => {
@@ -203,6 +206,33 @@ describe('RelaxNGValidator', () => {
     </start>
 </grammar>
 `;
+
+    before(() => {
+        const provider: XmlInputProvider<number> = {
+            match: (filename: string) => {
+                console.log(`match called for ${filename}`);
+                return true;
+            },
+            open: (filename: string) => {
+                console.log(`Opening ${filename}`);
+                return openSync(filename, 'r');
+            },
+            read: (fd: number, buf: Uint8Array, len: number) => {
+                console.log(`reading from ${fd}`);
+                return readSync(fd, buf, 0, len, null);
+            },
+            close: (fd: number) => {
+                console.log(`closing ${fd}`);
+                closeSync(fd);
+                return true;
+            },
+        };
+        expect(xmlRegisterInputProvider(provider)).to.be.true;
+    });
+
+    after(() => {
+        xmlCleanupInputProvider();
+    });
 
     it('should succeed with valid xml', () => {
         using schema = XmlDocument.fromString(rng);

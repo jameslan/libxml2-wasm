@@ -293,6 +293,48 @@ export class XmlErrorStruct {
     static col = getValueFunc(40, 'i32');
 }
 
+export interface XmlInputProvider<FdType> {
+    match(filename: string): boolean;
+    open(filename: string): FdType;
+    read(fd: FdType, buf: Uint8Array, len: number): number;
+    close(fd: FdType): boolean;
+}
+
+export function xmlRegisterInputProvider<FdType>(
+    provider: XmlInputProvider<FdType>,
+): boolean {
+    const matchFunc = libxml2.addFunction((cfilename: CString) => {
+        const filename = moveUtf8ToString(cfilename);
+        return provider.match(filename) ? 1 : 0;
+    }, 'ii');
+    const openFunc = libxml2.addFunction((cfilename: CString) => {
+        const filename = moveUtf8ToString(cfilename);
+        return provider.open(filename);
+    }, 'ii');
+    const readFunc = libxml2.addFunction(
+        (
+            fd: Pointer,
+            cbuf: Pointer,
+            len: number,
+        ) => {
+            const nbuf = Uint8Array.from([]);
+            return provider.read(fd as unknown as FdType, nbuf, len);
+        },
+        'iiii',
+    );
+    const closeFunc = libxml2.addFunction(
+        (fd: Pointer) => (provider.close(fd as unknown as FdType) ? 0 : 1),
+        'ii',
+    );
+
+    const res = libxml2._xmlRegisterInputCallbacks(matchFunc, openFunc, readFunc, closeFunc);
+    return res >= 0;
+}
+
+export function xmlCleanupInputProvider(): void {
+    libxml2._xmlCleanupInputCallbacks();
+}
+
 export const xmlCtxtSetErrorHandler = libxml2._xmlCtxtSetErrorHandler;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
 export const xmlFreeDoc = libxml2._xmlFreeDoc;
