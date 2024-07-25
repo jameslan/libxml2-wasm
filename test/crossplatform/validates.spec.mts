@@ -12,6 +12,39 @@ import {
 } from '@libxml2-wasm/lib/index.mjs';
 
 describe('XsdValidator', () => {
+    before(() => {
+        const provider: XmlInputProvider<number> = {
+            match: () => true,
+            open: (filename: string) => {
+                try {
+                    return openSync(filename, 'r');
+                } catch {
+                    return -1;
+                }
+            },
+            read: (fd: number, buf: Uint8Array) => {
+                try {
+                    return readSync(fd, buf, 0, buf.byteLength, null);
+                } catch {
+                    return -1;
+                }
+            },
+            close: (fd: number) => {
+                try {
+                    closeSync(fd);
+                    return true;
+                } catch {
+                    return false;
+                }
+            },
+        };
+        expect(xmlRegisterInputProvider(provider)).to.be.true;
+    });
+
+    after(() => {
+        xmlCleanupInputProvider();
+    });
+
     const xsd = `<?xml version="1.0"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <xsd:element name="bookstore" type="Bookstore"/>
@@ -206,33 +239,6 @@ describe('RelaxNGValidator', () => {
     </start>
 </grammar>
 `;
-
-    before(() => {
-        const provider: XmlInputProvider<number> = {
-            match: (filename: string) => {
-                console.log(`match called for ${filename}`);
-                return true;
-            },
-            open: (filename: string) => {
-                console.log(`Opening ${filename}`);
-                return openSync(filename, 'r');
-            },
-            read: (fd: number, buf: Uint8Array, len: number) => {
-                console.log(`reading from ${fd}`);
-                return readSync(fd, buf, 0, len, null);
-            },
-            close: (fd: number) => {
-                console.log(`closing ${fd}`);
-                closeSync(fd);
-                return true;
-            },
-        };
-        expect(xmlRegisterInputProvider(provider)).to.be.true;
-    });
-
-    after(() => {
-        xmlCleanupInputProvider();
-    });
 
     it('should succeed with valid xml', () => {
         using schema = XmlDocument.fromString(rng);
