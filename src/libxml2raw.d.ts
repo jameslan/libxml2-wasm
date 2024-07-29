@@ -55,10 +55,10 @@ export class LibXml2 {
     _xmlNewParserCtxt(): XmlParserCtxtPtr;
     _xmlNodeGetContent(node: XmlNodePtr): CString;
     _xmlRegisterInputCallbacks(
-        xmlInputMatchCallback: number,
-        xmlInputOpenCallback: number,
-        xmlInputReadCallback: number,
-        xmlInputCloseCallback: number,
+        xmlInputMatchCallback: Pointer,
+        xmlInputOpenCallback: Pointer,
+        xmlInputReadCallback: Pointer,
+        xmlInputCloseCallback: Pointer,
     ): number;
     _xmlRelaxNGFree(schema: XmlRelaxNGPtr): void;
     _xmlRelaxNGFreeParserCtxt(ctxt: XmlRelaxNGParserCtxtPtr): void;

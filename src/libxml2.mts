@@ -295,13 +295,13 @@ export class XmlErrorStruct {
 
 export interface XmlInputProvider<FdType> {
     /**
-     * Check if this input provider can open this file
-     * @param filename The file path
-     * @returns true iff the provider can open
+     * Check if this input provider should handle this file
+     * @param filename The file name/path/url
+     * @returns true if the provider should handle
      */
     match(filename: string): boolean;
     /**
-     * Open the file and return a file descriptor (handle
+     * Open the file and return a file descriptor (handle)
      * @param filename file path
      * @returns undefined on error, FdType on success
      */
@@ -317,7 +317,7 @@ export interface XmlInputProvider<FdType> {
     /**
      * Close the file
      * @param fd file descriptor
-     * @returns true iff success
+     * @returns true if success
      */
     close(fd: FdType): boolean;
 }
