@@ -2,9 +2,9 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
     <xsd:complexType name="author">
         <xsd:sequence>
-            <xsd:element minOccurs="0" name="name" type="xsd:string" />
-            <xsd:element minOccurs="0" name="first-name" type="xsd:string" />
-            <xsd:element minOccurs="0" name="last-name" type="xsd:string" />
+            <xsd:element minOccurs="0" name="country" type="xsd:string" />
+            <xsd:element minOccurs="1" name="first-name" type="xsd:string" />
+            <xsd:element minOccurs="1" name="last-name" type="xsd:string" />
         </xsd:sequence>
     </xsd:complexType>
 </xsd:schema>
