@@ -181,9 +181,9 @@ describe('XsdValidator', () => {
                  <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
                      <xsd:complexType name="author">
                          <xsd:sequence>
-                             <xsd:element minOccurs="0" name="country" type="xsd:string" />
-                             <xsd:element minOccurs="1" name="first-name" type="xsd:string" />
-                             <xsd:element minOccurs="1" name="last-name" type="xsd:string" />
+                             <xsd:element minOccurs="1" maxOccurs="1" name="first-name" type="xsd:string" />
+                             <xsd:element minOccurs="1" maxOccurs="1" name="last-name" type="xsd:string" />
+                             <xsd:element minOccurs="0" maxOccurs="1" name="country" type="xsd:string" />
                          </xsd:sequence>
                      </xsd:complexType>
                  </xsd:schema>`,
@@ -213,6 +213,16 @@ describe('XsdValidator', () => {
                         </xsd:complexType>
                     </xsd:element>
                 </xsd:schema>`,
+            'book.xml':
+                `<?xml version="1.0" encoding="utf-8"?>
+                <book xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="book.xsd">
+                    <title>Dune</title>
+                    <author>
+                        <first-name>Frank</first-name>
+                        <last-name>Herbert</last-name>
+                        <country>USA</country>
+                    </author>
+                </book>`,
         };
         /**
          * Simple array to keep file descriptors. First element is dummy to avoid returning 0 for fd
@@ -267,6 +277,9 @@ describe('XsdValidator', () => {
         it('should be able to handle includes when files are read', () => {
             const schemaDoc = XmlDocument.fromFile('book.xsd');
             const validator = XsdValidator.fromDoc(schemaDoc);
+            const instDoc = XmlDocument.fromFile('book.xml');
+            validator.validate(instDoc);
+            instDoc.dispose();
             validator.dispose();
             schemaDoc.dispose();
         });
@@ -274,6 +287,9 @@ describe('XsdValidator', () => {
         it('should be able to handle includes when strings are read', () => {
             const schemaDoc = XmlDocument.fromString(documents['book.xsd']);
             const validator = XsdValidator.fromDoc(schemaDoc);
+            const instDoc = XmlDocument.fromString(documents['book.xml']);
+            validator.validate(instDoc);
+            instDoc.dispose();
             validator.dispose();
             schemaDoc.dispose();
         });
