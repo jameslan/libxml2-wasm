@@ -309,8 +309,7 @@ export interface XmlInputProvider<FdType> {
     /**
      * Read from a file
      * @param fd File descriptor
-     * @param buf Buffer to read into
-     * @param len Maximum number of bytes to read
+     * @param buf Buffer to read into, no more than its byteLength shall be read into.
      * @returns number of bytes actually read, -1 on error
      */
     read(fd: FdType, buf: Uint8Array): number;
