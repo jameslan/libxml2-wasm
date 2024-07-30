@@ -77,9 +77,3 @@ For more detail, see the [Doc](https://jameslan.github.io/libxml2-wasm/index.htm
 
 [^1]: The speed of different libraries varies a lot, see [benchmark](performance.md).
 [^2]: The requirement of C/C++ toolchain may be waived if prebuilt binary is available.
-
-## Development environment
-
-If you'd like to contribute to `libxml2-wasm`, you need a [Node.js](https://nodejs.org/) (version 16 or newer) and an [emscripten](https://emscripten.org/) installation in your environment.
-
-Alternatively, you can use the provided devcontainer. Then you only need a Docker or Podman environment, and VS Code with the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension. Then you can just run the command "Dev Containers: Reopen in Container" which will provide you a container with the needed development environment. See <https://containers.dev/> for further info.
