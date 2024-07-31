@@ -1,5 +1,5 @@
-{
-    "$schema": "https://typedoc.org/schema.json",
+import footnote from 'markdown-it-footnote';
+export default {
     "entryPoints": ["./src/index.mts"],
     "preserveLinkText": false,
     "visibilityFilters": {
@@ -20,5 +20,8 @@
         "docs/performance.md"
     ],
     "sortEntryPoints": false,
-    "readme": "docs/index.md"
+    "readme": "docs/index.md",
+    markdownItLoader(parser) {
+        parser.use(footnote);
+    },
 }
