@@ -10,10 +10,15 @@
         "@internal": false
     },
     "tsconfig": "./tsconfig.prod.json",
-    "out": "./docs/api",
+    "out": "./_site",
     "navigationLinks": {
-        "DOC": "/libxml2-wasm/",
         "GITHUB": "https://github.com/jameslan/libxml2-wasm"
     },
-    "readme": "none"
+    "projectDocuments": [
+        "docs/tutorial.md",
+        "docs/mem.md",
+        "docs/performance.md"
+    ],
+    "sortEntryPoints": false,
+    "readme": "docs/index.md"
 }

@@ -16,14 +16,8 @@ jobs:
         uses: actions/configure-pages@v4
       - name: Build the document
         run: npm run doc
-      - name: Render Github Pages
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: ./docs
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./_site
   Deploy_Doc:
     permissions:
       contents: read

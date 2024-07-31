@@ -1,3 +1,6 @@
+/**
+ * @module References
+ */
 export * as diag from './diag.mjs';
 export * as disposable from './disposable.mjs';
 export { XmlXPath, NamespaceMap } from './xpath.mjs';
