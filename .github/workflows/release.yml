@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: verify version
-        run: test $(jq -r .version package.json) = ${{ github.event.inputs.version }}
+        run: test $(jq -r .version package.json) = ${{ inputs.version }}
   build:
     uses: ./.github/workflows/build.yml
     needs: check
@@ -29,9 +29,9 @@ jobs:
       - name: create release
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ github.event.inputs.title }}
-          body: ${{ github.event.inputs.note }}
-          tag: v${{ github.event.inputs.version }}
+          name: ${{ inputs.title }}
+          body: ${{ inputs.note }}
+          tag: v${{ inputs.version }}
           artifacts: ./artifact/*
       - uses: actions/setup-node@v3
         with:
@@ -40,3 +40,8 @@ jobs:
       - run: npm publish ./artifact/libxml2-wasm-*.tgz
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  doc:
+    uses: ./.github/workflows/docs.yml
+    with:
+      version: ${{ inputs.version }}
+    needs: release
