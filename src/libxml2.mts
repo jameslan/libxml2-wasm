@@ -82,34 +82,40 @@ function withCString<R>(str: Uint8Array, process: (buf: number, len: number) => 
 export function xmlReadString(
     ctxt: XmlParserCtxtPtr,
     xmlString: string,
-    url: string,
-    encoding: string,
+    url: string | null,
+    encoding: string | null,
     options: number,
 ): XmlDocPtr {
     return withStringUTF8(
         xmlString,
-        (buf, len) => libxml2._xmlCtxtReadMemory(ctxt, buf, len, 0, 0, options),
+        (xmlBuf, len) => withStringUTF8(
+            url,
+            (urlBuf) => libxml2._xmlCtxtReadMemory(ctxt, xmlBuf, len, urlBuf, 0, options),
+        ),
     );
 }
 
 export function xmlReadMemory(
     ctxt: XmlParserCtxtPtr,
     xmlBuffer: Uint8Array,
-    url: string,
-    encoding: string,
+    url: string | null,
+    encoding: string | null,
     options: number,
 ): XmlDocPtr {
     return withCString(
         xmlBuffer,
-        (buf, len) => libxml2._xmlCtxtReadMemory(ctxt, buf, len, 0, 0, options),
+        (xmlBuf, len) => withStringUTF8(
+            url,
+            (urlBuf) => libxml2._xmlCtxtReadMemory(ctxt, xmlBuf, len, urlBuf, 0, options),
+        ),
     );
 }
 
 export function xmlReadFile(
     ctxt: XmlParserCtxtPtr,
     filename: string,
-    url: string,
-    encoding: string,
+    url: string | null,
+    encoding: string | null,
     options: number,
 ): XmlDocPtr {
     return withStringUTF8(
