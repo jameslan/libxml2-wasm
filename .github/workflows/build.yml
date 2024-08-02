@@ -11,6 +11,10 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
     name: Build Package
     steps:
       - name: Checkout Code
@@ -34,6 +38,10 @@ jobs:
         run: npm run build
       - name: Test
         run: npm run test
+      - name: Report coverage
+        uses: romeovs/lcov-reporter-action@v0.4.0
+        with:
+          delete-old-comments: true
       - name: Pack
         run: npm pack
       - name: Upload package
