@@ -8,6 +8,7 @@ import {
     XmlLibError,
     xmlNewDoc,
     xmlNewParserCtxt,
+    xmlReadFile,
     xmlReadMemory,
     xmlReadString,
 } from './libxml2.mjs';
@@ -70,7 +71,12 @@ export enum ParseOption {
 }
 
 export interface ParseOptions {
-    url?: string; // reserved
+    /**
+     * The url of the document.
+     *
+     * It may be used as a base to calculate the url of other included document.
+     */
+    url?: string;
     encoding?: string; // reserved
     option?: ParseOption;
 }
@@ -108,7 +114,7 @@ export class XmlDocument extends XmlDisposable {
         source: string,
         options: ParseOptions = {},
     ): XmlDocument {
-        return XmlDocument.parse(xmlReadString, source, '', options);
+        return XmlDocument.parse(xmlReadString, source, options.url ?? null, options);
     }
 
     /**
@@ -120,26 +126,44 @@ export class XmlDocument extends XmlDisposable {
         source: Uint8Array,
         options: ParseOptions = {},
     ): XmlDocument {
-        return XmlDocument.parse(xmlReadMemory, source, '', options);
+        return XmlDocument.parse(xmlReadMemory, source, options.url ?? null, options);
+    }
+
+    /**
+     * Parse and create an {@link XmlDocument} from a file.
+     * @param filePath Path to the XML file
+     * @param options Parsing options
+     */
+    static fromFile(
+        filePath: string,
+        options: ParseOptions = {},
+    ): XmlDocument {
+        return XmlDocument.parse(xmlReadFile, filePath, '', options);
     }
 
     private static parse<Input>(
         parser: (
             ctxt: XmlParserCtxtPtr,
             source: Input,
-            url: string,
-            encoding: string,
+            url: string | null,
+            encoding: string | null,
             options: number,
         ) => XmlDocPtr,
         source: Input,
-        url: string,
+        url: string | null,
         options: ParseOptions,
     ): XmlDocument {
         const ctxt = xmlNewParserCtxt();
         const errIndex = error.allocErrorInfo();
         xmlCtxtSetErrorHandler(ctxt, error.errorCollector, errIndex);
         try {
-            const xml = parser(ctxt, source, url, '', options.option ?? ParseOption.XML_PARSE_DEFAULT);
+            const xml = parser(
+                ctxt,
+                source,
+                url,
+                null,
+                options.option ?? ParseOption.XML_PARSE_DEFAULT,
+            );
             if (!xml) {
                 const errDetails = error.getErrorInfo(errIndex);
                 throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
