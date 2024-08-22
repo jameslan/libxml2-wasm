@@ -18,9 +18,8 @@
         "cov": "c8 npm run unit",
         "build": "npm run wasm && tsc -p tsconfig.prod.json --declaration",
         "lint": "eslint 'src/**' 'test/**'",
-        "apidoc": "typedoc",
-        "doc": "typedoc && sed -i.bak '1 i\\\n---\\\ntitle: API\\\n---\\\n' docs/api/index.html && rm docs/api/index.html.bak",
-        "site": "jekyll serve --source ./docs",
+        "docwatch": "typedoc --watch",
+        "doc": "typedoc",
         "watch": "tsc -p tsconfig.prod.json --declaration --watch"
     },
     "repository": {
@@ -49,10 +48,11 @@
         "eslint-import-resolver-typescript": "^3.6.1",
         "eslint-plugin-chai-friendly": "^1.0.0",
         "eslint-plugin-import": "^2.29.1",
+        "markdown-it-footnote": "^4.0.0",
         "mocha": "^10.4.0",
         "ts-node": "^10.9.2",
         "ts-paths-esm-loader": "^1.4.3",
-        "typedoc": "^0.25.7",
+        "typedoc": "^0.26.5",
         "typescript": "^5.3.3",
         "yargs": "^17.7.2"
     },

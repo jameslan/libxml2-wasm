@@ -1,5 +1,4 @@
 ---
-layout: page
 title: Memory Management
 ---
 
@@ -47,7 +46,7 @@ at the exit of the local scope of `doc`,
 `[Symbol.dispose]()` is called.
 
 Besides DOM, other objects own Web Assembly memory need to be disposed too.
-These classes have a base class [`XmlDisposable`](api/classes/disposable.XmlDisposable.html)
+These classes have a base class {@link disposable!XmlDisposable | `XmlDisposable`}.
 
 # Garbage Collection
 
