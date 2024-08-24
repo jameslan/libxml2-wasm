@@ -25,7 +25,6 @@ it requires the minimum version of the following environments,
 |Edge|V89+|
 |Safari|v15+|
 
----
 
 [^1]: The speed of different libraries varies a lot, see [benchmark](performance.md).
 [^2]: The requirement of C/C++ toolchain may be waived if prebuilt binary is available.
