@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
+      # pull-requests: write # for reporting coverage as comment of PR
       repository-projects: write
     name: Build Package
     steps:
@@ -38,11 +38,13 @@ jobs:
         run: npm run build
       - name: Test
         run: npm run test
-      - name: Report coverage
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: romeovs/lcov-reporter-action@v0.4.0
-        with:
-          delete-old-comments: true
+      # Suspend reporting coverage as comment in PR, it works for owner only
+      # https://github.com/romeovs/lcov-reporter-action/issues/6
+      # - name: Report coverage
+      #   if: ${{ github.event_name == 'pull_request' }}
+      #   uses: romeovs/lcov-reporter-action@v0.4.0
+      #   with:
+      #     delete-old-comments: true
       - name: Pack
         run: npm pack
       - name: Upload package
