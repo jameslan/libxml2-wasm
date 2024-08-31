@@ -40,6 +40,9 @@ export interface ErrorDetail {
  * An exception class represents the error in libxml2
  */
 export class XmlLibError extends XmlError {
+    /**
+     * The detail of errors provided by libxml2
+     */
     details: ErrorDetail[];
 
     constructor(message: string, details: ErrorDetail[]) {

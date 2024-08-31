@@ -59,3 +59,26 @@ The DOM object tree, stored in the shared memory, contains all the information o
 It consumes much more memory than the javascript wrapper objects in almost all cases.
 Meanwhile, the shared memory is very limited comparing to the memory where the javascript objects reside.
 Thus it is very likely that the out-of-memory error occurs from the web assembly before GC is triggered.
+
+# Diagnostics
+
+It is not always easy to write leak-free code.
+libxml2-wasm provides a memory tracker to help finding out the leaked objects.
+
+To enable memory tracker:
+
+```ts
+import { diag } from 'libxml2-wasm';
+
+diag.configure({ enabled: true });
+```
+
+After some iteration of the code executing,
+you could let the tool to generate memory allocation report,
+to check how many objects were allocated but not disposed:
+
+```ts
+import { diag } from 'libxml2-wasm';
+
+console.log(diag.report());
+```
