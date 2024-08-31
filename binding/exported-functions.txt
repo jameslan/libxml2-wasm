@@ -1,7 +1,6 @@
 _free
 _malloc
 _xmlCleanupInputCallbacks
-_xmlCtxtReadFile
 _xmlCtxtReadMemory
 _xmlCtxtSetErrorHandler
 _xmlDocGetRootElement

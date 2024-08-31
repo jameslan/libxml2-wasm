@@ -1,6 +1,7 @@
 import {
     openSync,
     readSync,
+    readFileSync,
     closeSync,
 } from 'fs';
 import { expect } from 'chai';
@@ -53,7 +54,7 @@ describe('Node.js input callbacks', () => {
     });
 
     it('should be able to handle includes when files are read', () => {
-        const schemaDoc = XmlDocument.fromFile('test/testfiles/book.xsd');
+        const schemaDoc = XmlDocument.fromBuffer(readFileSync('test/testfiles/book.xsd'), { url: 'test/testfiles/book.xsd' });
         const validator = XsdValidator.fromDoc(schemaDoc);
         validator.dispose();
         schemaDoc.dispose();
@@ -61,11 +62,11 @@ describe('Node.js input callbacks', () => {
 
     it('should be able to report error conditions', () => {
         // match shall return false
-        expect(() => XmlDocument.fromFile('test/testfiles/shouldnotmatch.xyz')).to.throw();
+        expect(() => XmlDocument.fromBuffer(readFileSync('test/testfiles/shouldnotmatch.xyz', { url: 'test/testfiles/shouldnotmatch.xyz' }))).to.throw();
         // open shall file
-        expect(() => XmlDocument.fromFile('test/testfiles/nonexistingfile.xsd')).to.throw();
+        expect(() => XmlDocument.fromBuffer(readFileSync('test/testfiles/nonexistingfile.xsd', { url: 'test/testfiles/nonexistingfile.xsd' }))).to.throw();
         // open succeeds, but include shall fail
-        const wrongIncludeDoc = XmlDocument.fromFile('test/testfiles/book_wronginclude.xsd');
+        const wrongIncludeDoc = XmlDocument.fromBuffer(readFileSync('test/testfiles/book_wronginclude.xsd'), { url: 'test/testfiles/book_wronginclude.xsd' });
         expect(() => XsdValidator.fromDoc(wrongIncludeDoc)).to.throw();
         wrongIncludeDoc.dispose();
     });

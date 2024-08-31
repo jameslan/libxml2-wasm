@@ -111,22 +111,6 @@ export function xmlReadMemory(
     );
 }
 
-export function xmlReadFile(
-    ctxt: XmlParserCtxtPtr,
-    filename: string,
-    url: string | null,
-    encoding: string | null,
-    options: number,
-): XmlDocPtr {
-    return withStringUTF8(
-        filename,
-        (fnBuf) => withStringUTF8(
-            encoding,
-            (encBuf) => libxml2._xmlCtxtReadFile(ctxt, fnBuf, encBuf, options),
-        ),
-    );
-}
-
 export function xmlXPathRegisterNs(ctx: XmlXPathContextPtr, prefix: string, uri: string): number {
     return withStringUTF8(prefix, (bufPrefix) => withStringUTF8(
         uri,

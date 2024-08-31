@@ -275,9 +275,9 @@ describe('XsdValidator', () => {
         });
 
         it.skip('should be able to handle includes when files are read', () => {
-            const schemaDoc = XmlDocument.fromFile('book.xsd');
+            const schemaDoc = XmlDocument.fromString(documents['book.xsd']);
             const validator = XsdValidator.fromDoc(schemaDoc);
-            const instDoc = XmlDocument.fromFile('book.xml');
+            const instDoc = XmlDocument.fromString(documents['book.xml']);
             validator.validate(instDoc);
             instDoc.dispose();
             validator.dispose();
@@ -295,12 +295,8 @@ describe('XsdValidator', () => {
         });
 
         it('should be able to report error conditions', () => {
-            // match shall return false
-            expect(() => XmlDocument.fromFile('shouldnotmatch.xyz')).to.throw();
-            // open shall file
-            expect(() => XmlDocument.fromFile('nonexistingfile.xsd')).to.throw();
             // open succeeds, but include shall fail
-            const wrongIncludeDoc = XmlDocument.fromFile('book_wronginclude.xsd');
+            const wrongIncludeDoc = XmlDocument.fromString(documents['book_wronginclude.xsd']);
             expect(() => XsdValidator.fromDoc(wrongIncludeDoc)).to.throw();
             wrongIncludeDoc.dispose();
         });
