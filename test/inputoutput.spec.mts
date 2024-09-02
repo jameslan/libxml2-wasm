@@ -62,9 +62,9 @@ describe('Node.js input callbacks', () => {
 
     it('should be able to report error conditions', () => {
         // match shall return false
-        expect(() => XmlDocument.fromBuffer(readFileSync('test/testfiles/shouldnotmatch.xyz', { url: 'test/testfiles/shouldnotmatch.xyz' }))).to.throw();
+        expect(() => XmlDocument.fromBuffer(readFileSync('test/testfiles/shouldnotmatch.xyz'), { url: 'test/testfiles/shouldnotmatch.xyz' })).to.throw();
         // open shall file
-        expect(() => XmlDocument.fromBuffer(readFileSync('test/testfiles/nonexistingfile.xsd', { url: 'test/testfiles/nonexistingfile.xsd' }))).to.throw();
+        expect(() => XmlDocument.fromBuffer(readFileSync('test/testfiles/nonexistingfile.xsd'), { url: 'test/testfiles/nonexistingfile.xsd' })).to.throw();
         // open succeeds, but include shall fail
         const wrongIncludeDoc = XmlDocument.fromBuffer(readFileSync('test/testfiles/book_wronginclude.xsd'), { url: 'test/testfiles/book_wronginclude.xsd' });
         expect(() => XsdValidator.fromDoc(wrongIncludeDoc)).to.throw();
