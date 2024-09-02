@@ -85,26 +85,32 @@ function withCString<R>(str: Uint8Array, process: (buf: number, len: number) => 
 export function xmlReadString(
     ctxt: XmlParserCtxtPtr,
     xmlString: string,
-    url: string,
-    encoding: string,
+    url: string | null,
+    encoding: string | null,
     options: number,
 ): XmlDocPtr {
     return withStringUTF8(
         xmlString,
-        (buf, len) => libxml2._xmlCtxtReadMemory(ctxt, buf, len, 0, 0, options),
+        (xmlBuf, len) => withStringUTF8(
+            url,
+            (urlBuf) => libxml2._xmlCtxtReadMemory(ctxt, xmlBuf, len, urlBuf, 0, options),
+        ),
     );
 }
 
 export function xmlReadMemory(
     ctxt: XmlParserCtxtPtr,
     xmlBuffer: Uint8Array,
-    url: string,
-    encoding: string,
+    url: string | null,
+    encoding: string | null,
     options: number,
 ): XmlDocPtr {
     return withCString(
         xmlBuffer,
-        (buf, len) => libxml2._xmlCtxtReadMemory(ctxt, buf, len, 0, 0, options),
+        (xmlBuf, len) => withStringUTF8(
+            url,
+            (urlBuf) => libxml2._xmlCtxtReadMemory(ctxt, xmlBuf, len, urlBuf, 0, options),
+        ),
     );
 }
 
@@ -278,6 +284,72 @@ export class XmlErrorStruct {
     static line = getValueFunc(20, 'i32');
 
     static col = getValueFunc(40, 'i32');
+}
+
+export interface XmlInputProvider<FdType> {
+    /**
+     * Check if this input provider should handle this file
+     * @param filename The file name/path/url
+     * @returns true if the provider should handle
+     */
+    match(filename: string): boolean;
+    /**
+     * Open the file and return a file descriptor (handle)
+     * @param filename file path
+     * @returns undefined on error, FdType on success
+     */
+    open(filename: string): FdType | undefined;
+    /**
+     * Read from a file
+     * @param fd File descriptor
+     * @param buf Buffer to read into, no more than its byteLength shall be read into.
+     * @returns number of bytes actually read, -1 on error
+     */
+    read(fd: FdType, buf: Uint8Array): number;
+    /**
+     * Close the file
+     * @param fd file descriptor
+     * @returns true if success
+     */
+    close(fd: FdType): boolean;
+}
+
+export function xmlRegisterInputProvider<FdType>(
+    provider: XmlInputProvider<FdType>,
+): boolean {
+    const matchFunc = libxml2.addFunction((cfilename: CString) => {
+        const filename = libxml2.UTF8ToString(cfilename);
+        return provider.match(filename) ? 1 : 0;
+    }, 'ii');
+    const openFunc = libxml2.addFunction((cfilename: CString) => {
+        const filename = libxml2.UTF8ToString(cfilename);
+        const res = provider.open(filename);
+        return res === undefined ? -1 : res;
+    }, 'ii');
+    const readFunc = libxml2.addFunction(
+        (
+            fd: Pointer,
+            cbuf: Pointer,
+            len: number,
+        ) => {
+            const nbuf = new Uint8Array(len);
+            const actuallen = provider.read(fd as FdType, nbuf);
+            libxml2.HEAPU8.set(nbuf, cbuf);
+            return actuallen;
+        },
+        'iiii',
+    );
+    const closeFunc = libxml2.addFunction(
+        (fd: Pointer) => (provider.close(fd as FdType) ? 0 : 1),
+        'ii',
+    );
+
+    const res = libxml2._xmlRegisterInputCallbacks(matchFunc, openFunc, readFunc, closeFunc);
+    return res >= 0;
+}
+
+export function xmlCleanupInputProvider(): void {
+    libxml2._xmlCleanupInputCallbacks();
 }
 
 export const xmlCtxtSetErrorHandler = libxml2._xmlCtxtSetErrorHandler;

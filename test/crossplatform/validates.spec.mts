@@ -5,6 +5,9 @@ import {
     XmlValidateError,
     XsdValidator,
     RelaxNGValidator,
+    xmlCleanupInputProvider,
+    XmlInputProvider,
+    xmlRegisterInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
 
 describe('XsdValidator', () => {
@@ -169,6 +172,134 @@ describe('XsdValidator', () => {
                 col: 0,
             }],
         );
+    });
+
+    describe('string input callbacks', () => {
+        const documents: { [filename: string ]: string } = {
+            'test/author.xsd':
+                `<?xml version="1.0" encoding="utf-8"?>
+                 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+                     <xsd:complexType name="author">
+                         <xsd:sequence>
+                             <xsd:element minOccurs="1" maxOccurs="1" name="first-name" type="xsd:string" />
+                             <xsd:element minOccurs="1" maxOccurs="1" name="last-name" type="xsd:string" />
+                             <xsd:element minOccurs="0" maxOccurs="1" name="country" type="xsd:string" />
+                         </xsd:sequence>
+                     </xsd:complexType>
+                 </xsd:schema>`,
+            'book.xsd':
+                `<?xml version="1.0" encoding="utf-8"?>
+                <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+                    <xsd:include schemaLocation="author.xsd" />
+                    <xsd:element name="book">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="title" type="xsd:string" maxOccurs="1" minOccurs="1" />
+                                <xsd:element name="author" type="author" maxOccurs="1" minOccurs="1" />
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:schema>`,
+            'book_wronginclude.xsd':
+                `<?xml version="1.0" encoding="utf-8"?>
+                <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+                    <xsd:include schemaLocation="wronginclude.xsd" />
+                    <xsd:element name="book">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="title" type="xsd:string" maxOccurs="1" minOccurs="1" />
+                                <xsd:element name="author" type="author" maxOccurs="1" minOccurs="1" />
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:schema>`,
+            'book.xml':
+                `<?xml version="1.0" encoding="utf-8"?>
+                <book xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="book.xsd">
+                    <title>Dune</title>
+                    <author>
+                        <first-name>Frank</first-name>
+                        <last-name>Herbert</last-name>
+                        <country>USA</country>
+                    </author>
+                </book>`,
+        };
+        /**
+         * Simple array to keep file descriptors. First element is dummy to avoid returning 0 for fd
+         */
+        const fds: Array<{ filename: string, pos: number }> = [
+            { filename: 'dummy', pos: -1 },
+        ];
+
+        before(() => {
+            const provider: XmlInputProvider<number> = {
+                match: (filename: string) => {
+                    if (filename.endsWith('.xsd') || filename.endsWith('.xml')) {
+                        return true;
+                    }
+                    return false;
+                },
+                open: (filename: string) => {
+                    if (!(filename in documents)) {
+                        return undefined;
+                    }
+                    const fd = fds.length;
+                    fds[fd] = {
+                        filename,
+                        pos: 0,
+                    };
+                    return fd;
+                },
+                read: (fd: number, buf: Uint8Array) => {
+                    if (fd >= fds.length || fds[fd].pos === -1) {
+                        return -1;
+                    }
+                    const content = documents[fds[fd].filename].substring(fds[fd].pos, buf.length);
+                    const { read } = new TextEncoder().encodeInto(content, buf);
+                    fds[fd].pos += read;
+                    return read;
+                },
+                close: (fd: number) => {
+                    if (fd >= fds.length || fds[fd].pos === -1) {
+                        return false;
+                    }
+                    fds[fd].pos = -1;
+                    return true;
+                },
+            };
+            expect(xmlRegisterInputProvider(provider)).to.be.true;
+        });
+
+        after(() => {
+            xmlCleanupInputProvider();
+        });
+
+        it.skip('should be able to handle includes when files are read', () => {
+            const schemaDoc = XmlDocument.fromString(documents['book.xsd']);
+            const validator = XsdValidator.fromDoc(schemaDoc);
+            const instDoc = XmlDocument.fromString(documents['book.xml']);
+            validator.validate(instDoc);
+            instDoc.dispose();
+            validator.dispose();
+            schemaDoc.dispose();
+        });
+
+        it('should be able to handle includes when strings are read', () => {
+            const schemaDoc = XmlDocument.fromString(documents['book.xsd'], { url: 'test/book.xsd' });
+            const validator = XsdValidator.fromDoc(schemaDoc);
+            const instDoc = XmlDocument.fromString(documents['book.xml']);
+            validator.validate(instDoc);
+            instDoc.dispose();
+            validator.dispose();
+            schemaDoc.dispose();
+        });
+
+        it('should be able to report error conditions', () => {
+            // open succeeds, but include shall fail
+            const wrongIncludeDoc = XmlDocument.fromString(documents['book_wronginclude.xsd']);
+            expect(() => XsdValidator.fromDoc(wrongIncludeDoc)).to.throw();
+            wrongIncludeDoc.dispose();
+        });
     });
 });
 

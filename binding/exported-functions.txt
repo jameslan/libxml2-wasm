@@ -1,5 +1,6 @@
 _free
 _malloc
+_xmlCleanupInputCallbacks
 _xmlCtxtReadMemory
 _xmlCtxtSetErrorHandler
 _xmlDocGetRootElement
@@ -13,6 +14,7 @@ _xmlNewDocComment
 _xmlNewDocText
 _xmlNewParserCtxt
 _xmlNodeGetContent
+_xmlRegisterInputCallbacks
 _xmlRelaxNGFree
 _xmlRelaxNGFreeParserCtxt
 _xmlRelaxNGFreeValidCtxt

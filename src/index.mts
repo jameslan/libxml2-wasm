@@ -15,7 +15,14 @@ export {
     XmlDocument,
     XmlParseError,
 } from './document.mjs';
-export { ErrorDetail, XmlError, XmlLibError } from './libxml2.mjs';
+export {
+    ErrorDetail,
+    XmlError,
+    XmlLibError,
+    xmlCleanupInputProvider,
+    XmlInputProvider,
+    xmlRegisterInputProvider,
+} from './libxml2.mjs';
 export {
     RelaxNGValidator,
     XsdValidator,
