@@ -274,16 +274,6 @@ describe('XsdValidator', () => {
             xmlCleanupInputProvider();
         });
 
-        it.skip('should be able to handle includes when files are read', () => {
-            const schemaDoc = XmlDocument.fromString(documents['book.xsd']);
-            const validator = XsdValidator.fromDoc(schemaDoc);
-            const instDoc = XmlDocument.fromString(documents['book.xml']);
-            validator.validate(instDoc);
-            instDoc.dispose();
-            validator.dispose();
-            schemaDoc.dispose();
-        });
-
         it('should be able to handle includes when strings are read', () => {
             const schemaDoc = XmlDocument.fromString(documents['book.xsd'], { url: 'test/book.xsd' });
             const validator = XsdValidator.fromDoc(schemaDoc);

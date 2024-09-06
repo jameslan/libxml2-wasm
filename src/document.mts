@@ -10,6 +10,10 @@ import {
     xmlNewParserCtxt,
     xmlReadMemory,
     xmlReadString,
+    xmlXIncludeFreeContext,
+    xmlXIncludeNewContext,
+    xmlXIncludeProcessNode,
+    xmlXIncludeSetErrorHandler,
 } from './libxml2.mjs';
 import { XmlElement, XmlNode } from './nodes.mjs';
 import { NamespaceMap, XmlXPath } from './xpath.mjs';
@@ -141,25 +145,38 @@ export class XmlDocument extends XmlDisposable {
         options: ParseOptions,
     ): XmlDocument {
         const ctxt = xmlNewParserCtxt();
-        const errIndex = error.allocErrorInfo();
-        xmlCtxtSetErrorHandler(ctxt, error.errorCollector, errIndex);
+        const parseErr = error.allocErrorInfo();
+        xmlCtxtSetErrorHandler(ctxt, error.errorCollector, parseErr);
+        const xml = parser(
+            ctxt,
+            source,
+            url,
+            null,
+            options.option ?? ParseOption.XML_PARSE_DEFAULT,
+        );
         try {
-            const xml = parser(
-                ctxt,
-                source,
-                url,
-                null,
-                options.option ?? ParseOption.XML_PARSE_DEFAULT,
-            );
             if (!xml) {
-                const errDetails = error.getErrorInfo(errIndex);
+                const errDetails = error.getErrorInfo(parseErr);
                 throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
             }
-            return new XmlDocument(xml);
         } finally {
-            error.freeErrorInfo(errIndex);
+            error.freeErrorInfo(parseErr);
             xmlFreeParserCtxt(ctxt);
         }
+
+        const incErr = error.allocErrorInfo();
+        const xinc = xmlXIncludeNewContext(xml);
+        xmlXIncludeSetErrorHandler(xinc, error.errorCollector, incErr);
+        try {
+            if (xmlXIncludeProcessNode(xinc, xml) < 0) {
+                const errDetails = error.getErrorInfo(incErr);
+                throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
+            }
+        } finally {
+            error.freeErrorInfo(incErr);
+            xmlXIncludeFreeContext(xinc);
+        }
+        return new XmlDocument(xml);
     }
 
     get(xpath: XmlXPath): XmlNode | null;

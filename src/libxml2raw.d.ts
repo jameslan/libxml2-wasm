@@ -13,6 +13,7 @@ type XmlSchemaParserCtxtPtr = Pointer;
 type XmlSchemaPtr = Pointer;
 type XmlSchemaValidCtxtPtr = Pointer;
 type XmlStructuredErrorFunc = Pointer;
+type XmlXIncludeCtxtPtr = Pointer;
 type XmlXPathCompExprPtr = Pointer;
 type XmlXPathContextPtr = Pointer;
 type XmlXPathObjectPtr = Pointer;
@@ -26,12 +27,6 @@ export class LibXml2 {
     _malloc(size: number): Pointer;
 
     _xmlCleanupInputCallbacks(): void;
-    _xmlCtxtReadFile(
-        ctxt: XmlParserCtxtPtr,
-        filename: CString,
-        encoding: CString,
-        options: number
-    ): XmlDocPtr;
     _xmlCtxtReadMemory(
         ctxt: XmlParserCtxtPtr,
         buffer: CString,
@@ -79,6 +74,14 @@ export class LibXml2 {
     _xmlRelaxNGValidateDoc(ctxt: XmlRelaxNGValidCtxtPtr, doc: XmlDocPtr): number;
     _xmlResetLastError(): void;
     _xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: CString): XmlNsPtr;
+    _xmlXIncludeFreeContext(ctx: XmlXIncludeCtxtPtr): void;
+    _xmlXIncludeNewContext(doc: XmlDocPtr): XmlXIncludeCtxtPtr;
+    _xmlXIncludeProcessNode(ctxt: XmlXIncludeCtxtPtr, node: XmlNodePtr): number;
+    _xmlXIncludeSetErrorHandler(
+        ctxt: XmlXIncludeCtxtPtr,
+        handler: XmlStructuredErrorFunc,
+        data: Pointer,
+    ): void;
     _xmlXPathCompiledEval(comp: XmlXPathCompExprPtr, ctx: XmlXPathContextPtr): XmlXPathObjectPtr;
     _xmlXPathCtxtCompile(ctxt: XmlXPathContextPtr, str: CString): XmlXPathCompExprPtr;
     _xmlXPathFreeCompExpr(comp: XmlXPathCompExprPtr): void;

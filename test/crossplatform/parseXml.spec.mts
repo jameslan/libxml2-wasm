@@ -2,8 +2,10 @@ import { expect } from 'chai';
 import {
     ParseOption,
     XmlCData,
+    xmlCleanupInputProvider,
     XmlDocument,
     XmlParseError,
+    xmlRegisterInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
 
 describe('parseXmlString', () => {
@@ -116,5 +118,67 @@ describe('parseXmlBuffer', () => {
         expect(doc.root.firstChild).to.not.be.instanceOf(XmlCData);
         expect(doc.root.content).to.equal('3>2');
         doc.dispose();
+    });
+});
+
+describe('XInclude', () => {
+    after(() => {
+        xmlCleanupInputProvider();
+    });
+
+    const registerCallbacks = (xmlPath: string, xml: string) => {
+        let finished = 0;
+        xmlRegisterInputProvider({
+            match(filename: string): boolean {
+                return filename === xmlPath;
+            },
+
+            open(filename: string): number | undefined {
+                if (filename !== xmlPath) return undefined;
+                return 10;
+            },
+
+            read(fd: number, buf: Uint8Array): number {
+                if (finished === fd) return 0;
+                // didn't handle the case of reading multiple times to finish
+                // normally the buffer is bigger than our short xml
+                const { read } = new TextEncoder().encodeInto(xml, buf);
+                finished = fd;
+                return read;
+            },
+
+            close(): boolean {
+                return true;
+            },
+        });
+    };
+
+    it('should process xml with XInclude', () => {
+        registerCallbacks('path/sub.xml', '<sub foo="bar"></sub>');
+        using doc = XmlDocument.fromString(
+            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
+            { url: 'path/doc.xml' },
+        );
+
+        expect(doc.get('/doc/sub/@foo')?.content).to.equal('bar');
+    });
+
+    it('should handle errors in the included XML', () => {
+        registerCallbacks('path/sub.xml', '<sub foo="bar">');
+        expect(() => XmlDocument.fromString(
+            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
+            { url: 'path/doc.xml' },
+        )).to.throw(
+            XmlParseError,
+            'Premature end of data in tag sub line 1\ncould not load path/sub.xml, and no fallback was found',
+        ).with.deep.property('details', [{
+            message: 'Premature end of data in tag sub line 1\n',
+            line: 1,
+            col: 16,
+        }, {
+            message: 'could not load path/sub.xml, and no fallback was found\n',
+            line: 1,
+            col: 0,
+        }]);
     });
 });

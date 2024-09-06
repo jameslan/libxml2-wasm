@@ -293,12 +293,14 @@ export interface XmlInputProvider<FdType> {
      * @returns true if the provider should handle
      */
     match(filename: string): boolean;
+
     /**
      * Open the file and return a file descriptor (handle)
      * @param filename file path
      * @returns undefined on error, FdType on success
      */
     open(filename: string): FdType | undefined;
+
     /**
      * Read from a file
      * @param fd File descriptor
@@ -306,6 +308,7 @@ export interface XmlInputProvider<FdType> {
      * @returns number of bytes actually read, -1 on error
      */
     read(fd: FdType, buf: Uint8Array): number;
+
     /**
      * Close the file
      * @param fd file descriptor
@@ -378,6 +381,10 @@ export const xmlSchemaParse = libxml2._xmlSchemaParse;
 export const xmlSchemaSetParserStructuredErrors = libxml2._xmlSchemaSetParserStructuredErrors;
 export const xmlSchemaSetValidStructuredErrors = libxml2._xmlSchemaSetValidStructuredErrors;
 export const xmlSchemaValidateDoc = libxml2._xmlSchemaValidateDoc;
+export const xmlXIncludeFreeContext = libxml2._xmlXIncludeFreeContext;
+export const xmlXIncludeNewContext = libxml2._xmlXIncludeNewContext;
+export const xmlXIncludeProcessNode = libxml2._xmlXIncludeProcessNode;
+export const xmlXIncludeSetErrorHandler = libxml2._xmlXIncludeSetErrorHandler;
 export const xmlXPathCompiledEval = libxml2._xmlXPathCompiledEval;
 export const xmlXPathFreeCompExpr = libxml2._xmlXPathFreeCompExpr;
 export const xmlXPathFreeContext = libxml2._xmlXPathFreeContext;
