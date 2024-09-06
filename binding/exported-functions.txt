@@ -35,6 +35,10 @@ _xmlSchemaSetParserStructuredErrors
 _xmlSchemaSetValidStructuredErrors
 _xmlSchemaValidateDoc
 _xmlSearchNs
+_xmlXIncludeFreeContext
+_xmlXIncludeNewContext
+_xmlXIncludeProcessNode
+_xmlXIncludeSetErrorHandler
 _xmlXPathCompiledEval
 _xmlXPathCtxtCompile
 _xmlXPathFreeCompExpr
