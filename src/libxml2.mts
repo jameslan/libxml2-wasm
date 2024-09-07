@@ -26,10 +26,17 @@ export interface ErrorDetail {
      * The message of the error during processing.
      */
     message: string;
+
+    /**
+     * The filename
+     */
+    file?: string;
+
     /**
      * The line number of the xml file, where the error is occurred.
      */
     line: number;
+
     /**
      * The column number of the xml file, where the error is occurred.
      */
@@ -136,6 +143,17 @@ function getValueFunc(offset: number, type: string): (ptr: number) => number {
     return (ptr: number) => libxml2.getValue(ptr + offset, type);
 }
 
+function nullableUTF8ToString(str: CString): string | null {
+    if (str === 0) {
+        return null;
+    }
+    return libxml2.UTF8ToString(str);
+}
+
+function getNullableStringValueFunc(offset: number): (ptr: number) => string | null {
+    return (ptr: number) => nullableUTF8ToString(libxml2.getValue(ptr + offset, 'i8*'));
+}
+
 function getStringValueFunc(offset: number): (ptr: number) => string {
     return (ptr: number) => libxml2.UTF8ToString(libxml2.getValue(ptr + offset, 'i8*'));
 }
@@ -190,11 +208,16 @@ export namespace error {
     }
 
     export const errorCollector = libxml2.addFunction((index: number, err: XmlErrorPtr) => {
-        errorStorage.get(index)!.push({
+        const file = XmlErrorStruct.file(err);
+        const detail: ErrorDetail = {
             message: XmlErrorStruct.message(err),
             line: XmlErrorStruct.line(err),
             col: XmlErrorStruct.col(err),
-        });
+        };
+        if (file != null) {
+            detail.file = file;
+        }
+        errorStorage.get(index)!.push(detail);
     }, 'vii');
 }
 
@@ -280,6 +303,8 @@ export class XmlAttrStruct extends XmlTreeCommonStruct {
 
 export class XmlErrorStruct {
     static message = getStringValueFunc(8);
+
+    static file = getNullableStringValueFunc(16);
 
     static line = getValueFunc(20, 'i32');
 

@@ -173,10 +173,12 @@ describe('XInclude', () => {
             'Premature end of data in tag sub line 1\ncould not load path/sub.xml, and no fallback was found',
         ).with.deep.property('details', [{
             message: 'Premature end of data in tag sub line 1\n',
+            file: 'path/sub.xml',
             line: 1,
             col: 16,
         }, {
             message: 'could not load path/sub.xml, and no fallback was found\n',
+            file: 'path/doc.xml',
             line: 1,
             col: 0,
         }]);
