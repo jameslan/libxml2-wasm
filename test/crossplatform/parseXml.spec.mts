@@ -122,7 +122,7 @@ describe('parseXmlBuffer', () => {
 });
 
 describe('XInclude', () => {
-    after(() => {
+    afterEach(() => {
         xmlCleanupInputProvider();
     });
 

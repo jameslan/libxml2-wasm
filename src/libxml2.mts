@@ -352,7 +352,7 @@ export function xmlRegisterInputProvider<FdType>(
     const openFunc = libxml2.addFunction((cfilename: CString) => {
         const filename = libxml2.UTF8ToString(cfilename);
         const res = provider.open(filename);
-        return res === undefined ? -1 : res;
+        return res === undefined ? 0 : res;
     }, 'ii');
     const readFunc = libxml2.addFunction(
         (
@@ -368,7 +368,7 @@ export function xmlRegisterInputProvider<FdType>(
         'iiii',
     );
     const closeFunc = libxml2.addFunction(
-        (fd: Pointer) => (provider.close(fd as FdType) ? 0 : 1),
+        (fd: Pointer) => (provider.close(fd as FdType) ? 0 : -1),
         'ii',
     );
 
