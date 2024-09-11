@@ -1,3 +1,14 @@
+/**
+ * This is main script of the library.
+ *
+ * After installation of the library into your `node_modules` directory,
+ * you could import the class etc like
+ *
+ * ```ts
+ * import { <symbol> } from 'libxml2-wasm';
+ * ```
+ * @module libxml2-wasm
+ */
 export * as diag from './diag.mjs';
 export * as disposable from './disposable.mjs';
 export { XmlXPath, NamespaceMap } from './xpath.mjs';

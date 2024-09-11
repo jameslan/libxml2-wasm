@@ -35,7 +35,7 @@ import('libxml2-wasm').then(({ XmlDocument }) => {
 });
 ```
 
-**IMPORTANT**: {@link disposable!XmlDisposable#dispose | `dispose()`} is required to avoid memory leak.
+**IMPORTANT**: {@link libxml2-wasm!disposable.XmlDisposable#dispose | `dispose()`} is required to avoid memory leak.
 
 
 # Parsing XML
@@ -54,12 +54,12 @@ doc2.dispose();
 
 The underlying libxml2 library processes MBCS(mostly UTF-8) only,
 the UTF-16 string in Javascript needs an extra step to be converted,
-thus {@link XmlDocument.fromBuffer | `XmlDocument.fromBuffer`} is much faster than {@link XmlDocument.fromString | `XmlDocument.fromString`}.
+thus {@link libxml2-wasm!XmlDocument.fromBuffer | `XmlDocument.fromBuffer`} is much faster than {@link libxml2-wasm!XmlDocument.fromString | `XmlDocument.fromString`}.
 See the [benchmark](performance.md).
 
 # Query Nodes
 
-{@link XmlNode | `XmlNode`} has {@link XmlNode.get |`get`} and {@link XmlNode.find | `find`} methods which both use xpath to find the node.
+{@link libxml2-wasm!XmlNode | `XmlNode`} has {@link libxml2-wasm!XmlNode.get |`get`} and {@link libxml2-wasm!XmlNode.find | `find`} methods which both use xpath to find the node.
 Their different is, `get` returns the first found node while `find` returns all found nodes.
 
 ```js
@@ -72,7 +72,7 @@ doc.dispose();
 ```
 
 Although `get` and `find` can be used to get attributes of an element,
-{@link XmlElement.attr | `attr()`} and {@link XmlElement.attrs | `attrs`} could be more efficient:
+{@link libxml2-wasm!XmlElement.attr | `attr()`} and {@link libxml2-wasm!XmlElement.attrs | `attrs`} could be more efficient:
 
 ```js
 import { XmlDocument } from 'libxml2-wasm';
@@ -86,7 +86,7 @@ doc.dispose();
 ```
 
 When an XPath is used many times,
-you could create an {@link XmlXPath | `XmlXPath`} object to avoid redundantly parsing XPath string.
+you could create an {@link libxml2-wasm!XmlXPath | `XmlXPath`} object to avoid redundantly parsing XPath string.
 
 ```js
 import { XmlDocument, XmlXPath } from 'libxml2-wasm';
@@ -127,4 +127,4 @@ validator.dispose();
 schema.dispose();
 ```
 
-RELAX NG is also supported, with another validator class {@link RelaxNGValidator | `RelaxNGValidator`}.
+RELAX NG is also supported, with another validator class {@link libxml2-wasm!RelaxNGValidator | `RelaxNGValidator`}.
