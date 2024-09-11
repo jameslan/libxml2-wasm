@@ -40,7 +40,7 @@ window.onload = inject;
 `;
 
 export default {
-    entryPoints: ['./src/index.mts'],
+    entryPoints: ['./src/index.mts', './src/nodejs.mts'],
     preserveLinkText: false,
     visibilityFilters: {
         protected: false,
@@ -54,7 +54,6 @@ export default {
     navigationLinks: {
         GITHUB: 'https://github.com/jameslan/libxml2-wasm',
     },
-    alwaysCreateEntryPointModule: false,
     projectDocuments: [
         'docs/tutorial.md',
         'docs/mem.md',

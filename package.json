@@ -17,7 +17,7 @@
         "test": "npm run cov && npm run lint",
         "cov": "c8 npm run unit",
         "build": "npm run wasm && tsc -p tsconfig.prod.json --declaration",
-        "lint": "eslint 'src/**' 'test/**'",
+        "lint": "eslint 'src/**' 'test/**/*.mts'",
         "docwatch": "typedoc --watch",
         "doc": "typedoc",
         "watch": "tsc -p tsconfig.prod.json --declaration --watch"

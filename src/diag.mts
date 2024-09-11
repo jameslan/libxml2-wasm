@@ -117,11 +117,11 @@ export interface DiagOptions {
      */
     enabled: boolean;
     /**
-     * Generate the statistics of the callstack, for {@link disposable!XmlDisposable}.
+     * Generate the statistics of the callstack, for {@link disposable.XmlDisposable}.
      */
     callerStats?: boolean;
     /**
-     * Record the callstack of creating each {@link disposable!XmlDisposable}.
+     * Record the callstack of creating each {@link disposable.XmlDisposable}.
      */
     callerDetail?: boolean;
 }
@@ -129,9 +129,9 @@ export interface DiagOptions {
 /**
  * Set up memory diagnostic helpers.
  *
- * When enabled, it will record allocated {@link disposable!XmlDisposable} objects
+ * When enabled, it will record allocated {@link disposable.XmlDisposable} objects
  * (and its subclass objects) and track whether
- * {@link disposable!XmlDisposable#dispose} is called.
+ * {@link disposable.XmlDisposable#dispose} is called.
  *
  * Note that the allocation will not be monitored before memory diagnostics is enabled.
  *
