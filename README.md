@@ -27,13 +27,18 @@ https://jameslan.github.io/libxml2-wasm/index.html
 Due to the usage of WebAssembly, ES module and [top level await](https://caniuse.com/?search=top%20level%20await) etc,
 it requires the minimum version of the following environments,
 
-|Environment|Version|
-|:---:|:---:|
-|NodeJs|v16+|
-|Chrome|V89+|
-|Edge|V89+|
-|Safari|v15+|
+| Environment |Version|
+|:-----------:|:---:|
+|   Node.js   |v16+|
+|   Chrome    |V89+|
+|    Edge     |V89+|
+|   Safari    |v15+|
 
+## Features
+- Parsing
+- Validating
+- XInclude and XSD include/import (experimental)
+ 
 ## Getting started
 
 Install `libxml2-wasm` package:

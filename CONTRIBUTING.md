@@ -29,9 +29,9 @@ and try to design more test cases to cover them.
 
 ### Environment set up
 
-#### NodeJs
+#### Node.js
 
-The minimum version of NodeJs to run libxml2-wasm is 16, but some dev dependencies require NodeJs 18+.
+The minimum version of Node.js to run libxml2-wasm is 16, but some dev dependencies require Node.js 18+.
 
 #### Emscripten
 

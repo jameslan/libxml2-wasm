@@ -1,3 +1,12 @@
+/**
+ * A side module for Node.js user only.
+ *
+ * ```ts
+ * import { <symbol> } from 'libxml2-wasm/lib/nodejs.mjs';
+ * ```
+ *
+ * @packageDocumentation
+ */
 import fs from 'node:fs';
 import { XmlInputProvider, xmlRegisterInputProvider } from './libxml2.mjs';
 
@@ -16,9 +25,11 @@ function fileExists(filename: string): boolean {
 }
 
 /**
- * The virtual IO input providers using the fs module in NodeJS.
+ * The virtual IO input providers using the fs module in Node.js.
  *
- * @see {@link xmlRegisterInputProvider}
+ * It supports file path (`path/to/file.xml`) or file url (`file:///path/to/file.xml`).
+ *
+ * @see {@link libxml2-wasm!xmlRegisterInputProvider}
  */
 export const fsInputProviders: XmlInputProvider<number> = {
     match(filename: string) {
@@ -56,9 +67,9 @@ export const fsInputProviders: XmlInputProvider<number> = {
 };
 
 /**
- * Register
+ * Register {@link fsInputProviders}.
  *
- * @see {@link xmlRegisterInputProvider}
+ * @see {@link libxml2-wasm!xmlRegisterInputProvider}
  */
 export function xmlRegisterFsInputProviders(): boolean {
     return xmlRegisterInputProvider(fsInputProviders);

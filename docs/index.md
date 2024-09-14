@@ -3,7 +3,7 @@
 Comparing to the previous two main approaches,
 pure javascript implementation as well as traditional C implementation binding,
 using WebAssembly combines the pros from both sides,
-providing good performance while keeping best compatibility with modern Javascript runtime.
+providing good performance while keeping the best compatibility with modern Javascript runtime.
 
 | | Javascript Implementation | Traditional C Binding | WebAssembly |
 |-|:---:|:---:|:---:|
@@ -18,13 +18,17 @@ providing good performance while keeping best compatibility with modern Javascri
 Due to the usage of WebAssembly, ES module and [top level await](https://caniuse.com/?search=top%20level%20await) etc,
 it requires the minimum version of the following environments,
 
-|Environment|Version|
-|:---:|:---:|
-|NodeJs|v16+|
-|Chrome|V89+|
-|Edge|V89+|
-|Safari|v15+|
+| Environment |Version|
+|:-----------:|:---:|
+|   Node.js   |v16+|
+|   Chrome    |V89+|
+|    Edge     |V89+|
+|   Safari    |v15+|
 
+# Features
+- Parsing
+- Validating
+- XInclude and XSD include/import (experimental)
 
 [^1]: The speed of different libraries varies a lot, see [benchmark](performance.md).
 [^2]: The requirement of C/C++ toolchain may be waived if prebuilt binary is available.

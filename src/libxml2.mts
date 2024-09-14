@@ -311,6 +311,14 @@ export class XmlErrorStruct {
     static col = getValueFunc(40, 'i32');
 }
 
+/**
+ * The input provider for Virtual IO.
+ *
+ * This interface defines 4 callbacks for reading content of xml.
+ *
+ * @see {@link xmlRegisterInputProvider}
+ * @alpha
+ */
 export interface XmlInputProvider<FdType> {
     /**
      * Check if this input provider should handle this file
@@ -342,6 +350,12 @@ export interface XmlInputProvider<FdType> {
     close(fd: FdType): boolean;
 }
 
+/**
+ * Register the callbacks from the provider to the system.
+ *
+ * @param provider Provider of callbacks to be registered.
+ * @alpha
+ */
 export function xmlRegisterInputProvider<FdType>(
     provider: XmlInputProvider<FdType>,
 ): boolean {
@@ -376,6 +390,10 @@ export function xmlRegisterInputProvider<FdType>(
     return res >= 0;
 }
 
+/**
+ * Cleanup and remove all registered input providers.
+ * @alpha
+ */
 export function xmlCleanupInputProvider(): void {
     libxml2._xmlCleanupInputCallbacks();
 }
