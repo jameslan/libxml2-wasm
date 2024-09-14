@@ -232,7 +232,7 @@ describe('XsdValidator', () => {
         ];
 
         before(() => {
-            const provider: XmlInputProvider<number> = {
+            const provider: XmlInputProvider = {
                 match: (filename: string) => {
                     if (filename.endsWith('.xsd') || filename.endsWith('.xml')) {
                         return true;

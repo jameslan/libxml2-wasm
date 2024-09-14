@@ -314,12 +314,13 @@ export class XmlErrorStruct {
 /**
  * The input provider for Virtual IO.
  *
- * This interface defines 4 callbacks for reading content of xml.
+ * This interface defines 4 callbacks for reading content of xml,
+ * where 4-bytes integer is used as the type of file descriptor.
  *
  * @see {@link xmlRegisterInputProvider}
  * @alpha
  */
-export interface XmlInputProvider<FdType> {
+export interface XmlInputProvider {
     /**
      * Check if this input provider should handle this file
      * @param filename The file name/path/url
@@ -332,7 +333,7 @@ export interface XmlInputProvider<FdType> {
      * @param filename file path
      * @returns undefined on error, FdType on success
      */
-    open(filename: string): FdType | undefined;
+    open(filename: string): Pointer | undefined;
 
     /**
      * Read from a file
@@ -340,14 +341,14 @@ export interface XmlInputProvider<FdType> {
      * @param buf Buffer to read into, no more than its byteLength shall be read into.
      * @returns number of bytes actually read, -1 on error
      */
-    read(fd: FdType, buf: Uint8Array): number;
+    read(fd: Pointer, buf: Uint8Array): number;
 
     /**
      * Close the file
      * @param fd file descriptor
      * @returns true if success
      */
-    close(fd: FdType): boolean;
+    close(fd: Pointer): boolean;
 }
 
 /**
@@ -356,8 +357,8 @@ export interface XmlInputProvider<FdType> {
  * @param provider Provider of callbacks to be registered.
  * @alpha
  */
-export function xmlRegisterInputProvider<FdType>(
-    provider: XmlInputProvider<FdType>,
+export function xmlRegisterInputProvider(
+    provider: XmlInputProvider,
 ): boolean {
     const matchFunc = libxml2.addFunction((cfilename: CString) => {
         const filename = libxml2.UTF8ToString(cfilename);
@@ -373,16 +374,11 @@ export function xmlRegisterInputProvider<FdType>(
             fd: Pointer,
             cbuf: Pointer,
             len: number,
-        ) => {
-            const nbuf = new Uint8Array(len);
-            const actuallen = provider.read(fd as FdType, nbuf);
-            libxml2.HEAPU8.set(nbuf, cbuf);
-            return actuallen;
-        },
+        ) => provider.read(fd, libxml2.HEAPU8.subarray(cbuf, cbuf + len)),
         'iiii',
     );
     const closeFunc = libxml2.addFunction(
-        (fd: Pointer) => (provider.close(fd as FdType) ? 0 : -1),
+        (fd: Pointer) => (provider.close(fd) ? 0 : -1),
         'ii',
     );
 
