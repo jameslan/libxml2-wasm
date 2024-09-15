@@ -28,7 +28,7 @@ import type {
     XmlRelaxNGPtr,
     XmlSchemaParserCtxtPtr,
     XmlSchemaPtr,
-} from './libxml2raw.js';
+} from './libxml2raw.cjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 /**

@@ -17,7 +17,7 @@ import {
 } from './libxml2.mjs';
 import { XmlElement, XmlNode } from './nodes.mjs';
 import { NamespaceMap, XmlXPath } from './xpath.mjs';
-import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.js';
+import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.cjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 export enum ParseOption {

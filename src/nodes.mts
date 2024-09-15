@@ -17,7 +17,7 @@ import {
     xmlXPathSetContextNode,
 } from './libxml2.mjs';
 import type { XmlDocument } from './document.mjs';
-import type { XmlNodePtr } from './libxml2raw.js';
+import type { XmlNodePtr } from './libxml2raw.cjs';
 import { XmlXPath, NamespaceMap } from './xpath.mjs';
 
 export abstract class XmlNode {
