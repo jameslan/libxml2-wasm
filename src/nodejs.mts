@@ -31,7 +31,7 @@ function fileExists(filename: string): boolean {
  *
  * @see {@link libxml2-wasm!xmlRegisterInputProvider}
  */
-export const fsInputProviders: XmlInputProvider<number> = {
+export const fsInputProviders: XmlInputProvider = {
     match(filename: string) {
         return fileExists(filename);
     },
