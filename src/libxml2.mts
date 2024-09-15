@@ -9,8 +9,8 @@ import type {
     XmlParserCtxtPtr,
     XmlXPathCompExprPtr,
     XmlXPathContextPtr,
-} from './libxml2raw.js';
-import moduleLoader from './libxml2raw.js';
+} from './libxml2raw.cjs';
+import moduleLoader from './libxml2raw.cjs';
 
 const libxml2 = await moduleLoader();
 

@@ -2,7 +2,7 @@ import {
     xmlXPathCtxtCompile,
     xmlXPathFreeCompExpr,
 } from './libxml2.mjs';
-import type { XmlXPathCompExprPtr } from './libxml2raw.js';
+import type { XmlXPathCompExprPtr } from './libxml2raw.cjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 /**

@@ -1,6 +1,6 @@
 {
   "exclude": [
-    "lib/libxml2raw.js"
+    "lib/libxml2raw.cjs"
   ],
   "reporter": [
     "text",
