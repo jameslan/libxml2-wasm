@@ -1,0 +1,606 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<countries>
+    <country>
+        <name>Afghanistan</name><capital>Kabul</capital>
+    </country>
+    <country>
+        <name>Albania</name><capital>Tirana (Tirane)</capital>
+    </country>
+    <country>
+        <name>Algeria</name><capital>Algiers</capital>
+    </country>
+    <country>
+        <name>Andorra</name><capital>Andorra la Vella</capital>
+    </country>
+    <country>
+        <name>Angola</name><capital>Luanda</capital>
+    </country>
+    <country>
+        <name>Antigua and Barbuda</name><capital>Saint John's</capital>
+    </country>
+    <country>
+        <name>Argentina</name><capital>Buenos Aires</capital>
+    </country>
+    <country>
+        <name>Armenia</name><capital>Yerevan</capital>
+    </country>
+    <country>
+        <name>Australia</name><capital>Canberra</capital>
+    </country>
+    <country>
+        <name>Austria</name><capital>Vienna</capital>
+    </country>
+    <country>
+        <name>Azerbaijan</name><capital>Baku</capital>
+    </country>
+    <country>
+        <name>Bahamas</name><capital>Nassau</capital>
+    </country>
+    <country>
+        <name>Bahrain</name><capital>Manama</capital>
+    </country>
+    <country>
+        <name>Bangladesh</name><capital>Dhaka</capital>
+    </country>
+    <country>
+        <name>Barbados</name><capital>Bridgetown</capital>
+    </country>
+    <country>
+        <name>Belarus</name><capital>Minsk</capital>
+    </country>
+    <country>
+        <name>Belgium</name><capital>Brussels</capital>
+    </country>
+    <country>
+        <name>Belize</name><capital>Belmopan</capital>
+    </country>
+    <country>
+        <name>Benin</name><capital>Porto Novo</capital>
+    </country>
+    <country>
+        <name>Bhutan</name><capital>Thimphu</capital>
+    </country>
+    <country>
+        <name>Bolivia</name><capital>La Paz (administrative), Sucre (official)</capital>
+    </country>
+    <country>
+        <name>Bosnia and Herzegovina</name><capital>Sarajevo</capital>
+    </country>
+    <country>
+        <name>Botswana</name><capital>Gaborone</capital>
+    </country>
+    <country>
+        <name>Brazil</name><capital>Brasilia</capital>
+    </country>
+    <country>
+        <name>Brunei</name><capital>Bandar Seri Begawan</capital>
+    </country>
+    <country>
+        <name>Bulgaria</name><capital>Sofia</capital>
+    </country>
+    <country>
+        <name>Burkina Faso</name><capital>Ouagadougou</capital>
+    </country>
+    <country>
+        <name>Burundi</name><capital>Gitega</capital>
+    </country>
+    <country>
+        <name>Cambodia</name><capital>Phnom Penh</capital>
+    </country>
+    <country>
+        <name>Cameroon</name><capital>Yaounde</capital>
+    </country>
+    <country>
+        <name>Canada</name><capital>Ottawa</capital>
+    </country>
+    <country>
+        <name>Cape Verde</name><capital>Praia</capital>
+    </country>
+    <country>
+        <name>Central African Republic</name><capital>Bangui</capital>
+    </country>
+    <country>
+        <name>Chad</name><capital>N'Djamena</capital>
+    </country>
+    <country>
+        <name>Chile</name><capital>Santiago</capital>
+    </country>
+    <country>
+        <name>China</name><capital>Beijing</capital>
+    </country>
+    <country>
+        <name>Colombia</name><capital>Bogota</capital>
+    </country>
+    <country>
+        <name>Comoros</name><capital>Moroni</capital>
+    </country>
+    <country>
+        <name>Congo, Democratic Republic of the</name><capital>Kinshasa</capital>
+    </country>
+    <country>
+        <name>Congo, Republic of the</name><capital>Brazzaville</capital>
+    </country>
+    <country>
+        <name>Costa Rica</name><capital>San Jose</capital>
+    </country>
+    <country>
+        <name>Côte d'Ivoire (Ivory Coast)</name><capital>Yamoussoukro</capital>
+    </country>
+    <country>
+        <name>Croatia</name><capital>Zagreb</capital>
+    </country>
+    <country>
+        <name>Cuba</name><capital>Havana</capital>
+    </country>
+    <country>
+        <name>Cyprus</name><capital>Nicosia</capital>
+    </country>
+    <country>
+        <name>Czech Republic (Czechia)</name><capital>Prague</capital>
+    </country>
+    <country>
+        <name>Denmark</name><capital>Copenhagen</capital>
+    </country>
+    <country>
+        <name>Djibouti</name><capital>Djibouti</capital>
+    </country>
+    <country>
+        <name>Dominica</name><capital>Roseau</capital>
+    </country>
+    <country>
+        <name>Dominican Republic</name><capital>Santo Domingo</capital>
+    </country>
+    <country>
+        <name>East Timor</name><capital>Dili</capital>
+    </country>
+    <country>
+        <name>Ecuador</name><capital>Quito</capital>
+    </country>
+    <country>
+        <name>Egypt</name><capital>Cairo</capital>
+    </country>
+    <country>
+        <name>El Salvador</name><capital>San Salvador</capital>
+    </country>
+    <country>
+        <name>England</name><capital>London</capital>
+    </country>
+    <country>
+        <name>Equatorial Guinea</name><capital>Malabo</capital>
+    </country>
+    <country>
+        <name>Eritrea</name><capital>Asmara</capital>
+    </country>
+    <country>
+        <name>Estonia</name><capital>Tallinn</capital>
+    </country>
+    <country>
+        <name>Eswatini (Swaziland)</name><capital>Mbabane</capital>
+    </country>
+    <country>
+        <name>Ethiopia</name><capital>Addis Ababa</capital>
+    </country>
+    <country>
+        <name>Federated States of Micronesia</name><capital>Palikir</capital>
+    </country>
+    <country>
+        <name>Fiji</name><capital>Suva</capital>
+    </country>
+    <country>
+        <name>Finland</name><capital>Helsinki</capital>
+    </country>
+    <country>
+        <name>France</name><capital>Paris</capital>
+    </country>
+    <country>
+        <name>Gabon</name><capital>Libreville</capital>
+    </country>
+    <country>
+        <name>Gambia</name><capital>Banjul</capital>
+    </country>
+    <country>
+        <name>Georgia</name><capital>Tbilisi</capital>
+    </country>
+    <country>
+        <name>Germany</name><capital>Berlin</capital>
+    </country>
+    <country>
+        <name>Ghana</name><capital>Accra</capital>
+    </country>
+    <country>
+        <name>Greece</name><capital>Athens</capital>
+    </country>
+    <country>
+        <name>Grenada</name><capital>Saint George's</capital>
+    </country>
+    <country>
+        <name>Guatemala</name><capital>Guatemala City</capital>
+    </country>
+    <country>
+        <name>Guinea</name><capital>Conakry</capital>
+    </country>
+    <country>
+        <name>Guinea-Bissau</name><capital>Bissau</capital>
+    </country>
+    <country>
+        <name>Guyana</name><capital>Georgetown</capital>
+    </country>
+    <country>
+        <name>Haiti</name><capital>Port au Prince</capital>
+    </country>
+    <country>
+        <name>Honduras</name><capital>Tegucigalpa</capital>
+    </country>
+    <country>
+        <name>Hungary</name><capital>Budapest</capital>
+    </country>
+    <country>
+        <name>Iceland</name><capital>Reykjavik</capital>
+    </country>
+    <country>
+        <name>India</name><capital>New Delhi</capital>
+    </country>
+    <country>
+        <name>Indonesia</name><capital>Jakarta</capital>
+    </country>
+    <country>
+        <name>Iran</name><capital>Tehran</capital>
+    </country>
+    <country>
+        <name>Iraq</name><capital>Baghdad</capital>
+    </country>
+    <country>
+        <name>Ireland</name><capital>Dublin</capital>
+    </country>
+    <country>
+        <name>Israel</name><capital>Jerusalem</capital>
+    </country>
+    <country>
+        <name>Italy</name><capital>Rome</capital>
+    </country>
+    <country>
+        <name>Jamaica</name><capital>Kingston</capital>
+    </country>
+    <country>
+        <name>Japan</name><capital>Tokyo</capital>
+    </country>
+    <country>
+        <name>Jordan</name><capital>Amman</capital>
+    </country>
+    <country>
+        <name>Kazakhstan</name><capital>Astana</capital>
+    </country>
+    <country>
+        <name>Kenya</name><capital>Nairobi</capital>
+    </country>
+    <country>
+        <name>Kiribati</name><capital>Tarawa Atoll</capital>
+    </country>
+    <country>
+        <name>Kosovo</name><capital>Pristina</capital>
+    </country>
+    <country>
+        <name>Kuwait</name><capital>Kuwait City</capital>
+    </country>
+    <country>
+        <name>Kyrgyzstan</name><capital>Bishkek</capital>
+    </country>
+    <country>
+        <name>Laos</name><capital>Vientiane</capital>
+    </country>
+    <country>
+        <name>Latvia</name><capital>Riga</capital>
+    </country>
+    <country>
+        <name>Lebanon</name><capital>Beirut</capital>
+    </country>
+    <country>
+        <name>Lesotho</name><capital>Maseru</capital>
+    </country>
+    <country>
+        <name>Liberia</name><capital>Monrovia</capital>
+    </country>
+    <country>
+        <name>Libya</name><capital>Tripoli</capital>
+    </country>
+    <country>
+        <name>Liechtenstein</name><capital>Vaduz</capital>
+    </country>
+    <country>
+        <name>Lithuania</name><capital>Vilnius</capital>
+    </country>
+    <country>
+        <name>Luxembourg</name><capital>Luxembourg</capital>
+    </country>
+    <country>
+        <name>Madagascar</name><capital>Antananarivo</capital>
+    </country>
+    <country>
+        <name>Malawi</name><capital>Lilongwe</capital>
+    </country>
+    <country>
+        <name>Malaysia</name><capital>Kuala Lumpur</capital>
+    </country>
+    <country>
+        <name>Maldives</name><capital>Male</capital>
+    </country>
+    <country>
+        <name>Mali</name><capital>Bamako</capital>
+    </country>
+    <country>
+        <name>Malta</name><capital>Valletta</capital>
+    </country>
+    <country>
+        <name>Marshall Islands</name><capital>Majuro</capital>
+    </country>
+    <country>
+        <name>Mauritania</name><capital>Nouakchott</capital>
+    </country>
+    <country>
+        <name>Mauritius</name><capital>Port Louis</capital>
+    </country>
+    <country>
+        <name>Mexico</name><capital>Mexico City</capital>
+    </country>
+    <country>
+        <name>Moldova</name><capital>Chisinau</capital>
+    </country>
+    <country>
+        <name>Monaco</name><capital>Monaco</capital>
+    </country>
+    <country>
+        <name>Mongolia</name><capital>Ulaanbaatar</capital>
+    </country>
+    <country>
+        <name>Montenegro</name><capital>Podgorica</capital>
+    </country>
+    <country>
+        <name>Morocco</name><capital>Rabat</capital>
+    </country>
+    <country>
+        <name>Mozambique</name><capital>Maputo</capital>
+    </country>
+    <country>
+        <name>Myanmar (Burma)</name><capital>Nay Pyi Taw</capital>
+    </country>
+    <country>
+        <name>Namibia</name><capital>Windhoek</capital>
+    </country>
+    <country>
+        <name>Nauru</name><capital>No official capital</capital>
+    </country>
+    <country>
+        <name>Nepal</name><capital>Kathmandu</capital>
+    </country>
+    <country>
+        <name>Netherlands</name><capital>Amsterdam</capital>
+    </country>
+    <country>
+        <name>New Zealand</name><capital>Wellington</capital>
+    </country>
+    <country>
+        <name>Nicaragua</name><capital>Managua</capital>
+    </country>
+    <country>
+        <name>Niger</name><capital>Niamey</capital>
+    </country>
+    <country>
+        <name>Nigeria</name><capital>Abuja</capital>
+    </country>
+    <country>
+        <name>North Korea</name><capital>Pyongyang</capital>
+    </country>
+    <country>
+        <name>North Macedonia (Macedonia)</name><capital>Skopje</capital>
+    </country>
+    <country>
+        <name>Northern Ireland</name><capital>Belfast</capital>
+    </country>
+    <country>
+        <name>Norway</name><capital>Oslo</capital>
+    </country>
+    <country>
+        <name>Oman</name><capital>Muscat</capital>
+    </country>
+    <country>
+        <name>Pakistan</name><capital>Islamabad</capital>
+    </country>
+    <country>
+        <name>Palau</name><capital>Melekeok</capital>
+    </country>
+    <country>
+        <name>Palestine</name><capital>Jerusalem</capital>
+    </country>
+    <country>
+        <name>Panama</name><capital>Panama City</capital>
+    </country>
+    <country>
+        <name>Papua New Guinea</name><capital>Port Moresby</capital>
+    </country>
+    <country>
+        <name>Paraguay</name><capital>Asuncion</capital>
+    </country>
+    <country>
+        <name>Peru</name><capital>Lima</capital>
+    </country>
+    <country>
+        <name>Philippines</name><capital>Manila</capital>
+    </country>
+    <country>
+        <name>Poland</name><capital>Warsaw</capital>
+    </country>
+    <country>
+        <name>Portugal</name><capital>Lisbon</capital>
+    </country>
+    <country>
+        <name>Qatar</name><capital>Doha</capital>
+    </country>
+    <country>
+        <name>Romania</name><capital>Bucharest</capital>
+    </country>
+    <country>
+        <name>Russia</name><capital>Moscow</capital>
+    </country>
+    <country>
+        <name>Rwanda</name><capital>Kigali</capital>
+    </country>
+    <country>
+        <name>Saint Kitts and Nevis</name><capital>Basseterre</capital>
+    </country>
+    <country>
+        <name>Saint Lucia</name><capital>Castries</capital>
+    </country>
+    <country>
+        <name>Saint Vincent and the Grenadines</name><capital>Kingstown</capital>
+    </country>
+    <country>
+        <name>Samoa</name><capital>Apia</capital>
+    </country>
+    <country>
+        <name>San Marino</name><capital>San Marino</capital>
+    </country>
+    <country>
+        <name>Sao Tome and Principe</name><capital>Sao Tome</capital>
+    </country>
+    <country>
+        <name>Saudi Arabia</name><capital>Riyadh</capital>
+    </country>
+    <country>
+        <name>Scotland</name><capital>Edinburgh</capital>
+    </country>
+    <country>
+        <name>Senegal</name><capital>Dakar</capital>
+    </country>
+    <country>
+        <name>Serbia</name><capital>Belgrade</capital>
+    </country>
+    <country>
+        <name>Seychelles</name><capital>Victoria</capital>
+    </country>
+    <country>
+        <name>Sierra Leone</name><capital>Freetown</capital>
+    </country>
+    <country>
+        <name>Singapore</name><capital>Singapore</capital>
+    </country>
+    <country>
+        <name>Slovakia</name><capital>Bratislava</capital>
+    </country>
+    <country>
+        <name>Slovenia</name><capital>Ljubljana</capital>
+    </country>
+    <country>
+        <name>Solomon Islands</name><capital>Honiara</capital>
+    </country>
+    <country>
+        <name>Somalia</name><capital>Mogadishu</capital>
+    </country>
+    <country>
+        <name>South Africa</name><capital>Pretoria, Bloemfontein, Cape Town</capital>
+    </country>
+    <country>
+        <name>South Korea</name><capital>Seoul</capital>
+    </country>
+    <country>
+        <name>South Sudan</name><capital>Juba</capital>
+    </country>
+    <country>
+        <name>Spain</name><capital>Madrid</capital>
+    </country>
+    <country>
+        <name>Sri Lanka</name><capital>Sri Jayawardenapura Kotte</capital>
+    </country>
+    <country>
+        <name>Sudan</name><capital>Khartoum</capital>
+    </country>
+    <country>
+        <name>Suriname</name><capital>Paramaribo</capital>
+    </country>
+    <country>
+        <name>Sweden</name><capital>Stockholm</capital>
+    </country>
+    <country>
+        <name>Switzerland</name><capital>Bern</capital>
+    </country>
+    <country>
+        <name>Syria</name><capital>Damascus</capital>
+    </country>
+    <country>
+        <name>Taiwan</name><capital>Taipei</capital>
+    </country>
+    <country>
+        <name>Tajikistan</name><capital>Dushanbe</capital>
+    </country>
+    <country>
+        <name>Tanzania</name><capital>Dodoma</capital>
+    </country>
+    <country>
+        <name>Thailand</name><capital>Bangkok</capital>
+    </country>
+    <country>
+        <name>Togo</name><capital>Lome</capital>
+    </country>
+    <country>
+        <name>Tonga</name><capital>Nuku'alofa</capital>
+    </country>
+    <country>
+        <name>Trinidad and Tobago</name><capital>Port of Spain</capital>
+    </country>
+    <country>
+        <name>Tunisia</name><capital>Tunis</capital>
+    </country>
+    <country>
+        <name>Türkiye (Turkey)</name><capital>Ankara</capital>
+    </country>
+    <country>
+        <name>Turkmenistan</name><capital>Ashgabat</capital>
+    </country>
+    <country>
+        <name>Tuvalu</name><capital>Funafuti</capital>
+    </country>
+    <country>
+        <name>Uganda</name><capital>Kampala</capital>
+    </country>
+    <country>
+        <name>Ukraine</name><capital>Kyiv or Kiev</capital>
+    </country>
+    <country>
+        <name>United Arab Emirates</name><capital>Abu Dhabi</capital>
+    </country>
+    <country>
+        <name>United Kingdom</name><capital>London</capital>
+    </country>
+    <country>
+        <name>United States</name><capital>Washington D.C.</capital>
+    </country>
+    <country>
+        <name>Uruguay</name><capital>Montevideo</capital>
+    </country>
+    <country>
+        <name>Uzbekistan</name><capital>Tashkent</capital>
+    </country>
+    <country>
+        <name>Vanuatu</name><capital>Port Vila</capital>
+    </country>
+    <country>
+        <name>Vatican City</name><capital>Vatican City</capital>
+    </country>
+    <country>
+        <name>Venezuela</name><capital>Caracas</capital>
+    </country>
+    <country>
+        <name>Vietnam</name><capital>Hanoi</capital>
+    </country>
+    <country>
+        <name>Wales</name><capital>Cardiff</capital>
+    </country>
+    <country>
+        <name>Yemen</name><capital>Sana'a</capital>
+    </country>
+    <country>
+        <name>Zambia</name><capital>Lusaka</capital>
+    </country>
+    <country>
+        <name>Zimbabwe</name><capital>Harare</capital>
+    </country>
+</countries>
