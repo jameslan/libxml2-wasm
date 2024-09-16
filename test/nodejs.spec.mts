@@ -41,6 +41,12 @@ describe('Node.js input callbacks', () => {
     });
 
     it('can read big file', () => {
+        using doc = XmlDocument.fromBuffer(
+            fs.readFileSync('test/testfiles/geography.xml'),
+            { url: 'test/testfiles/geography.xml' },
+        );
+
+        expect(doc.get('//country/capital[../name="United States"]')?.content).to.equal('Washington D.C.');
     });
 
     it('reports error conditions', () => {
