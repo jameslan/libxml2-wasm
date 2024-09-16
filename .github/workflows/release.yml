@@ -41,6 +41,8 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   doc:
+    permissions:
+      contents: write
     uses: ./.github/workflows/docs.yml
     with:
       version: ${{ inputs.version }}
