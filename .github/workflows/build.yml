@@ -11,10 +11,10 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      # pull-requests: write # for reporting coverage as comment of PR
-      repository-projects: write
+#    permissions:
+#      contents: write
+#      pull-requests: write # for reporting coverage as comment of PR
+#      repository-projects: write
     name: Build Package
     steps:
       - name: Checkout Code
