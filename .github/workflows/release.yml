@@ -40,10 +40,3 @@ jobs:
       - run: npm publish ./artifact/libxml2-wasm-*.tgz
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-  doc:
-    permissions:
-      contents: write
-    uses: ./.github/workflows/docs.yml
-    with:
-      version: ${{ inputs.version }}
-    needs: release

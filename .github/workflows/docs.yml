@@ -3,11 +3,8 @@ on:
   push:
     branches:
       - master
-  workflow_call:
-    inputs:
-      version:
-        required: true
-        type: string
+  release:
+    types: [published]
 jobs:
   build:
     name: Build Doc
@@ -17,22 +14,22 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+      - name: Find variables
+        id: vars
+        # if on master branch push, use "dev", otherwise major.minor
+        run: |
+          [ "$GITHUB_REF_NAME" = "master" ] && (echo version=dev >> $GITHUB_OUTPUT) || (echo version=$GITHUB_REF_NAME | cut -d "." -f 1,2 >> $GITHUB_OUTPUT)
+          echo git_msg=\"$(git log -1 --pretty=format:'%s')\" >> $GITHUB_OUTPUT
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Install npm packages
         run: npm ci
       - name: Build the document
-        run: npm run doc
+        run: npm run doc -- --gitRevision $GITHUB_REF_NAME
       - name: Checkout the site
         uses: actions/checkout@v4
         with:
           path: site
           ref: gh-pages
-      - name: Find variables
-        id: vars
-        # if no version, should be on master branch push, use "dev", otherwise major.minor
-        run: |
-          [ -z "${{ inputs.version }}" ] && (echo version=dev >> $GITHUB_OUTPUT) || (echo version=v${{ inputs.version }} | cut -d "." -f 1,2 >> $GITHUB_OUTPUT)
-          echo git_msg=\"$(git log -1 --pretty=format:'%s')\" >> $GITHUB_OUTPUT
-          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: build site
         run: |
           rm -rf site/${{ steps.vars.outputs.version }}
