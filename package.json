@@ -27,6 +27,7 @@
         "url": "git@github.com:jameslan/libxml2-wasm.git"
     },
     "main": "lib/index.mjs",
+    "homepage": "https://jameslan.github.io/libxml2-wasm/",
     "author": "James Lan",
     "license": "MIT",
     "files": [
