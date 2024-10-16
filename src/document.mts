@@ -145,7 +145,7 @@ export class XmlDocument extends XmlDisposable {
         options: ParseOptions,
     ): XmlDocument {
         const ctxt = xmlNewParserCtxt();
-        const parseErr = error.allocErrorInfo();
+        const parseErr = error.storage.allocate();
         xmlCtxtSetErrorHandler(ctxt, error.errorCollector, parseErr);
         const xml = parser(
             ctxt,
@@ -156,24 +156,24 @@ export class XmlDocument extends XmlDisposable {
         );
         try {
             if (!xml) {
-                const errDetails = error.getErrorInfo(parseErr);
+                const errDetails = error.storage.get(parseErr);
                 throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
             }
         } finally {
-            error.freeErrorInfo(parseErr);
+            error.storage.free(parseErr);
             xmlFreeParserCtxt(ctxt);
         }
 
-        const incErr = error.allocErrorInfo();
+        const incErr = error.storage.allocate();
         const xinc = xmlXIncludeNewContext(xml);
         xmlXIncludeSetErrorHandler(xinc, error.errorCollector, incErr);
         try {
             if (xmlXIncludeProcessNode(xinc, xml) < 0) {
-                const errDetails = error.getErrorInfo(incErr);
+                const errDetails = error.storage.get(incErr);
                 throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
             }
         } finally {
-            error.freeErrorInfo(incErr);
+            error.storage.free(incErr);
             xmlXIncludeFreeContext(xinc);
         }
         return new XmlDocument(xml);

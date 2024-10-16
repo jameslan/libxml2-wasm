@@ -54,11 +54,11 @@ export class RelaxNGValidator extends XmlDisposable {
 
     private constructor(ctx: XmlRelaxNGParserCtxtPtr) {
         super();
-        const errIndex = error.allocErrorInfo();
+        const errIndex = error.storage.allocate();
         xmlRelaxNGSetParserStructuredErrors(ctx, error.errorCollector, errIndex);
         this._schemaPtr = xmlRelaxNGParse(ctx);
-        const errDetails = error.getErrorInfo(errIndex);
-        error.freeErrorInfo(errIndex);
+        const errDetails = error.storage.get(errIndex);
+        error.storage.free(errIndex);
         if (this._schemaPtr === 0) {
             throw XmlValidateError.fromDetails(errDetails!);
         }
@@ -74,11 +74,11 @@ export class RelaxNGValidator extends XmlDisposable {
      */
     validate(doc: XmlDocument): void {
         const ctxt = xmlRelaxNGNewValidCtxt(this._schemaPtr);
-        const errIndex = error.allocErrorInfo();
+        const errIndex = error.storage.allocate();
         xmlRelaxNGSetValidStructuredErrors(ctxt, error.errorCollector, errIndex);
         const ret = xmlRelaxNGValidateDoc(ctxt, doc._docPtr);
-        const errDetails = error.getErrorInfo(errIndex);
-        error.freeErrorInfo(errIndex);
+        const errDetails = error.storage.get(errIndex);
+        error.storage.free(errIndex);
         xmlRelaxNGFreeValidCtxt(ctxt);
 
         if (ret < 0) {
@@ -118,11 +118,11 @@ export class XsdValidator extends XmlDisposable {
 
     private constructor(ctx: XmlSchemaParserCtxtPtr) {
         super();
-        const errIndex = error.allocErrorInfo();
+        const errIndex = error.storage.allocate();
         xmlSchemaSetParserStructuredErrors(ctx, error.errorCollector, errIndex);
         this._schemaPtr = xmlSchemaParse(ctx);
-        const errDetails = error.getErrorInfo(errIndex);
-        error.freeErrorInfo(errIndex);
+        const errDetails = error.storage.get(errIndex);
+        error.storage.free(errIndex);
         if (this._schemaPtr === 0) {
             throw XmlValidateError.fromDetails(errDetails!);
         }
@@ -138,11 +138,11 @@ export class XsdValidator extends XmlDisposable {
      */
     validate(doc: XmlDocument): void {
         const ctx = xmlSchemaNewValidCtxt(this._schemaPtr);
-        const errIndex = error.allocErrorInfo();
+        const errIndex = error.storage.allocate();
         xmlSchemaSetValidStructuredErrors(ctx, error.errorCollector, errIndex);
         const ret = xmlSchemaValidateDoc(ctx, doc._docPtr);
-        const errDetails = error.getErrorInfo(errIndex);
-        error.freeErrorInfo(errIndex);
+        const errDetails = error.storage.get(errIndex);
+        error.storage.free(errIndex);
         xmlSchemaFreeValidCtxt(ctx);
         if (ret < 0) {
             throw new XmlError('Invalid input or internal error');
