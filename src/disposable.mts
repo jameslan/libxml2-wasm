@@ -17,7 +17,6 @@ export abstract class XmlDisposable implements Disposable {
      * Alias of {@link "[dispose]"}.
      *
      * @see {@link "[dispose]"}
-     * @see {@link disposeBy}
      */
     dispose(): void {
         const metadata = (this.constructor as any)[Symbol.metadata];
@@ -37,7 +36,6 @@ export abstract class XmlDisposable implements Disposable {
      * or declare the object with `using` declaration.
      *
      * @see {@link dispose}
-     * @see {@link disposeBy}
      */
     [Symbol.dispose](): void {
         this.dispose();
@@ -49,6 +47,7 @@ export abstract class XmlDisposable implements Disposable {
  *
  * @param free function to release the managed wasm resource
  * @returns the decorator
+ * @internal
  */
 export function disposeBy<This extends XmlDisposable>(free: (value: Pointer) => void) {
     return function decorator(
