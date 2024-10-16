@@ -11,6 +11,7 @@ import type {
     XmlXPathContextPtr,
 } from './libxml2raw.cjs';
 import moduleLoader from './libxml2raw.cjs';
+import { ContextStorage } from './utils.mjs';
 
 const libxml2 = await moduleLoader();
 
@@ -190,22 +191,7 @@ export function xmlXPathCtxtCompile(ctxt: XmlXPathContextPtr, str: string): XmlX
 }
 
 export namespace error {
-    const errorStorage = new Map<number, ErrorDetail[]>();
-    let errIndex = 0;
-
-    export function allocErrorInfo(): number {
-        errIndex += 1;
-        errorStorage.set(errIndex, []);
-        return errIndex;
-    }
-
-    export function freeErrorInfo(index: number) {
-        errorStorage.delete(index);
-    }
-
-    export function getErrorInfo(index: number) {
-        return errorStorage.get(index);
-    }
+    export const storage = new ContextStorage<ErrorDetail[]>(() => []);
 
     export const errorCollector = libxml2.addFunction((index: number, err: XmlErrorPtr) => {
         const file = XmlErrorStruct.file(err);
@@ -217,7 +203,7 @@ export namespace error {
         if (file != null) {
             detail.file = file;
         }
-        errorStorage.get(index)!.push(detail);
+        storage.get(index).push(detail);
     }, 'vii');
 }
 
