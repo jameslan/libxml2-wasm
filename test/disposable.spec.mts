@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { disposeBy, XmlDisposable } from '../lib/disposable.mjs';
+import { disposeBy, XmlDisposable } from '../src/disposable.mjs';
 
 function fixture(free1: number[], free2: number[]) {
     return class Fixture extends XmlDisposable {
