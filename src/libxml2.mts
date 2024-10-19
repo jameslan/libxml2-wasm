@@ -191,7 +191,7 @@ export function xmlXPathCtxtCompile(ctxt: XmlXPathContextPtr, str: string): XmlX
 }
 
 export namespace error {
-    export const storage = new ContextStorage<ErrorDetail[]>(() => []);
+    export const storage = new ContextStorage<ErrorDetail[]>();
 
     export const errorCollector = libxml2.addFunction((index: number, err: XmlErrorPtr) => {
         const file = XmlErrorStruct.file(err);
