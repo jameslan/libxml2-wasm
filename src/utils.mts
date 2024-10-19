@@ -9,19 +9,13 @@
  * And the callback use this key to retrieve the real object.
  */
 export class ContextStorage<T> {
-    private allocator: () => T;
-
     private storage: Map<number, T> = new Map<number, T>();
 
     private index = 0;
 
-    constructor(allocator: () => T) {
-        this.allocator = allocator;
-    }
-
-    allocate(): number {
+    allocate(value: T): number {
         this.index += 1;
-        this.storage.set(this.index, this.allocator());
+        this.storage.set(this.index, value);
         return this.index;
     }
 
