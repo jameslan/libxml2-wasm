@@ -8,8 +8,11 @@ import {
     XmlLibError,
     xmlNewDoc,
     xmlNewParserCtxt,
+    xmlOutputBufferCreate,
+    XmlOutputBufferHandler,
     xmlReadMemory,
     xmlReadString,
+    xmlSaveFormatFileTo,
     xmlXIncludeFreeContext,
     xmlXIncludeNewContext,
     xmlXIncludeProcessNode,
@@ -85,6 +88,19 @@ export interface ParseOptions {
 }
 
 export class XmlParseError extends XmlLibError {
+}
+
+/**
+ * Options to be passed in the call to saving functions
+ *
+ * @see {@link XmlDocument#toBuffer}
+ * @see {@link XmlDocument#toString}
+ */
+export interface SaveOptions {
+    /**
+     * To enable format on the output: separate line for tags, indentation etc.
+     */
+    format?: boolean;
 }
 
 export class XmlDocument extends XmlDisposable {
@@ -177,6 +193,38 @@ export class XmlDocument extends XmlDisposable {
             xmlXIncludeFreeContext(xinc);
         }
         return new XmlDocument(xml);
+    }
+
+    /**
+     * Save the XmlDocument to a string
+     * @param options options to adjust the saving behavior
+     */
+    toString(options?: SaveOptions): string {
+        const handler = {
+            result: '',
+            onWrite(buf: Uint8Array) {
+                this.result += new TextDecoder().decode(buf);
+                return buf.length;
+            },
+
+            onClose() {
+                return true;
+            },
+        };
+        this.toBuffer(handler, options);
+
+        return handler.result;
+    }
+
+    /**
+     * Save the XmlDocument to a buffer and invoke the callbacks to process.
+     *
+     * @param handler handlers to process the content in the buffer
+     * @param options options to adjust the saving behavior
+     */
+    toBuffer(handler: XmlOutputBufferHandler, options?: SaveOptions) {
+        const buf = xmlOutputBufferCreate(handler);
+        xmlSaveFormatFileTo(buf, this._docPtr, null, options?.format ?? true ? 1 : 0);
     }
 
     get(xpath: XmlXPath): XmlNode | null;

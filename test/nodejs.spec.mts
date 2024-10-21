@@ -1,15 +1,22 @@
 import fs from 'node:fs';
 import { resolve } from 'node:path';
-import { expect } from 'chai';
+import * as chai from 'chai';
 import sinon from 'sinon';
-
+import sinonChai from 'sinon-chai';
 import {
     xmlCleanupInputProvider,
     XmlDocument,
     XmlValidateError,
     XsdValidator,
 } from '../lib/index.mjs';
-import { fsInputProviders, xmlRegisterFsInputProviders } from '../lib/nodejs.mjs';
+import {
+    fsInputProviders,
+    saveDocSync,
+    xmlRegisterFsInputProviders,
+} from '../lib/nodejs.mjs';
+
+chai.use(sinonChai);
+const { expect } = chai;
 
 describe('Node.js input callbacks', () => {
     before(() => {
@@ -108,5 +115,37 @@ describe('Node.js input callbacks', () => {
 
             expect(fsInputProviders.close(44)).to.be.true;
         });
+    });
+});
+
+describe('saveDocSync', () => {
+    let writeStub: sinon.SinonStub;
+    let closeStub: sinon.SinonStub;
+
+    beforeEach(() => {
+        writeStub = sinon.stub(fs, 'writeSync');
+        closeStub = sinon.stub(fs, 'closeSync');
+    });
+
+    afterEach(() => {
+        writeStub.restore();
+        closeStub.restore();
+    });
+
+    it('writes to file', () => {
+        const calledWithCorrectArg = writeStub.withArgs(
+            42,
+            sinon.match((value) => value instanceof Uint8Array && new TextDecoder().decode(value) === `\
+<?xml version="1.0"?>
+<docs>
+  <doc/>
+</docs>
+`),
+        );
+        using doc = XmlDocument.fromString('<docs><doc></doc></docs>');
+        saveDocSync(doc, 42);
+
+        expect(calledWithCorrectArg).to.have.been.called;
+        expect(closeStub).to.have.been.calledWith(42);
     });
 });

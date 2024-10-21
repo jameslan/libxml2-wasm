@@ -14,6 +14,7 @@ _xmlNewDocComment
 _xmlNewDocText
 _xmlNewParserCtxt
 _xmlNodeGetContent
+_xmlOutputBufferCreateIO
 _xmlRegisterInputCallbacks
 _xmlRelaxNGFree
 _xmlRelaxNGFreeParserCtxt
@@ -25,6 +26,7 @@ _xmlRelaxNGSetParserStructuredErrors
 _xmlRelaxNGSetValidStructuredErrors
 _xmlRelaxNGValidateDoc
 _xmlResetLastError
+_xmlSaveFormatFileTo
 _xmlSchemaNewDocParserCtxt
 _xmlSchemaFree
 _xmlSchemaFreeParserCtxt

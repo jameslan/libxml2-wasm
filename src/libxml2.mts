@@ -6,6 +6,7 @@ import type {
     XmlErrorPtr,
     XmlNodePtr,
     XmlNsPtr,
+    XmlOutputBufferPtr,
     XmlParserCtxtPtr,
     XmlXPathCompExprPtr,
     XmlXPathContextPtr,
@@ -380,6 +381,59 @@ export function xmlCleanupInputProvider(): void {
     libxml2._xmlCleanupInputCallbacks();
 }
 
+/**
+ * Callbacks to process the content in the output buffer.
+ */
+export interface XmlOutputBufferHandler {
+    /**
+     * The callback for consuming the content.
+     * @param buf The buffer containing output data
+     *
+     * @returns The bytes had been consumed or -1 to indicate errors
+     */
+    onWrite(buf: Uint8Array): number;
+
+    /**
+     * The callback for finishing output.
+     * Will be invoked when all data were consumed.
+     *
+     * @returns Whether the operation is succeeded.
+     */
+    onClose(): boolean;
+}
+
+const saveHandlerStorage = new ContextStorage<XmlOutputBufferHandler>();
+
+const iowrite = libxml2.addFunction(
+    (index: number, buf: Pointer, len: number) => saveHandlerStorage.get(index)
+        .onWrite(libxml2.HEAPU8.subarray(buf, buf + len)),
+    'iiii',
+);
+
+const ioclose = libxml2.addFunction(
+    (index: number) => {
+        const ret = saveHandlerStorage.get(index).onClose();
+        saveHandlerStorage.free(index);
+        return ret;
+    },
+    'ii',
+);
+
+export function xmlOutputBufferCreate(handler: XmlOutputBufferHandler): XmlOutputBufferPtr {
+    const index = saveHandlerStorage.allocate(handler);
+    return libxml2._xmlOutputBufferCreateIO(iowrite, ioclose, index, 0);
+}
+
+export function xmlSaveFormatFileTo(
+    buf: XmlOutputBufferPtr,
+    doc: XmlDocPtr,
+    encoding: string | null,
+    format: number,
+): number {
+    // Support only UTF-8 as of now
+    return libxml2._xmlSaveFormatFileTo(buf, doc, 0, format);
+}
+
 export const xmlCtxtSetErrorHandler = libxml2._xmlCtxtSetErrorHandler;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
 export const xmlFreeDoc = libxml2._xmlFreeDoc;
@@ -387,6 +441,7 @@ export const xmlFreeParserCtxt = libxml2._xmlFreeParserCtxt;
 export const xmlGetLastError = libxml2._xmlGetLastError;
 export const xmlNewDoc = libxml2._xmlNewDoc;
 export const xmlNewParserCtxt = libxml2._xmlNewParserCtxt;
+// export const xmlOutputBufferClose = libxml2._xmlOutputBufferClose;
 export const xmlRelaxNGFree = libxml2._xmlRelaxNGFree;
 export const xmlRelaxNGFreeParserCtxt = libxml2._xmlRelaxNGFreeParserCtxt;
 export const xmlRelaxNGFreeValidCtxt = libxml2._xmlRelaxNGFreeValidCtxt;
