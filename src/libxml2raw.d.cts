@@ -1,11 +1,15 @@
 type Pointer = number;
 type CString = Pointer;
 type XmlAttrPtr = Pointer;
+type XmlCharEncodingHandlerPtr = Pointer;
 type XmlParserCtxtPtr = Pointer;
 type XmlDocPtr = Pointer;
 type XmlErrorPtr = Pointer;
 type XmlNodePtr = Pointer;
 type XmlNsPtr = Pointer;
+type XmlOutputBufferPtr = Pointer;
+type XmlOutputCloseCallback = Pointer;
+type XmlOutputWriteCallback = Pointer;
 type XmlRelaxNGParserCtxtPtr = Pointer;
 type XmlRelaxNGPtr = Pointer;
 type XmlRelaxNGValidCtxtPtr = Pointer;
@@ -49,6 +53,12 @@ export class LibXml2 {
     _xmlNewDoc(): XmlDocPtr;
     _xmlNewParserCtxt(): XmlParserCtxtPtr;
     _xmlNodeGetContent(node: XmlNodePtr): CString;
+    _xmlOutputBufferCreateIO(
+        iowrite: XmlOutputWriteCallback,
+        ioclose: XmlOutputCloseCallback,
+        context: Pointer,
+        encoder: XmlCharEncodingHandlerPtr,
+    ): XmlOutputBufferPtr;
     _xmlRegisterInputCallbacks(
         xmlInputMatchCallback: Pointer,
         xmlInputOpenCallback: Pointer,
@@ -73,6 +83,12 @@ export class LibXml2 {
     ): void;
     _xmlRelaxNGValidateDoc(ctxt: XmlRelaxNGValidCtxtPtr, doc: XmlDocPtr): number;
     _xmlResetLastError(): void;
+    _xmlSaveFormatFileTo(
+        buf: XmlOutputBufferPtr,
+        doc: XmlDocPtr,
+        encoding: CString,
+        format: number,
+    ): number;
     _xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: CString): XmlNsPtr;
     _xmlXIncludeFreeContext(ctx: XmlXIncludeCtxtPtr): void;
     _xmlXIncludeNewContext(doc: XmlDocPtr): XmlXIncludeCtxtPtr;

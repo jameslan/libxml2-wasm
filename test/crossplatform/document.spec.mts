@@ -25,4 +25,22 @@ describe('XmlDocument', () => {
             expect((doc.get('/docs/doc') as XmlElement).name).to.equal('doc');
         });
     });
+
+    describe('toString', () => {
+        it('formats output by default', () => {
+            expect(doc.toString()).to.equal(`\
+<?xml version="1.0"?>
+<docs>
+  <doc/>
+</docs>
+`);
+        });
+
+        it('not format when required', () => {
+            expect(doc.toString({ format: false })).to.equal(`\
+<?xml version="1.0"?>
+<docs><doc/></docs>
+`);
+        });
+    });
 });

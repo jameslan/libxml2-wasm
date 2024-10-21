@@ -9,6 +9,7 @@
  */
 import fs from 'node:fs';
 import { XmlInputProvider, xmlRegisterInputProvider } from './libxml2.mjs';
+import { SaveOptions, XmlDocument } from './document.mjs';
 
 function filePath(filename: string): string | null {
     try {
@@ -73,4 +74,26 @@ export const fsInputProviders: XmlInputProvider = {
  */
 export function xmlRegisterFsInputProviders(): boolean {
     return xmlRegisterInputProvider(fsInputProviders);
+}
+
+/**
+ * Synchronously save the {@link XmlDocument} to file.
+ * @param doc The XmlDocument to be saved.
+ * @param fd File descriptor returned by fs.open or fs.openSync etc
+ * @param options Options for saving
+ */
+export function saveDocSync(doc: XmlDocument, fd: number, options?: SaveOptions) {
+    const handler = {
+        fd,
+
+        onWrite(buf: Uint8Array) {
+            return fs.writeSync(this.fd, buf);
+        },
+
+        onClose(): boolean {
+            fs.closeSync(this.fd);
+            return true;
+        },
+    };
+    doc.toBuffer(handler, options);
 }
