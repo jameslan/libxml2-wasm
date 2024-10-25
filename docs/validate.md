@@ -81,7 +81,7 @@ schema.dispose();
 ### XSD Include/Import
 
 `xsd:include` and `xsd:import` are supported with virtual IO.
-See the Virtual IO section of document of [Parsing](parsing.md)
+See the Virtual IO section of document of [Parsing and Serializing](io.md)
 
 ### RELAX NG
 RELAX NG is also supported, with another validator class {@link libxml2-wasm!RelaxNGValidator | `RelaxNGValidator`}.

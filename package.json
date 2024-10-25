@@ -1,7 +1,7 @@
 {
     "name": "libxml2-wasm",
     "version": "0.5.0-dev",
-    "description": "WebAssembly-based libxml2 javascript binding",
+    "description": "WebAssembly-based libxml2 javascript wrapper",
     "scripts": {
         "clean": "rm -rf lib out",
         "init": "mkdir -p out && mkdir -p lib",
@@ -57,7 +57,7 @@
         "sinon-chai": "^4.0.0",
         "ts-node": "^10.9.2",
         "ts-paths-esm-loader": "^1.4.3",
-        "typedoc": "^0.26.7",
+        "typedoc": "^0.26.10",
         "typescript": "^5.3.3",
         "yargs": "^17.7.2"
     },

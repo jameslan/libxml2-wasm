@@ -441,7 +441,6 @@ export const xmlFreeParserCtxt = libxml2._xmlFreeParserCtxt;
 export const xmlGetLastError = libxml2._xmlGetLastError;
 export const xmlNewDoc = libxml2._xmlNewDoc;
 export const xmlNewParserCtxt = libxml2._xmlNewParserCtxt;
-// export const xmlOutputBufferClose = libxml2._xmlOutputBufferClose;
 export const xmlRelaxNGFree = libxml2._xmlRelaxNGFree;
 export const xmlRelaxNGFreeParserCtxt = libxml2._xmlRelaxNGFreeParserCtxt;
 export const xmlRelaxNGFreeValidCtxt = libxml2._xmlRelaxNGFreeValidCtxt;

@@ -1,5 +1,5 @@
 ---
-title: Parsing
+title: Parsing and Serializing
 ---
 
 # Parsing XML
@@ -80,4 +80,28 @@ const doc = XmlDocument.fromBuffer(
     { url: 'path/to/doc.xml' },
 );
 doc.dispose();
+```
+
+# Serialize an XML
+
+{@link libxml2-wasm!XmlDocument.toBuffer | `XmlDocument.toBuffer`} dumps the content of the XML DOM tree into a buffer gradually,
+and calls the {@link libxml2-wasm!XmlOutputBufferHandler | `XmlOutputBufferHandler`} to process the data.
+
+Note that UTF-8 is the only supported encoding for now.
+
+Based on `toBuffer`, two more convenience functions are provided:
+{@link libxml2-wasm!XmlDocument.toString | `XmlDocument.toString`}  and {@link nodejs!saveDocSync | `saveDocSync`}.
+
+For example, to save an XML to compact string,
+
+```js
+xml.toString({ format: false });
+```
+
+To save a formatted XML to file in Node.js environment,
+
+```js
+import { saveDocSync } from 'libxml2-wasm/lib/nodejs.mjs';
+
+saveDocSync(xml);
 ```
