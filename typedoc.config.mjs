@@ -56,7 +56,7 @@ export default {
     },
     projectDocuments: [
         'docs/tutorial.md',
-        'docs/parsing.md',
+        'docs/io.md',
         'docs/validate.md',
         'docs/mem.md',
         'docs/performance.md',

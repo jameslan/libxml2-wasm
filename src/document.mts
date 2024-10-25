@@ -99,6 +99,8 @@ export class XmlParseError extends XmlLibError {
 export interface SaveOptions {
     /**
      * To enable format on the output: separate line for tags, indentation etc.
+     *
+     * @default true
      */
     format?: boolean;
 }
@@ -200,10 +202,11 @@ export class XmlDocument extends XmlDisposable {
      * @param options options to adjust the saving behavior
      */
     toString(options?: SaveOptions): string {
+        const decoder = new TextDecoder();
         const handler = {
             result: '',
             onWrite(buf: Uint8Array) {
-                this.result += new TextDecoder().decode(buf);
+                this.result += decoder.decode(buf);
                 return buf.length;
             },
 

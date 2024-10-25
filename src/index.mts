@@ -23,6 +23,7 @@ export {
 export {
     ParseOption,
     ParseOptions,
+    SaveOptions,
     XmlDocument,
     XmlParseError,
 } from './document.mjs';
@@ -32,6 +33,7 @@ export {
     XmlLibError,
     xmlCleanupInputProvider,
     XmlInputProvider,
+    XmlOutputBufferHandler,
     xmlRegisterInputProvider,
 } from './libxml2.mjs';
 export {
