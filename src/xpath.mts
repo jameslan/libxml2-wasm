@@ -20,19 +20,16 @@ export interface NamespaceMap {
  *
  * Note: This object requires to be {@link dispose}d explicitly.
  */
-export class XmlXPath extends XmlDisposable {
-    /** @internal */
-    @disposeBy(xmlXPathFreeCompExpr)
-    accessor _xpath: XmlXPathCompExprPtr;
-
+@disposeBy(xmlXPathFreeCompExpr)
+export class XmlXPath extends XmlDisposable<XmlXPath> {
     private readonly _xpathSource;
 
     private readonly _namespaces: NamespaceMap | undefined;
 
-    constructor(xpath: string, namespaces?: NamespaceMap) {
-        super();
-        this._xpathSource = xpath;
-        this._xpath = xmlXPathCtxtCompile(0, xpath);
+    /** @internal */
+    constructor(xpath: XmlXPathCompExprPtr, xpathStr: string, namespaces?: NamespaceMap) {
+        super(xpath);
+        this._xpathSource = xpathStr;
         this._namespaces = namespaces;
     }
 
@@ -48,5 +45,15 @@ export class XmlXPath extends XmlDisposable {
      */
     toString(): string {
         return this._xpathSource;
+    }
+
+    /**
+     * Create a new XPath object.
+     * @param xpathStr The XPath string
+     * @param namespaces Namespace map for prefixes used in the xpathStr
+     */
+    static create(xpathStr: string, namespaces?: NamespaceMap): XmlXPath {
+        const xpath = XmlXPath.getInstance(xmlXPathCtxtCompile(0, xpathStr), xpathStr, namespaces);
+        return xpath;
     }
 }

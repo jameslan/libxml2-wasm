@@ -23,12 +23,6 @@ import {
     xmlSchemaSetValidStructuredErrors,
     xmlSchemaValidateDoc,
 } from './libxml2.mjs';
-import type {
-    XmlRelaxNGParserCtxtPtr,
-    XmlRelaxNGPtr,
-    XmlSchemaParserCtxtPtr,
-    XmlSchemaPtr,
-} from './libxml2raw.cjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 /**
@@ -48,22 +42,8 @@ export class DtdValidator {
  *
  * NOTE: This validator needs to be disposed explicitly.
  */
-export class RelaxNGValidator extends XmlDisposable {
-    @disposeBy(xmlRelaxNGFree)
-    private accessor _schemaPtr: XmlRelaxNGPtr;
-
-    private constructor(ctx: XmlRelaxNGParserCtxtPtr) {
-        super();
-        const errIndex = error.storage.allocate([]);
-        xmlRelaxNGSetParserStructuredErrors(ctx, error.errorCollector, errIndex);
-        this._schemaPtr = xmlRelaxNGParse(ctx);
-        const errDetails = error.storage.get(errIndex);
-        error.storage.free(errIndex);
-        if (this._schemaPtr === 0) {
-            throw XmlValidateError.fromDetails(errDetails!);
-        }
-    }
-
+@disposeBy(xmlRelaxNGFree)
+export class RelaxNGValidator extends XmlDisposable<RelaxNGValidator> {
     /**
      * Validate the XmlDocument.
      *
@@ -73,10 +53,10 @@ export class RelaxNGValidator extends XmlDisposable {
      * such as validating a document already disposed, etc.
      */
     validate(doc: XmlDocument): void {
-        const ctxt = xmlRelaxNGNewValidCtxt(this._schemaPtr);
+        const ctxt = xmlRelaxNGNewValidCtxt(this._ptr);
         const errIndex = error.storage.allocate([]);
         xmlRelaxNGSetValidStructuredErrors(ctxt, error.errorCollector, errIndex);
-        const ret = xmlRelaxNGValidateDoc(ctxt, doc._docPtr);
+        const ret = xmlRelaxNGValidateDoc(ctxt, doc._ptr);
         const errDetails = error.storage.get(errIndex);
         error.storage.free(errIndex);
         xmlRelaxNGFreeValidCtxt(ctxt);
@@ -95,15 +75,27 @@ export class RelaxNGValidator extends XmlDisposable {
      * @throws {@link XmlError} or {@link XmlValidateError} if something wrong.
      */
     static fromDoc(rng: XmlDocument): RelaxNGValidator {
-        const ctx = xmlRelaxNGNewDocParserCtxt(rng._docPtr);
+        // prepare parsing context for Relax NG
+        const ctx = xmlRelaxNGNewDocParserCtxt(rng._ptr);
         if (ctx === 0) {
             throw new XmlError('Schema is null or failed to allocate memory');
         }
-        try {
-            return new RelaxNGValidator(ctx);
-        } finally {
-            xmlRelaxNGFreeParserCtxt(ctx);
+        const errIndex = error.storage.allocate([]);
+        xmlRelaxNGSetParserStructuredErrors(ctx, error.errorCollector, errIndex);
+
+        // parse relax NG validator from DOM
+        const schema = xmlRelaxNGParse(ctx);
+
+        // handle parsing errors and cleanup
+        const errDetails = error.storage.get(errIndex);
+        error.storage.free(errIndex);
+        xmlRelaxNGFreeParserCtxt(ctx);
+        if (schema === 0) {
+            throw XmlValidateError.fromDetails(errDetails!);
         }
+
+        // create Validator object
+        return new RelaxNGValidator(schema);
     }
 }
 
@@ -112,22 +104,8 @@ export class RelaxNGValidator extends XmlDisposable {
  *
  * NOTE: This validator needs to be disposed explicitly.
  */
-export class XsdValidator extends XmlDisposable {
-    @disposeBy(xmlSchemaFree)
-    private accessor _schemaPtr: XmlSchemaPtr;
-
-    private constructor(ctx: XmlSchemaParserCtxtPtr) {
-        super();
-        const errIndex = error.storage.allocate([]);
-        xmlSchemaSetParserStructuredErrors(ctx, error.errorCollector, errIndex);
-        this._schemaPtr = xmlSchemaParse(ctx);
-        const errDetails = error.storage.get(errIndex);
-        error.storage.free(errIndex);
-        if (this._schemaPtr === 0) {
-            throw XmlValidateError.fromDetails(errDetails!);
-        }
-    }
-
+@disposeBy(xmlSchemaFree)
+export class XsdValidator extends XmlDisposable<XsdValidator> {
     /**
      * Validate the XmlDocument.
      *
@@ -137,10 +115,10 @@ export class XsdValidator extends XmlDisposable {
      * such as validating a document already disposed, etc.
      */
     validate(doc: XmlDocument): void {
-        const ctx = xmlSchemaNewValidCtxt(this._schemaPtr);
+        const ctx = xmlSchemaNewValidCtxt(this._ptr);
         const errIndex = error.storage.allocate([]);
         xmlSchemaSetValidStructuredErrors(ctx, error.errorCollector, errIndex);
-        const ret = xmlSchemaValidateDoc(ctx, doc._docPtr);
+        const ret = xmlSchemaValidateDoc(ctx, doc._ptr);
         const errDetails = error.storage.get(errIndex);
         error.storage.free(errIndex);
         xmlSchemaFreeValidCtxt(ctx);
@@ -159,14 +137,26 @@ export class XsdValidator extends XmlDisposable {
      * @throws {@link XmlError} or {@link XmlValidateError} if something wrong.
      */
     static fromDoc(xsd: XmlDocument): XsdValidator {
-        const ctx = xmlSchemaNewDocParserCtxt(xsd._docPtr);
+        // prepare parsing context for XSD
+        const ctx = xmlSchemaNewDocParserCtxt(xsd._ptr);
         if (ctx === 0) {
             throw new XmlError('Schema is null or failed to allocate memory');
         }
-        try {
-            return new XsdValidator(ctx);
-        } finally {
-            xmlSchemaFreeParserCtxt(ctx);
+        const errIndex = error.storage.allocate([]);
+        xmlSchemaSetParserStructuredErrors(ctx, error.errorCollector, errIndex);
+
+        // parse XSD validator from DOM
+        const schema = xmlSchemaParse(ctx);
+
+        // handle parsing errors and cleanup
+        const errDetails = error.storage.get(errIndex);
+        error.storage.free(errIndex);
+        xmlSchemaFreeParserCtxt(ctx);
+        if (schema === 0) {
+            throw XmlValidateError.fromDetails(errDetails!);
         }
+
+        // create Validator object
+        return new XsdValidator(schema);
     }
 }
