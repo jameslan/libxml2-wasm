@@ -45,7 +45,7 @@ export abstract class XmlNode {
      */
     get parent(): XmlNode | null { // TODO: should it return XmlElement?
         const parent = XmlNodeStruct.parent(this._nodePtr);
-        if (!parent || parent === this._doc._docPtr) {
+        if (!parent || parent === this._doc._ptr) {
             return null;
         }
         return this.create(parent);
@@ -133,7 +133,7 @@ export abstract class XmlNode {
      * Namespace definitions on this node, including inherited
      */
     get namespaces(): NamespaceMap {
-        return xmlGetNsList(this._doc._docPtr, this._nodePtr).reduce(
+        return xmlGetNsList(this._doc._ptr, this._nodePtr).reduce(
             // convert to object
             (prev, curr) => ({ ...prev, [XmlNsStruct.prefix(curr)]: XmlNsStruct.href(curr) }),
             {},
@@ -145,7 +145,7 @@ export abstract class XmlNode {
      * @param prefix
      */
     namespaceForPrefix(prefix: string): string | null {
-        const ns = xmlSearchNs(this._doc._docPtr, this._nodePtr, prefix);
+        const ns = xmlSearchNs(this._doc._ptr, this._nodePtr, prefix);
         return ns ? XmlNsStruct.href(ns) : null;
     }
 
@@ -182,7 +182,9 @@ export abstract class XmlNode {
     }
 
     private xpathEval(xpath: string | XmlXPath, namespaces?: NamespaceMap) {
-        const xpathCompiled = xpath instanceof XmlXPath ? xpath : new XmlXPath(xpath, namespaces);
+        const xpathCompiled = xpath instanceof XmlXPath
+            ? xpath
+            : XmlXPath.create(xpath, namespaces);
         const ret = this.compiledXPathEval(xpathCompiled);
         if (!(xpath instanceof XmlXPath)) {
             xpathCompiled.dispose();
@@ -191,7 +193,7 @@ export abstract class XmlNode {
     }
 
     private compiledXPathEval(xpath: XmlXPath) {
-        const context = xmlXPathNewContext(this._doc._docPtr);
+        const context = xmlXPathNewContext(this._doc._ptr);
         if (xpath.namespaces) {
             Object.entries(xpath.namespaces)
                 .forEach(([prefix, uri]) => {
@@ -199,7 +201,7 @@ export abstract class XmlNode {
                 });
         }
         xmlXPathSetContextNode(this._nodePtr, context);
-        const xpathObj = xmlXPathCompiledEval(xpath._xpath, context);
+        const xpathObj = xmlXPathCompiledEval(xpath._ptr, context);
         xmlXPathFreeContext(context);
         return xpathObj;
     }

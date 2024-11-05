@@ -105,25 +105,13 @@ export interface SaveOptions {
     format?: boolean;
 }
 
-export class XmlDocument extends XmlDisposable {
-    /** @internal */
-    @disposeBy(xmlFreeDoc)
-    accessor _docPtr: number;
-
-    /** Create a document object wrapping document parsed by libxml2.
-     * @see {@link parseXmlString}
-     * @internal
-     */
-    private constructor(xmlDocPtr: XmlDocPtr) {
-        super();
-        this._docPtr = xmlDocPtr;
-    }
-
+@disposeBy(xmlFreeDoc)
+export class XmlDocument extends XmlDisposable<XmlDocument> {
     /** Create a new document from scratch.
      * To parse an existing xml, use {@link fromBuffer} or {@link fromString}.
      */
     static create(): XmlDocument {
-        return new XmlDocument(xmlNewDoc());
+        return XmlDocument.getInstance(xmlNewDoc());
     }
 
     /**
@@ -194,7 +182,7 @@ export class XmlDocument extends XmlDisposable {
             error.storage.free(incErr);
             xmlXIncludeFreeContext(xinc);
         }
-        return new XmlDocument(xml);
+        return XmlDocument.getInstance(xml);
     }
 
     /**
@@ -227,7 +215,7 @@ export class XmlDocument extends XmlDisposable {
      */
     toBuffer(handler: XmlOutputBufferHandler, options?: SaveOptions) {
         const buf = xmlOutputBufferCreate(handler);
-        xmlSaveFormatFileTo(buf, this._docPtr, null, options?.format ?? true ? 1 : 0);
+        xmlSaveFormatFileTo(buf, this._ptr, null, options?.format ?? true ? 1 : 0);
     }
 
     get(xpath: XmlXPath): XmlNode | null;
@@ -266,7 +254,7 @@ export class XmlDocument extends XmlDisposable {
      * {@link XmlError} will be thrown.
      */
     get root(): XmlElement {
-        const root = xmlDocGetRootElement(this._docPtr);
+        const root = xmlDocGetRootElement(this._ptr);
         if (!root) {
             // TODO: get error information from libxml2
             throw new XmlError();

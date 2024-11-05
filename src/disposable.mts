@@ -3,13 +3,46 @@ import './disposeShim.mjs';
 import './metadataShim.mjs';
 import { tracker } from './diag.mjs';
 
+const symXmlDisposableInternal = Symbol('XmlDisposableInternal');
+
+interface XmlDisposableConstructor<T extends XmlDisposable<T>> {
+    new (ptr: Pointer, ...args: any[]): T;
+}
+
+interface XmlDisposableInternal<T extends XmlDisposable<T>> {
+    instances: Map<Pointer, WeakRef<T>>;
+    finalization: FinalizationRegistry<Pointer>;
+    free: (ptr: Pointer) => void;
+}
+
+/** @internal */
+export function disposeBy<T extends XmlDisposable<T>>(free: (value: Pointer) => void) {
+    return function decorator(
+        target: XmlDisposableConstructor<T>,
+        context: ClassDecoratorContext,
+    ) {
+        context.metadata[symXmlDisposableInternal] = {
+            instances: new Map<Pointer, WeakRef<T>>(),
+            finalization: new FinalizationRegistry(free),
+            free,
+        };
+    };
+}
+
 /**
  * Base implementation of interface Disposable to handle wasm memory.
  *
  * Remember to call `dispose()` for any subclass object.
+ *
+ * @template T The subclass deriving from XmlDisposable.
  */
-export abstract class XmlDisposable implements Disposable {
-    protected constructor() {
+export abstract class XmlDisposable<T extends XmlDisposable<T>> implements Disposable {
+    /** @internal */
+    _ptr: Pointer;
+
+    /** @internal */
+    constructor(ptr: Pointer) {
+        this._ptr = ptr;
         tracker().trackAllocate(this);
     }
 
@@ -19,10 +52,7 @@ export abstract class XmlDisposable implements Disposable {
      * @see {@link "[dispose]"}
      */
     dispose(): void {
-        const metadata = (this.constructor as any)[Symbol.metadata];
-        const propsToRelease = metadata[Symbol.dispose] as Array<string | symbol>;
-        propsToRelease.forEach((prop) => { (this as any)[prop] = 0; });
-        tracker().trackDeallocate(this);
+        this[Symbol.dispose]();
     }
 
     /**
@@ -38,37 +68,37 @@ export abstract class XmlDisposable implements Disposable {
      * @see {@link dispose}
      */
     [Symbol.dispose](): void {
-        this.dispose();
-    }
-}
+        if (this._ptr === 0) return; // already disposed
 
-/**
- * Decorator factory of disposable accessor
- *
- * @param free function to release the managed wasm resource
- * @returns the decorator
- * @internal
- */
-export function disposeBy<This extends XmlDisposable>(free: (value: Pointer) => void) {
-    return function decorator(
-        target: ClassAccessorDecoratorTarget<This, Pointer>,
-        ctx: ClassAccessorDecoratorContext<This, Pointer>,
-    ): ClassAccessorDecoratorResult<This, Pointer> {
-        const registry = new FinalizationRegistry(free);
-        ctx.metadata[Symbol.dispose] ??= [];
-        (ctx.metadata[Symbol.dispose] as Array<string | symbol>).push(ctx.name);
-        return {
-            set(value: Pointer) {
-                const prev = target.get.call(this);
-                if (prev) {
-                    free(prev);
-                    registry.unregister(this);
-                }
-                target.set.call(this, value);
-                if (value) {
-                    registry.register(this, value, this);
-                }
-            },
-        };
-    };
+        const metadata = (this.constructor as any)[Symbol.metadata];
+        const internal: XmlDisposableInternal<T> = metadata[symXmlDisposableInternal];
+        internal.free(this._ptr);
+        // already freed, remove from finalization registry
+        internal.finalization.unregister(this);
+        // remove from instances registry
+        internal.instances.delete(this._ptr);
+        tracker().trackDeallocate(this);
+        this._ptr = 0;
+    }
+
+    /** @internal */
+    static getInstance<U extends XmlDisposable<U>>(
+        this: XmlDisposableConstructor<U>,
+        ptr: Pointer,
+        ...args: any[]
+    ): U {
+        const metadata = (this as any)[Symbol.metadata];
+        const internal: XmlDisposableInternal<U> = metadata[symXmlDisposableInternal];
+        const instRef = internal.instances.get(ptr);
+        if (instRef) {
+            const inst = instRef.deref();
+            if (inst) {
+                return inst;
+            }
+        }
+        const newInst = new this(ptr, ...args);
+        internal.instances.set(ptr, new WeakRef(newInst));
+        internal.finalization.register(newInst, ptr, newInst);
+        return newInst;
+    }
 }

@@ -42,7 +42,7 @@ you could create an {@link libxml2-wasm!XmlXPath | `XmlXPath`} object to avoid r
 ```js
 import { XmlDocument, XmlXPath } from 'libxml2-wasm';
 
-const xpath = new XmlXPath('/book/title');
+const xpath = XmlXPath.create('/book/title');
 const doc1 = XmlDocument.fromString('<book><title>Harry Potter</title></book>');
 const doc2 = XmlDocument.fromString('<book><title>Learning XML</title></book>');
 console.log(doc1.get(xpath).content); // Harry Potter
