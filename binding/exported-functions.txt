@@ -4,6 +4,7 @@ _xmlCleanupInputCallbacks
 _xmlCtxtReadMemory
 _xmlCtxtSetErrorHandler
 _xmlDocGetRootElement
+_xmlDocSetRootElement
 _xmlFreeDoc
 _xmlFreeParserCtxt
 _xmlGetLastError
@@ -12,6 +13,7 @@ _xmlHasNsProp
 _xmlNewDoc
 _xmlNewDocComment
 _xmlNewDocText
+_xmlNewNode
 _xmlNewParserCtxt
 _xmlNodeGetContent
 _xmlOutputBufferCreateIO

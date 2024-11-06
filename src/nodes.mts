@@ -16,18 +16,16 @@ import {
     xmlXPathRegisterNs,
     xmlXPathSetContextNode,
 } from './libxml2.mjs';
-import type { XmlDocument } from './document.mjs';
+import { XmlDocument } from './document.mjs';
 import type { XmlNodePtr } from './libxml2raw.cjs';
 import { XmlXPath, NamespaceMap } from './xpath.mjs';
 
 export abstract class XmlNode {
-    protected _doc: XmlDocument;
+    /** @internal */
+    _nodePtr: XmlNodePtr;
 
-    protected _nodePtr: XmlNodePtr;
-
-    // TODO: Support node creation
-    constructor(doc: XmlDocument, nodePtr: XmlNodePtr) {
-        this._doc = doc;
+    /** @internal */
+    constructor(nodePtr: XmlNodePtr) {
         this._nodePtr = nodePtr;
     }
 
@@ -35,7 +33,7 @@ export abstract class XmlNode {
      * The {@link XmlDocument} containing this node.
      */
     get doc(): XmlDocument {
-        return this._doc;
+        return XmlDocument.getInstance(XmlNodeStruct.doc(this._nodePtr));
     }
 
     /**
@@ -45,10 +43,10 @@ export abstract class XmlNode {
      */
     get parent(): XmlNode | null { // TODO: should it return XmlElement?
         const parent = XmlNodeStruct.parent(this._nodePtr);
-        if (!parent || parent === this._doc._ptr) {
+        if (!parent || parent === XmlNodeStruct.doc(this._nodePtr)) {
             return null;
         }
-        return this.create(parent);
+        return XmlNode.createNode(parent);
     }
 
     /**
@@ -65,7 +63,7 @@ export abstract class XmlNode {
      */
     get firstChild(): XmlNode | null {
         const child = XmlNodeStruct.children(this._nodePtr);
-        return this.createNullable(child);
+        return XmlNode.createNullableNode(child);
     }
 
     /**
@@ -82,7 +80,7 @@ export abstract class XmlNode {
      */
     get lastChild(): XmlNode | null {
         const child = XmlNodeStruct.last(this._nodePtr);
-        return this.createNullable(child);
+        return XmlNode.createNullableNode(child);
     }
 
     /**
@@ -97,7 +95,7 @@ export abstract class XmlNode {
      */
     get next(): XmlNode | null {
         const child = XmlNodeStruct.next(this._nodePtr);
-        return this.createNullable(child);
+        return XmlNode.createNullableNode(child);
     }
 
     /**
@@ -112,7 +110,7 @@ export abstract class XmlNode {
      */
     get prev(): XmlNode | null {
         const child = XmlNodeStruct.prev(this._nodePtr);
-        return this.createNullable(child);
+        return XmlNode.createNullableNode(child);
     }
 
     /**
@@ -133,7 +131,7 @@ export abstract class XmlNode {
      * Namespace definitions on this node, including inherited
      */
     get namespaces(): NamespaceMap {
-        return xmlGetNsList(this._doc._ptr, this._nodePtr).reduce(
+        return xmlGetNsList(XmlNodeStruct.doc(this._nodePtr), this._nodePtr).reduce(
             // convert to object
             (prev, curr) => ({ ...prev, [XmlNsStruct.prefix(curr)]: XmlNsStruct.href(curr) }),
             {},
@@ -145,7 +143,7 @@ export abstract class XmlNode {
      * @param prefix
      */
     namespaceForPrefix(prefix: string): string | null {
-        const ns = xmlSearchNs(this._doc._ptr, this._nodePtr, prefix);
+        const ns = xmlSearchNs(XmlNodeStruct.doc(this._nodePtr), this._nodePtr, prefix);
         return ns ? XmlNsStruct.href(ns) : null;
     }
 
@@ -174,7 +172,7 @@ export abstract class XmlNode {
             if (nodeSet === 0 || XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
                 ret = null;
             } else {
-                ret = this.create(XmlNodeSetStruct.nodeTable(nodeSet, 1)[0]);
+                ret = XmlNode.createNode(XmlNodeSetStruct.nodeTable(nodeSet, 1)[0]);
             }
         }
         xmlXPathFreeObject(xpathObj);
@@ -193,7 +191,7 @@ export abstract class XmlNode {
     }
 
     private compiledXPathEval(xpath: XmlXPath) {
-        const context = xmlXPathNewContext(this._doc._ptr);
+        const context = xmlXPathNewContext(XmlNodeStruct.doc(this._nodePtr));
         if (xpath.namespaces) {
             Object.entries(xpath.namespaces)
                 .forEach(([prefix, uri]) => {
@@ -230,7 +228,7 @@ export abstract class XmlNode {
             const nodeCount = XmlNodeSetStruct.nodeCount(nodeSet);
             const nodeTable = XmlNodeSetStruct.nodeTable(nodeSet, nodeCount);
             for (let i = 0; i < nodeCount; i += 1) {
-                nodes.push(this.create(nodeTable[i]));
+                nodes.push(XmlNode.createNode(nodeTable[i]));
             }
         }
 
@@ -238,23 +236,23 @@ export abstract class XmlNode {
         return nodes;
     }
 
-    private createNullable(nodePtr: XmlNodePtr): XmlNode | null {
-        return nodePtr ? this.create(nodePtr) : null;
+    private static createNullableNode(nodePtr: XmlNodePtr): XmlNode | null {
+        return nodePtr ? XmlNode.createNode(nodePtr) : null;
     }
 
-    private create(nodePtr: XmlNodePtr): XmlNode {
+    private static createNode(nodePtr: XmlNodePtr): XmlNode {
         const nodeType = XmlNodeStruct.type(nodePtr);
         switch (nodeType) {
             case XmlNodeStruct.Type.XML_ELEMENT_NODE:
-                return new XmlElement(this._doc, nodePtr);
+                return new XmlElement(nodePtr);
             case XmlNodeStruct.Type.XML_ATTRIBUTE_NODE:
-                return new XmlAttribute(this._doc, nodePtr);
+                return new XmlAttribute(nodePtr);
             case XmlNodeStruct.Type.XML_TEXT_NODE:
-                return new XmlText(this._doc, nodePtr);
+                return new XmlText(nodePtr);
             case XmlNodeStruct.Type.XML_COMMENT_NODE:
-                return new XmlComment(this._doc, nodePtr);
+                return new XmlComment(nodePtr);
             case XmlNodeStruct.Type.XML_CDATA_SECTION_NODE:
-                return new XmlCData(this._doc, nodePtr);
+                return new XmlCData(nodePtr);
             default:
                 throw new XmlError(`Unsupported node type ${nodeType}`);
         }
@@ -303,7 +301,7 @@ export class XmlElement extends XmlNamedNode {
             attr;
             attr = XmlNodeStruct.next(attr)
         ) {
-            attrs.push(new XmlAttribute(this._doc, attr));
+            attrs.push(new XmlAttribute(attr));
         }
 
         return attrs;
@@ -334,7 +332,7 @@ export class XmlElement extends XmlNamedNode {
         if (!attrPtr) {
             return null;
         }
-        return new XmlAttribute(this._doc, attrPtr);
+        return new XmlAttribute(attrPtr);
     }
 }
 
