@@ -2,6 +2,7 @@ import {
     error,
     xmlCtxtSetErrorHandler,
     xmlDocGetRootElement,
+    xmlDocSetRootElement,
     XmlError,
     xmlFreeDoc,
     xmlFreeParserCtxt,
@@ -18,7 +19,7 @@ import {
     xmlXIncludeProcessNode,
     xmlXIncludeSetErrorHandler,
 } from './libxml2.mjs';
-import { XmlElement, XmlNode } from './nodes.mjs';
+import { XmlElement, type XmlNode } from './nodes.mjs';
 import { NamespaceMap, XmlXPath } from './xpath.mjs';
 import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.cjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
@@ -259,6 +260,16 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
             // TODO: get error information from libxml2
             throw new XmlError();
         }
-        return new XmlElement(this, root);
+        return new XmlElement(root);
+    }
+
+    /**
+     * Set the root of the document.
+     * @param value The new root.
+     * If the node is from another document,
+     * it and its subtree will be removed from the previous document.
+     */
+    set root(value: XmlElement) {
+        xmlDocSetRootElement(this._ptr, value._nodePtr);
     }
 }

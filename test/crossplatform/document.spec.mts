@@ -42,5 +42,26 @@ describe('XmlDocument', () => {
 <docs><doc/></docs>
 `);
         });
+
+        it('move root from another doc', () => {
+            using doc1 = XmlDocument.create();
+            using doc2 = XmlDocument.fromString('<docs><doc/></docs>');
+
+            const docsNode = doc2.root;
+            const docNode = docsNode.firstChild;
+            expect(docsNode.doc).to.equal(doc2);
+            expect(docNode?.doc).to.equal(doc2);
+
+            doc1.root = doc2.root;
+
+            expect(doc1.root.name).to.equal('docs');
+            expect(() => doc2.root).to.throw(XmlError); // no root
+            expect(docsNode.doc).to.equal(doc1);
+            expect(docNode?.doc).to.equal(doc1);
+        });
+
+        it.skip('set root from a new node', () => {
+            // TODO: after we can create a node / an element
+        });
     });
 });

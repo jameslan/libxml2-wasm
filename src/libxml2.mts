@@ -253,6 +253,8 @@ export class XmlTreeCommonStruct {
     static next = getValueFunc(24, '*');
 
     static prev = getValueFunc(28, '*');
+
+    static doc = getValueFunc(32, '*');
 }
 
 export class XmlNamedNodeStruct extends XmlTreeCommonStruct {
@@ -436,6 +438,7 @@ export function xmlSaveFormatFileTo(
 
 export const xmlCtxtSetErrorHandler = libxml2._xmlCtxtSetErrorHandler;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
+export const xmlDocSetRootElement = libxml2._xmlDocSetRootElement;
 export const xmlFreeDoc = libxml2._xmlFreeDoc;
 export const xmlFreeParserCtxt = libxml2._xmlFreeParserCtxt;
 export const xmlGetLastError = libxml2._xmlGetLastError;

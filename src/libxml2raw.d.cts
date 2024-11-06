@@ -46,11 +46,13 @@ export class LibXml2 {
     ): void;
     _xmlFreeParserCtxt(ctxt: XmlParserCtxtPtr): void;
     _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
+    _xmlDocSetRootElement(doc: XmlDocPtr, root: XmlNodePtr): XmlNodePtr;
     _xmlFreeDoc(Doc: XmlDocPtr): void;
     _xmlGetLastError(): XmlErrorPtr;
     _xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): Pointer;
     _xmlHasNsProp(node: XmlNodePtr, name: CString, namespace: CString): XmlAttrPtr;
     _xmlNewDoc(): XmlDocPtr;
+    _xmlNewNode(ns: XmlNsPtr, name: CString): XmlNodePtr;
     _xmlNewParserCtxt(): XmlParserCtxtPtr;
     _xmlNodeGetContent(node: XmlNodePtr): CString;
     _xmlOutputBufferCreateIO(
