@@ -6,14 +6,16 @@ _xmlCtxtSetErrorHandler
 _xmlDocGetRootElement
 _xmlDocSetRootElement
 _xmlFreeDoc
+_xmlFreeNode
 _xmlFreeParserCtxt
 _xmlGetLastError
 _xmlGetNsList
 _xmlHasNsProp
 _xmlNewDoc
-_xmlNewDocComment
+_xmlNewDocNode
 _xmlNewDocText
 _xmlNewNode
+_xmlNewNs
 _xmlNewParserCtxt
 _xmlNodeGetContent
 _xmlOutputBufferCreateIO
@@ -39,6 +41,7 @@ _xmlSchemaSetParserStructuredErrors
 _xmlSchemaSetValidStructuredErrors
 _xmlSchemaValidateDoc
 _xmlSearchNs
+_xmlSetNs
 _xmlXIncludeFreeContext
 _xmlXIncludeNewContext
 _xmlXIncludeProcessNode

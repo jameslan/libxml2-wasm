@@ -3,11 +3,13 @@ import {
     xmlGetNsList,
     xmlHasNsProp,
     XmlNamedNodeStruct,
+    xmlNewNs,
     xmlNodeGetContent,
     XmlNodeSetStruct,
     XmlNodeStruct,
     XmlNsStruct,
     xmlSearchNs,
+    xmlSetNs,
     xmlXPathCompiledEval,
     xmlXPathFreeContext,
     xmlXPathFreeObject,
@@ -288,6 +290,21 @@ class XmlNamedNode extends XmlNode {
         }
         return '';
     }
+
+    /**
+     * Set the namespace prefix of this node.
+     * @param prefix The new prefix to set.
+     * Use empty string to set to default namespace,
+     * or to remove the prefix (if no default namespace declared).
+     */
+    set namespacePrefix(prefix: string) {
+        // Check if the namespace prefix valid for the current node
+        const ns = xmlSearchNs(XmlNodeStruct.doc(this._nodePtr), this._nodePtr, prefix || null);
+        if (!ns && prefix) {
+            throw new XmlError(`Namespace prefix "${prefix}" not found`);
+        }
+        xmlSetNs(this._nodePtr, ns);
+    }
 }
 
 export class XmlElement extends XmlNamedNode {
@@ -308,9 +325,10 @@ export class XmlElement extends XmlNamedNode {
     }
 
     /**
-     * Namespace definitions on this element
+     * Namespace declaration on this element
      *
      * @returns Empty object if there's no local namespace definition on this element.
+     * Note that default namespace uses empty string as key.
      */
     get localNamespaces(): NamespaceMap {
         const namespaces: NamespaceMap = {};
@@ -321,10 +339,20 @@ export class XmlElement extends XmlNamedNode {
     }
 
     /**
+     * Add a namespace declaration to this element.
+     * @param uri The namespace URI.
+     * @param prefix The prefix to the namespace.
+     * If not provided, it will be treated as default namespace.
+     */
+    addLocalNamespace(uri: string, prefix?: string): void {
+        xmlNewNs(this._nodePtr, uri, prefix);
+    }
+
+    /**
      * Get the attribute of this element.
      * Return null if the attribute doesn't exist.
      * @param name The name of the attribute
-     * @param prefix The prefix to the namespace
+     * @param prefix The prefix to the namespace.
      */
     attr(name: string, prefix?: string): XmlAttribute | null {
         const namespace = prefix ? this.namespaceForPrefix(prefix) : null;

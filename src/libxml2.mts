@@ -180,7 +180,7 @@ export function xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): XmlNsPtr[] {
     return arr;
 }
 
-export function xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: string): XmlNsPtr {
+export function xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: string | null): XmlNsPtr {
     return withStringUTF8(
         prefix,
         (buf) => libxml2._xmlSearchNs(doc, node, buf),
@@ -298,6 +298,31 @@ export class XmlErrorStruct {
     static line = getValueFunc(20, 'i32');
 
     static col = getValueFunc(40, 'i32');
+}
+
+export function xmlNewDocNode(
+    doc: XmlDocPtr,
+    ns: XmlNsPtr,
+    name: string,
+): XmlNodePtr {
+    return withStringUTF8(
+        name,
+        (buf) => libxml2._xmlNewDocNode(doc, ns, buf, 0),
+    );
+}
+
+export function xmlNewNs(
+    node: XmlNodePtr,
+    href: string,
+    prefix?: string,
+): XmlNsPtr {
+    return withStringUTF8(
+        href,
+        (bufHref) => withStringUTF8(
+            prefix ?? null,
+            (bufPrefix) => libxml2._xmlNewNs(node, bufHref, bufPrefix),
+        ),
+    );
 }
 
 /**
@@ -440,6 +465,7 @@ export const xmlCtxtSetErrorHandler = libxml2._xmlCtxtSetErrorHandler;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
 export const xmlDocSetRootElement = libxml2._xmlDocSetRootElement;
 export const xmlFreeDoc = libxml2._xmlFreeDoc;
+export const xmlFreeNode = libxml2._xmlFreeNode;
 export const xmlFreeParserCtxt = libxml2._xmlFreeParserCtxt;
 export const xmlGetLastError = libxml2._xmlGetLastError;
 export const xmlNewDoc = libxml2._xmlNewDoc;
@@ -463,6 +489,7 @@ export const xmlSchemaParse = libxml2._xmlSchemaParse;
 export const xmlSchemaSetParserStructuredErrors = libxml2._xmlSchemaSetParserStructuredErrors;
 export const xmlSchemaSetValidStructuredErrors = libxml2._xmlSchemaSetValidStructuredErrors;
 export const xmlSchemaValidateDoc = libxml2._xmlSchemaValidateDoc;
+export const xmlSetNs = libxml2._xmlSetNs;
 export const xmlXIncludeFreeContext = libxml2._xmlXIncludeFreeContext;
 export const xmlXIncludeNewContext = libxml2._xmlXIncludeNewContext;
 export const xmlXIncludeProcessNode = libxml2._xmlXIncludeProcessNode;
