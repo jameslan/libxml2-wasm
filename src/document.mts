@@ -5,9 +5,11 @@ import {
     xmlDocSetRootElement,
     XmlError,
     xmlFreeDoc,
+    xmlFreeNode,
     xmlFreeParserCtxt,
     XmlLibError,
     xmlNewDoc,
+    xmlNewDocNode,
     xmlNewParserCtxt,
     xmlOutputBufferCreate,
     XmlOutputBufferHandler,
@@ -270,6 +272,27 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
      * it and its subtree will be removed from the previous document.
      */
     set root(value: XmlElement) {
-        xmlDocSetRootElement(this._ptr, value._nodePtr);
+        const old = xmlDocSetRootElement(this._ptr, value._nodePtr);
+        if (old) {
+            xmlFreeNode(old);
+        }
+    }
+
+    /**
+     * Create the root element.
+     * @param name The name of the root node.
+     * @param namespace The namespace of the root node. Optional.
+     * @param prefix The namespace prefix of the root node.
+     * If it is not provided, the namespace will be default.
+     */
+    createRoot(name: string, namespace?: string, prefix?: string): XmlElement {
+        const elem = xmlNewDocNode(this._ptr, 0, name);
+        const root = new XmlElement(elem);
+        if (namespace) {
+            root.addLocalNamespace(namespace, prefix);
+            root.namespacePrefix = prefix ?? '';
+        }
+        this.root = root;
+        return root;
     }
 }

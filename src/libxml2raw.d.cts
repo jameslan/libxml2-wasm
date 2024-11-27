@@ -44,6 +44,7 @@ export class LibXml2 {
         handler: XmlStructuredErrorFunc,
         data: Pointer,
     ): void;
+    _xmlFreeNode(node: XmlNodePtr): void;
     _xmlFreeParserCtxt(ctxt: XmlParserCtxtPtr): void;
     _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
     _xmlDocSetRootElement(doc: XmlDocPtr, root: XmlNodePtr): XmlNodePtr;
@@ -52,7 +53,8 @@ export class LibXml2 {
     _xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): Pointer;
     _xmlHasNsProp(node: XmlNodePtr, name: CString, namespace: CString): XmlAttrPtr;
     _xmlNewDoc(): XmlDocPtr;
-    _xmlNewNode(ns: XmlNsPtr, name: CString): XmlNodePtr;
+    _xmlNewDocNode(doc: XmlDocPtr, ns: XmlNsPtr, name: CString, content: CString): XmlNodePtr;
+    _xmlNewNs(node: XmlNodePtr, href: CString, prefix: CString): XmlNsPtr;
     _xmlNewParserCtxt(): XmlParserCtxtPtr;
     _xmlNodeGetContent(node: XmlNodePtr): CString;
     _xmlOutputBufferCreateIO(
@@ -92,6 +94,7 @@ export class LibXml2 {
         format: number,
     ): number;
     _xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: CString): XmlNsPtr;
+    _xmlSetNs(node: XmlNodePtr, ns: XmlNsPtr): void;
     _xmlXIncludeFreeContext(ctx: XmlXIncludeCtxtPtr): void;
     _xmlXIncludeNewContext(doc: XmlDocPtr): XmlXIncludeCtxtPtr;
     _xmlXIncludeProcessNode(ctxt: XmlXIncludeCtxtPtr, node: XmlNodePtr): number;

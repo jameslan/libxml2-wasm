@@ -5,11 +5,12 @@ import {
     XmlComment,
     XmlDocument,
     XmlElement,
+    XmlError,
     XmlText,
 } from '@libxml2-wasm/lib/index.mjs';
 
 const doc = XmlDocument.fromString(`<?xml version="1.0" encoding="UTF-8"?>
-<bookstore xmlns:m="http://www.federalreserve.gov"><!--comment1-->
+<bookstore xmlns:m="http://www.federalreserve.gov" xmlns:n="http://www.xml.org"><!--comment1-->
     <book><title lang="en" author="J.K. Rowling">Harry Potter</title><price m:currency="USD"><![CDATA[29.99]]></price></book>
     <book><title lang="en" author="Erik Ray">Learning XML</title><price m:currency="USD">39.95</price></book>
 <!--comment2--></bookstore>`);
@@ -212,22 +213,6 @@ describe('XmlNode', () => {
         });
     });
 
-    describe('name getter', () => {
-        it('should return name of XmlAttribute', () => {
-            const attr = doc.get('/bookstore/book/title/@lang');
-            expect(attr).to.be.an.instanceOf(XmlAttribute);
-            expect((attr as XmlAttribute).name).to.equal('lang');
-        });
-
-        it('should return name of the XmlElement', () => {
-            expect((doc.get('book/title') as XmlElement).name).to.equal('title');
-        });
-
-        it('should return name without namespace', () => {
-            expect((doc.get('book/price') as XmlElement).attrs[0].name).to.equal('currency');
-        });
-    });
-
     describe('line getter', () => {
         it('returns line number', () => {
             expect(doc.root.line).to.equal(2);
@@ -237,7 +222,10 @@ describe('XmlNode', () => {
 
     describe('namespaces getter', () => {
         it('should get namespaces inherited for the element', () => {
-            expect(doc.get('book')?.namespaces).to.deep.equal({ m: 'http://www.federalreserve.gov' });
+            expect(doc.get('book')?.namespaces).to.deep.equal({
+                m: 'http://www.federalreserve.gov',
+                n: 'http://www.xml.org',
+            });
         });
 
         it('should return empty if element has no namespace definition', () => {
@@ -247,9 +235,10 @@ describe('XmlNode', () => {
         });
 
         it('should get namespaces on an attribute', () => {
-            expect(doc.get('book/title/@lang')?.namespaces).to.deep.equal(
-                { m: 'http://www.federalreserve.gov' },
-            );
+            expect(doc.get('book/title/@lang')?.namespaces).to.deep.equal({
+                m: 'http://www.federalreserve.gov',
+                n: 'http://www.xml.org',
+            });
         });
     });
 
@@ -305,8 +294,26 @@ describe('XmlNode', () => {
             expect(doc.root.namespaceForPrefix('a')).is.null;
         });
     });
+});
 
-    describe('namespace getter', () => {
+describe('XmlNamedNode/XmlAttribute', () => {
+    describe('name getter', () => {
+        it('should return name of XmlAttribute', () => {
+            const attr = doc.get('/bookstore/book/title/@lang');
+            expect(attr).to.be.an.instanceOf(XmlAttribute);
+            expect((attr as XmlAttribute).name).to.equal('lang');
+        });
+
+        it('should return name of the XmlElement', () => {
+            expect((doc.get('book/title') as XmlElement).name).to.equal('title');
+        });
+
+        it('should return name without namespace', () => {
+            expect((doc.get('book/price') as XmlElement).attrs[0].name).to.equal('currency');
+        });
+    });
+
+    describe('namespace', () => {
         it('should return the namespace of the node', () => {
             const attr = (doc.get('book/price') as XmlElement).attrs[0];
             expect(attr.name).to.equal('currency');
@@ -314,9 +321,45 @@ describe('XmlNode', () => {
             expect(attr.namespaceUri).to.equal('http://www.federalreserve.gov');
         });
 
-        it('should return empty  if has no namespace', () => {
+        it('should return empty if has no namespace', () => {
             expect(doc.root.namespacePrefix).to.equal('');
             expect(doc.root.namespaceUri).to.equal('');
+        });
+
+        it('should return empty for default namespace', () => {
+            const newDoc = XmlDocument.fromString('<docs xmlns="http://example.net/"/>');
+            expect(newDoc.root.namespacePrefix).to.equal('');
+            expect(newDoc.root.namespaceUri).to.equal('http://example.net/');
+        });
+
+        it('sets namespace prefix', () => {
+            const newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.net/"/>');
+
+            expect(newDoc.root.namespacePrefix).to.equal('');
+            newDoc.root.namespacePrefix = 'ex';
+            expect(newDoc.root.namespacePrefix).to.equal('ex');
+        });
+
+        it('sets default namespace', () => {
+            const newDoc = XmlDocument.fromString('<ex:docs xmlns:ex="http://example.net/" xmlns="http://xml.org/"/>');
+
+            expect(newDoc.root.namespacePrefix).to.equal('ex');
+            newDoc.root.namespacePrefix = '';
+            expect(newDoc.root.namespacePrefix).to.equal('');
+        });
+
+        it('clears namespace', () => {
+            const newDoc = XmlDocument.fromString('<ex:docs xmlns:ex="http://example.net/"/>');
+
+            expect(newDoc.root.namespacePrefix).to.equal('ex');
+            newDoc.root.namespacePrefix = '';
+            expect(newDoc.root.namespacePrefix).to.equal('');
+        });
+
+        it('fails on unknown prefix', () => {
+            const newDoc = XmlDocument.fromString('<docs/>');
+
+            expect(() => { newDoc.root.namespacePrefix = 'ex'; }).to.throw(XmlError, 'Namespace prefix "ex" not found');
         });
     });
 });
@@ -352,13 +395,32 @@ describe('XmlElement', () => {
         });
     });
 
-    describe('localNamespaces getter', () => {
+    describe('localNamespaces', () => {
         it('should get namespaces declared on the element', () => {
-            expect(doc.root.localNamespaces).to.deep.equal({ m: 'http://www.federalreserve.gov' });
+            expect(doc.root.localNamespaces).to.deep.equal({
+                m: 'http://www.federalreserve.gov',
+                n: 'http://www.xml.org',
+            });
         });
 
-        it('should return empty if element has no namespace definition', () => {
+        it('should return empty for default namespace', () => {
             expect((doc.get('book') as XmlElement).localNamespaces).to.be.empty;
+        });
+
+        it('could add namespace declaration on the element', () => {
+            const newDoc = XmlDocument.fromString('<docs/>');
+            newDoc.root.addLocalNamespace('http://example.com', 'ex');
+            expect(newDoc.toString()).to.equal('<?xml version="1.0"?>\n<docs xmlns:ex="http://example.com"/>\n');
+        });
+
+        it('could add default namespace declaration', () => {
+            const newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.com"/>');
+            newDoc.root.addLocalNamespace('http://www.federalreserve.gov');
+
+            expect(newDoc.root.localNamespaces).to.deep.equal({
+                '': 'http://www.federalreserve.gov',
+                ex: 'http://example.com',
+            });
         });
     });
 });
