@@ -86,6 +86,7 @@ export class LibXml2 {
         data: Pointer,
     ): void;
     _xmlRelaxNGValidateDoc(ctxt: XmlRelaxNGValidCtxtPtr, doc: XmlDocPtr): number;
+    _xmlRemoveProp(cur: XmlAttrPtr): number;
     _xmlResetLastError(): void;
     _xmlSaveFormatFileTo(
         buf: XmlOutputBufferPtr,
@@ -95,6 +96,7 @@ export class LibXml2 {
     ): number;
     _xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: CString): XmlNsPtr;
     _xmlSetNs(node: XmlNodePtr, ns: XmlNsPtr): void;
+    _xmlSetNsProp(node: XmlNodePtr, ns: XmlNsPtr, name: CString, value: CString): XmlAttrPtr;
     _xmlXIncludeFreeContext(ctx: XmlXIncludeCtxtPtr): void;
     _xmlXIncludeNewContext(doc: XmlDocPtr): XmlXIncludeCtxtPtr;
     _xmlXIncludeProcessNode(ctxt: XmlXIncludeCtxtPtr, node: XmlNodePtr): number;

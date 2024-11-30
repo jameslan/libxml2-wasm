@@ -7,9 +7,9 @@ import {
     xmlNodeGetContent,
     XmlNodeSetStruct,
     XmlNodeStruct,
-    XmlNsStruct,
+    XmlNsStruct, xmlRemoveProp,
     xmlSearchNs,
-    xmlSetNs,
+    xmlSetNs, xmlSetNsProp,
     xmlXPathCompiledEval,
     xmlXPathFreeContext,
     xmlXPathFreeObject,
@@ -341,18 +341,23 @@ export class XmlElement extends XmlNamedNode {
     /**
      * Add a namespace declaration to this element.
      * @param uri The namespace URI.
-     * @param prefix The prefix to the namespace.
+     * @param prefix The prefix that the namespace to be used as.
      * If not provided, it will be treated as default namespace.
+     *
+     * @throws XmlError if namespace declaration already exists.
      */
     addLocalNamespace(uri: string, prefix?: string): void {
-        xmlNewNs(this._nodePtr, uri, prefix);
+        const namespace = xmlNewNs(this._nodePtr, uri, prefix);
+        if (!namespace) {
+            throw new XmlError(`Failed to add namespace declaration "${prefix}"`);
+        }
     }
 
     /**
      * Get the attribute of this element.
      * Return null if the attribute doesn't exist.
      * @param name The name of the attribute
-     * @param prefix The prefix to the namespace.
+     * @param prefix The namespace prefix to the attribute.
      */
     attr(name: string, prefix?: string): XmlAttribute | null {
         const namespace = prefix ? this.namespaceForPrefix(prefix) : null;
@@ -361,6 +366,20 @@ export class XmlElement extends XmlNamedNode {
             return null;
         }
         return new XmlAttribute(attrPtr);
+    }
+
+    /**
+     * Set the attribute of this element.
+     * @param name The name of the attribute
+     * @param value The value of the attribute
+     * @param prefix The namespace prefix to the attribute.
+     */
+    setAttr(name: string, value: string, prefix?: string): XmlAttribute {
+        const ns = xmlSearchNs(XmlNodeStruct.doc(this._nodePtr), this._nodePtr, prefix || null);
+        if (!ns && prefix) {
+            throw new XmlError(`Namespace prefix "${prefix}" not found`);
+        }
+        return new XmlAttribute(xmlSetNsProp(this._nodePtr, ns, name, value));
     }
 }
 
@@ -371,6 +390,14 @@ export class XmlText extends XmlNode {
 }
 
 export class XmlAttribute extends XmlNamedNode {
+    /**
+     * Remove current attribute from the element and document.
+     */
+    removeFromParent(): void {
+        if (xmlRemoveProp(this._nodePtr)) {
+            throw new XmlError('Failed to remove attribute');
+        }
+    }
 }
 
 export class XmlCData extends XmlNode {

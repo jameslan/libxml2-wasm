@@ -29,6 +29,7 @@ _xmlRelaxNGParse
 _xmlRelaxNGSetParserStructuredErrors
 _xmlRelaxNGSetValidStructuredErrors
 _xmlRelaxNGValidateDoc
+_xmlRemoveProp
 _xmlResetLastError
 _xmlSaveFormatFileTo
 _xmlSchemaNewDocParserCtxt
@@ -42,6 +43,7 @@ _xmlSchemaSetValidStructuredErrors
 _xmlSchemaValidateDoc
 _xmlSearchNs
 _xmlSetNs
+_xmlSetNsProp
 _xmlXIncludeFreeContext
 _xmlXIncludeNewContext
 _xmlXIncludeProcessNode
