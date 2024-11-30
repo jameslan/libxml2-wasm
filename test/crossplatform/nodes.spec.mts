@@ -362,6 +362,22 @@ describe('XmlNamedNode/XmlAttribute', () => {
             expect(() => { newDoc.root.namespacePrefix = 'ex'; }).to.throw(XmlError, 'Namespace prefix "ex" not found');
         });
     });
+
+    describe('removeFromParent', () => {
+        it('should remove the node from its parent', () => {
+            const newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
+            const lang = newDoc.get('/docs/doc/@lang') as XmlAttribute;
+            lang.removeFromParent();
+            expect(newDoc.toString({ format: false })).to.equal('<?xml version="1.0"?>\n<docs><doc/></docs>\n');
+        });
+
+        it('should fail if it is not attached to an element', () => {
+            const newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
+            const lang = newDoc.get('/docs/doc/@lang') as XmlAttribute;
+            lang.removeFromParent();
+            expect(() => lang.removeFromParent()).to.throw(XmlError, 'Failed to remove attribute');
+        });
+    });
 });
 
 describe('XmlElement', () => {
@@ -393,6 +409,41 @@ describe('XmlElement', () => {
             const price = doc.get('book/price') as XmlElement;
             expect(price.attr('currency', 'm')?.content).to.equal('USD');
         });
+
+        it('could add new attribute', () => {
+            const newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+            const attr = (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'en');
+            expect(attr.name).to.equal('lang');
+            expect(attr.content).to.equal('en');
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs><doc lang="en"/></docs>\n');
+        });
+
+        it('could add new attribute with namespace', () => {
+            const newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.net/"><doc/></docs>');
+            const attr = (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'en', 'ex');
+            expect(attr.name).to.equal('lang');
+            expect(attr.content).to.equal('en');
+            expect(attr.namespaceUri).to.equal('http://example.net/');
+            expect(attr.namespacePrefix).to.equal('ex');
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs xmlns:ex="http://example.net/"><doc ex:lang="en"/></docs>\n');
+        });
+
+        it('could set attribute to a new value', () => {
+            const newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
+            const attr = (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'de');
+            expect(attr.content).to.equal('de');
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs><doc lang="de"/></docs>\n');
+        });
+
+        it('fails on unknown prefix', () => {
+            const newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+
+            expect(() => { (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'en', 'ex'); })
+                .to.throw(XmlError, 'Namespace prefix "ex" not found');
+        });
     });
 
     describe('localNamespaces', () => {
@@ -411,6 +462,12 @@ describe('XmlElement', () => {
             const newDoc = XmlDocument.fromString('<docs/>');
             newDoc.root.addLocalNamespace('http://example.com', 'ex');
             expect(newDoc.toString()).to.equal('<?xml version="1.0"?>\n<docs xmlns:ex="http://example.com"/>\n');
+        });
+
+        it('throws when add namespace multiple times', () => {
+            const newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.com"/>');
+            expect(() => newDoc.root.addLocalNamespace('http://xml.org', 'ex'))
+                .to.throw(XmlError, 'Failed to add namespace declaration "ex"');
         });
 
         it('could add default namespace declaration', () => {

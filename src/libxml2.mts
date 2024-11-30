@@ -60,15 +60,36 @@ export class XmlLibError extends XmlError {
     }
 }
 
-function withStringUTF8<R>(str: string | null, process: (buf: number, len: number) => R): R {
+function allocUTF8Buffer(str: string | null) {
     if (!str) {
-        return process(0, 0);
+        return [0, 0];
     }
     const len = libxml2.lengthBytesUTF8(str);
     const buf = libxml2._malloc(len + 1);
     libxml2.stringToUTF8(str, buf, len + 1);
+    return [buf, len];
+}
+
+function withStrings<R>(process: (...buf: number[]) => R, ...strings: (string | null)[]): R {
+    const args = strings.map((str) => {
+        const [buf] = allocUTF8Buffer(str);
+        return buf;
+    });
+    const ret = process(...args);
+    args.forEach((buf) => {
+        if (buf) {
+            libxml2._free(buf);
+        }
+    });
+    return ret;
+}
+
+function withStringUTF8<R>(str: string | null, process: (buf: number, len: number) => R): R {
+    const [buf, len] = allocUTF8Buffer(str);
     const ret = process(buf, len);
-    libxml2._free(buf);
+    if (buf) {
+        libxml2._free(buf);
+    }
     return ret;
 }
 
@@ -100,9 +121,9 @@ export function xmlReadString(
 ): XmlDocPtr {
     return withStringUTF8(
         xmlString,
-        (xmlBuf, len) => withStringUTF8(
-            url,
+        (xmlBuf, len) => withStrings(
             (urlBuf) => libxml2._xmlCtxtReadMemory(ctxt, xmlBuf, len, urlBuf, 0, options),
+            url,
         ),
     );
 }
@@ -116,25 +137,40 @@ export function xmlReadMemory(
 ): XmlDocPtr {
     return withCString(
         xmlBuffer,
-        (xmlBuf, len) => withStringUTF8(
-            url,
+        (xmlBuf, len) => withStrings(
             (urlBuf) => libxml2._xmlCtxtReadMemory(ctxt, xmlBuf, len, urlBuf, 0, options),
+            url,
         ),
     );
 }
 
 export function xmlXPathRegisterNs(ctx: XmlXPathContextPtr, prefix: string, uri: string): number {
-    return withStringUTF8(prefix, (bufPrefix) => withStringUTF8(
+    return withStrings(
+        (bufPrefix, bufUri) => libxml2._xmlXPathRegisterNs(ctx, bufPrefix, bufUri),
+        prefix,
         uri,
-        (bufUri) => libxml2._xmlXPathRegisterNs(ctx, bufPrefix, bufUri),
-    ));
+    );
 }
 
 export function xmlHasNsProp(node: XmlNodePtr, name: string, namespace: string | null): XmlAttrPtr {
-    return withStringUTF8(name, (bufName) => withStringUTF8(
+    return withStrings(
+        (bufName, bufNamespace) => libxml2._xmlHasNsProp(node, bufName, bufNamespace),
+        name,
         namespace,
-        (bufNamespace) => libxml2._xmlHasNsProp(node, bufName, bufNamespace),
-    ));
+    );
+}
+
+export function xmlSetNsProp(
+    node: XmlNodePtr,
+    namespace: XmlNsPtr,
+    name: string,
+    value: string,
+): XmlAttrPtr {
+    return withStrings(
+        (bufName, bufValue) => libxml2._xmlSetNsProp(node, namespace, bufName, bufValue),
+        name,
+        value,
+    );
 }
 
 export function xmlNodeGetContent(node: XmlNodePtr): string {
@@ -181,14 +217,14 @@ export function xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): XmlNsPtr[] {
 }
 
 export function xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: string | null): XmlNsPtr {
-    return withStringUTF8(
-        prefix,
+    return withStrings(
         (buf) => libxml2._xmlSearchNs(doc, node, buf),
+        prefix,
     );
 }
 
 export function xmlXPathCtxtCompile(ctxt: XmlXPathContextPtr, str: string): XmlXPathCompExprPtr {
-    return withStringUTF8(str, (buf) => libxml2._xmlXPathCtxtCompile(ctxt, buf));
+    return withStrings((buf) => libxml2._xmlXPathCtxtCompile(ctxt, buf), str);
 }
 
 export namespace error {
@@ -305,9 +341,9 @@ export function xmlNewDocNode(
     ns: XmlNsPtr,
     name: string,
 ): XmlNodePtr {
-    return withStringUTF8(
-        name,
+    return withStrings(
         (buf) => libxml2._xmlNewDocNode(doc, ns, buf, 0),
+        name,
     );
 }
 
@@ -316,12 +352,10 @@ export function xmlNewNs(
     href: string,
     prefix?: string,
 ): XmlNsPtr {
-    return withStringUTF8(
+    return withStrings(
+        (bufHref, bufPrefix) => libxml2._xmlNewNs(node, bufHref, bufPrefix),
         href,
-        (bufHref) => withStringUTF8(
-            prefix ?? null,
-            (bufPrefix) => libxml2._xmlNewNs(node, bufHref, bufPrefix),
-        ),
+        prefix ?? null,
     );
 }
 
@@ -479,6 +513,7 @@ export const xmlRelaxNGParse = libxml2._xmlRelaxNGParse;
 export const xmlRelaxNGSetParserStructuredErrors = libxml2._xmlRelaxNGSetParserStructuredErrors;
 export const xmlRelaxNGSetValidStructuredErrors = libxml2._xmlRelaxNGSetValidStructuredErrors;
 export const xmlRelaxNGValidateDoc = libxml2._xmlRelaxNGValidateDoc;
+export const xmlRemoveProp = libxml2._xmlRemoveProp;
 export const xmlResetLastError = libxml2._xmlResetLastError;
 export const xmlSchemaFree = libxml2._xmlSchemaFree;
 export const xmlSchemaFreeParserCtxt = libxml2._xmlSchemaFreeParserCtxt;
