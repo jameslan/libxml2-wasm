@@ -15,6 +15,7 @@ import moduleLoader from './libxml2raw.cjs';
 import { ContextStorage } from './utils.mjs';
 
 const libxml2 = await moduleLoader();
+libxml2._xmlInitParser();
 
 /**
  * Base class for exceptions.

@@ -52,6 +52,7 @@ export class LibXml2 {
     _xmlGetLastError(): XmlErrorPtr;
     _xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): Pointer;
     _xmlHasNsProp(node: XmlNodePtr, name: CString, namespace: CString): XmlAttrPtr;
+    _xmlInitParser(): void;
     _xmlNewDoc(): XmlDocPtr;
     _xmlNewDocNode(doc: XmlDocPtr, ns: XmlNsPtr, name: CString, content: CString): XmlNodePtr;
     _xmlNewNs(node: XmlNodePtr, href: CString, prefix: CString): XmlNsPtr;

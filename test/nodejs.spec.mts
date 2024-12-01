@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import * as chai from 'chai';
 import sinon from 'sinon';
@@ -147,5 +148,12 @@ describe('saveDocSync', () => {
 
         expect(calledWithCorrectArg).to.have.been.called;
         expect(closeStub).to.have.been.calledWith(42);
+    });
+});
+
+describe('Initialization', () => {
+    it('works when register io callbacks at the beginning', () => {
+        // execute in external process to test the initialization
+        execSync(`"${process.execPath}" test/initialization.test.js`);
     });
 });
