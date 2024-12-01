@@ -11,6 +11,7 @@ _xmlFreeParserCtxt
 _xmlGetLastError
 _xmlGetNsList
 _xmlHasNsProp
+_xmlInitParser
 _xmlNewDoc
 _xmlNewDocNode
 _xmlNewDocText
