@@ -1,15 +1,24 @@
 import {
-    XmlError,
+    xmlAddChild,
+    xmlAddNextSibling,
+    xmlAddPrevSibling,
+    XmlError, xmlFreeNode,
     xmlGetNsList,
     xmlHasNsProp,
     XmlNamedNodeStruct,
+    xmlNewCDataBlock,
+    xmlNewDocComment,
+    xmlNewDocText,
     xmlNewNs,
     xmlNodeGetContent,
+    xmlNodeSetContent,
     XmlNodeSetStruct,
     XmlNodeStruct,
-    XmlNsStruct, xmlRemoveProp,
+    XmlNsStruct,
+    xmlRemoveProp,
     xmlSearchNs,
     xmlSetNs, xmlSetNsProp,
+    xmlUnlinkNode,
     xmlXPathCompiledEval,
     xmlXPathFreeContext,
     xmlXPathFreeObject,
@@ -36,6 +45,97 @@ export abstract class XmlNode {
      */
     get doc(): XmlDocument {
         return XmlDocument.getInstance(XmlNodeStruct.doc(this._nodePtr));
+    }
+
+    /**
+     * Remove the node from its parent.
+     */
+    remove(): void {
+        if (!this._nodePtr) {
+            return;
+        }
+        xmlUnlinkNode(this._nodePtr);
+        xmlFreeNode(this._nodePtr);
+        this._nodePtr = 0;
+    }
+
+    /**
+     * Add a comment sibling node after this node.
+     *
+     * @param content the content of the comment
+     *
+     * @see {@link prependComment}
+     * @see {@link XmlElement#addComment}
+     */
+    appendComment(content: string): XmlComment {
+        let node = xmlNewDocComment(XmlNodeStruct.doc(this._nodePtr), content);
+        node = xmlAddNextSibling(this._nodePtr, node);
+        return new XmlComment(node);
+    }
+
+    /**
+     * Add a comment sibling node before this node.
+     * @param content the content of the comment
+     *
+     * @see {@link appendComment}
+     * @see {@link XmlElement#addComment}
+     */
+    prependComment(content: string): XmlComment {
+        let node = xmlNewDocComment(XmlNodeStruct.doc(this._nodePtr), content);
+        node = xmlAddPrevSibling(this._nodePtr, node);
+        return new XmlComment(node);
+    }
+
+    /**
+     * Add a CDATA section sibling node after this node.
+     * @param content the content of the CDATA section
+     *
+     * @see {@link prependCData}
+     * @see {@link XmlElement#addCData}
+     */
+    appendCData(content: string): XmlCData {
+        let node = xmlNewCDataBlock(XmlNodeStruct.doc(this._nodePtr), content);
+        node = xmlAddNextSibling(this._nodePtr, node);
+        return new XmlCData(node);
+    }
+
+    /**
+     * Add a CDATA section sibling node before this node.
+     * @param content the content of the CDATA section
+     *
+     * @see {@link appendCData}
+     * @see {@link XmlElement#addCData}
+     */
+    prependCData(content: string): XmlCData {
+        let node = xmlNewCDataBlock(XmlNodeStruct.doc(this._nodePtr), content);
+        node = xmlAddPrevSibling(this._nodePtr, node);
+        return new XmlCData(node);
+    }
+
+    /**
+     * Add a text sibling node after this node.
+     * @param text the content of the text node
+     *
+     * @see {@link prependText}
+     * @see {@link XmlElement#addText}
+     */
+    appendText(text: string): XmlText {
+        let node = xmlNewDocText(XmlNodeStruct.doc(this._nodePtr), text);
+        node = xmlAddNextSibling(this._nodePtr, node);
+        return new XmlText(node);
+    }
+
+    /**
+     * Add a text sibling node before this node.
+     * @param text the content of the text node
+     *
+     * @see {@link appendText}
+     * @see {@link XmlElement#addText}
+     */
+    prependText(text: string): XmlText {
+        let node = xmlNewDocText(XmlNodeStruct.doc(this._nodePtr), text);
+        node = xmlAddPrevSibling(this._nodePtr, node);
+        return new XmlText(node);
     }
 
     /**
@@ -381,24 +481,82 @@ export class XmlElement extends XmlNamedNode {
         }
         return new XmlAttribute(xmlSetNsProp(this._nodePtr, ns, name, value));
     }
-}
 
-export class XmlComment extends XmlNode {
-}
+    /**
+     * Add a child comment node to the end of the children list.
+     * @param content the content of the comment
+     *
+     * @see {@link appendComment}
+     * @see {@link prependComment}
+     */
+    addComment(content: string): XmlComment {
+        let node = xmlNewDocComment(XmlNodeStruct.doc(this._nodePtr), content);
+        node = xmlAddChild(this._nodePtr, node);
+        return new XmlComment(node);
+    }
 
-export class XmlText extends XmlNode {
+    /**
+     * Add a child CDATA section node to the end of the children list.
+     * @param content the content of the CDATA section
+     *
+     * @see {@link appendCData}
+     * @see {@link prependCData}
+     */
+    addCData(content: string): XmlCData {
+        let node = xmlNewCDataBlock(XmlNodeStruct.doc(this._nodePtr), content);
+        node = xmlAddChild(this._nodePtr, node);
+        return new XmlCData(node);
+    }
+
+    /**
+     * Add a child text node to the end of the children list.
+     * Note that this method will merge the text node if the last child is also a text node.
+     * @param text the content of the text node
+     *
+     * @see {@link appendText}
+     * @see {@link prependText}
+     */
+    addText(text: string): XmlText {
+        let node = xmlNewDocText(XmlNodeStruct.doc(this._nodePtr), text);
+        node = xmlAddChild(this._nodePtr, node);
+        return new XmlText(node);
+    }
 }
 
 export class XmlAttribute extends XmlNamedNode {
     /**
      * Remove current attribute from the element and document.
      */
-    removeFromParent(): void {
+    remove(): void {
+        if (!this._nodePtr) {
+            return;
+        }
         if (xmlRemoveProp(this._nodePtr)) {
             throw new XmlError('Failed to remove attribute');
         }
+        this._nodePtr = 0;
     }
 }
 
-export class XmlCData extends XmlNode {
+class XmlSimpleNode extends XmlNode {
+    get content(): string {
+        return super.content;
+    }
+
+    /**
+     * Set the content of the node.
+     * @param value the new content
+     */
+    set content(value: string) {
+        xmlNodeSetContent(this._nodePtr, value);
+    }
+}
+
+export class XmlCData extends XmlSimpleNode {
+}
+
+export class XmlComment extends XmlSimpleNode {
+}
+
+export class XmlText extends XmlSimpleNode {
 }

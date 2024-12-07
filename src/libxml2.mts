@@ -178,8 +178,17 @@ export function xmlNodeGetContent(node: XmlNodePtr): string {
     return moveUtf8ToString(libxml2._xmlNodeGetContent(node));
 }
 
+export function xmlNodeSetContent(node: XmlNodePtr, content: string): number {
+    return withStringUTF8(content, (buf, len) => libxml2._xmlNodeSetContentLen(node, buf, len));
+}
+
 function getValueFunc(offset: number, type: string): (ptr: number) => number {
-    return (ptr: number) => libxml2.getValue(ptr + offset, type);
+    return (ptr: number) => {
+        if (ptr === 0) {
+            throw new XmlError('Access with null pointer');
+        }
+        return libxml2.getValue(ptr + offset, type);
+    };
 }
 
 function nullableUTF8ToString(str: CString): string | null {
@@ -194,7 +203,12 @@ function getNullableStringValueFunc(offset: number): (ptr: number) => string | n
 }
 
 function getStringValueFunc(offset: number): (ptr: number) => string {
-    return (ptr: number) => libxml2.UTF8ToString(libxml2.getValue(ptr + offset, 'i8*'));
+    return (ptr: number) => {
+        if (ptr === 0) {
+            throw new XmlError('Access with null pointer');
+        }
+        return libxml2.UTF8ToString(libxml2.getValue(ptr + offset, 'i8*'));
+    };
 }
 
 export function xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): XmlNsPtr[] {
@@ -257,7 +271,7 @@ export class XmlXPathObjectStruct {
     static stringval = getStringValueFunc(20);
 }
 
-export module XmlXPathObjectStruct {
+export namespace XmlXPathObjectStruct {
     export enum Type {
         XPATH_NODESET = 1,
         XPATH_BOOLEAN = 2,
@@ -306,7 +320,7 @@ export class XmlNodeStruct extends XmlNamedNodeStruct {
     static line = getValueFunc(56, 'i32');
 }
 
-export module XmlNodeStruct {
+export namespace XmlNodeStruct {
     export enum Type {
         XML_ELEMENT_NODE = 1,
         XML_ATTRIBUTE_NODE = 2,
@@ -337,6 +351,14 @@ export class XmlErrorStruct {
     static col = getValueFunc(40, 'i32');
 }
 
+export function xmlNewCDataBlock(doc: XmlDocPtr, content: string): XmlNodePtr {
+    return withStringUTF8(content, (buf, len) => libxml2._xmlNewCDataBlock(doc, buf, len));
+}
+
+export function xmlNewDocComment(doc: XmlDocPtr, content: string): XmlNodePtr {
+    return withStringUTF8(content, (buf) => libxml2._xmlNewDocComment(doc, buf));
+}
+
 export function xmlNewDocNode(
     doc: XmlDocPtr,
     ns: XmlNsPtr,
@@ -346,6 +368,10 @@ export function xmlNewDocNode(
         (buf) => libxml2._xmlNewDocNode(doc, ns, buf, 0),
         name,
     );
+}
+
+export function xmlNewDocText(doc: XmlDocPtr, content: string): XmlNodePtr {
+    return withStringUTF8(content, (buf, len) => libxml2._xmlNewDocTextLen(doc, buf, len));
 }
 
 export function xmlNewNs(
@@ -496,6 +522,9 @@ export function xmlSaveFormatFileTo(
     return libxml2._xmlSaveFormatFileTo(buf, doc, 0, format);
 }
 
+export const xmlAddChild = libxml2._xmlAddChild;
+export const xmlAddNextSibling = libxml2._xmlAddNextSibling;
+export const xmlAddPrevSibling = libxml2._xmlAddPrevSibling;
 export const xmlCtxtSetErrorHandler = libxml2._xmlCtxtSetErrorHandler;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
 export const xmlDocSetRootElement = libxml2._xmlDocSetRootElement;
@@ -526,6 +555,7 @@ export const xmlSchemaSetParserStructuredErrors = libxml2._xmlSchemaSetParserStr
 export const xmlSchemaSetValidStructuredErrors = libxml2._xmlSchemaSetValidStructuredErrors;
 export const xmlSchemaValidateDoc = libxml2._xmlSchemaValidateDoc;
 export const xmlSetNs = libxml2._xmlSetNs;
+export const xmlUnlinkNode = libxml2._xmlUnlinkNode;
 export const xmlXIncludeFreeContext = libxml2._xmlXIncludeFreeContext;
 export const xmlXIncludeNewContext = libxml2._xmlXIncludeNewContext;
 export const xmlXIncludeProcessNode = libxml2._xmlXIncludeProcessNode;

@@ -242,6 +242,101 @@ describe('XmlNode', () => {
         });
     });
 
+    describe('remove', () => {
+        it('removes the sub element from its parent', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+            const element = newDoc.get('/docs/doc');
+            element?.remove();
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs/>\n');
+        });
+
+        it('2nd remove call do nothing', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+            const element = newDoc.get('/docs/doc');
+            element?.remove();
+            element?.remove();
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs/>\n');
+        });
+
+        it('removes Text from its parent', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc>text</doc></docs>');
+            const text = newDoc.get('/docs/doc/text()');
+            text?.remove();
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs><doc/></docs>\n');
+        });
+
+        it('removes comment from its parent', () => {
+            using newDoc = XmlDocument.fromString('<docs><!--comment--></docs>');
+            const comment = newDoc.root.firstChild as XmlComment;
+            comment.remove();
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs/>\n');
+        });
+
+        it('removes CDATA from its parent', () => {
+            using newDoc = XmlDocument.fromString('<docs><![CDATA[content]]></docs>');
+            const cdata = newDoc.root.firstChild as XmlCData;
+            cdata.remove();
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs/>\n');
+        });
+
+        it('has no properties after remove', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+            const element = newDoc.get('/docs/doc') as XmlElement;
+            element.remove();
+            expect(() => element.name).to.throw(XmlError, 'Access with null pointer');
+            expect(() => element.firstChild).to.throw(XmlError, 'Access with null pointer');
+        });
+    });
+
+    describe('addSibling', () => {
+        it('adds a new comment node after the current node', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+            newDoc.get('/docs/doc')?.appendComment('comment');
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs><doc/><!--comment--></docs>\n');
+        });
+
+        it('adds a new comment node before the current node', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+            newDoc.get('/docs/doc')?.prependComment('comment');
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs><!--comment--><doc/></docs>\n');
+        });
+
+        it('adds a new CDATA node after the current node', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+            newDoc.get('/docs/doc')?.appendCData('content');
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs><doc/><![CDATA[content]]></docs>\n');
+        });
+
+        it('adds a new CDATA node before the current node', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+            newDoc.get('/docs/doc')?.prependCData('content');
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs><![CDATA[content]]><doc/></docs>\n');
+        });
+
+        it('adds a new text node after the current node', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+            newDoc.get('/docs/doc')?.appendText('content');
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs><doc/>content</docs>\n');
+        });
+
+        it('adds a new text node before the current node', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+            newDoc.get('/docs/doc')?.prependText('content');
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs>content<doc/></docs>\n');
+        });
+    });
+
     describe('find', () => {
         it('return empty array if not found', () => {
             expect(doc.find('book[title/@lang="de"]')).to.be.empty;
@@ -327,13 +422,13 @@ describe('XmlNamedNode/XmlAttribute', () => {
         });
 
         it('should return empty for default namespace', () => {
-            const newDoc = XmlDocument.fromString('<docs xmlns="http://example.net/"/>');
+            using newDoc = XmlDocument.fromString('<docs xmlns="http://example.net/"/>');
             expect(newDoc.root.namespacePrefix).to.equal('');
             expect(newDoc.root.namespaceUri).to.equal('http://example.net/');
         });
 
         it('sets namespace prefix', () => {
-            const newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.net/"/>');
+            using newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.net/"/>');
 
             expect(newDoc.root.namespacePrefix).to.equal('');
             newDoc.root.namespacePrefix = 'ex';
@@ -341,7 +436,7 @@ describe('XmlNamedNode/XmlAttribute', () => {
         });
 
         it('sets default namespace', () => {
-            const newDoc = XmlDocument.fromString('<ex:docs xmlns:ex="http://example.net/" xmlns="http://xml.org/"/>');
+            using newDoc = XmlDocument.fromString('<ex:docs xmlns:ex="http://example.net/" xmlns="http://xml.org/"/>');
 
             expect(newDoc.root.namespacePrefix).to.equal('ex');
             newDoc.root.namespacePrefix = '';
@@ -349,7 +444,7 @@ describe('XmlNamedNode/XmlAttribute', () => {
         });
 
         it('clears namespace', () => {
-            const newDoc = XmlDocument.fromString('<ex:docs xmlns:ex="http://example.net/"/>');
+            using newDoc = XmlDocument.fromString('<ex:docs xmlns:ex="http://example.net/"/>');
 
             expect(newDoc.root.namespacePrefix).to.equal('ex');
             newDoc.root.namespacePrefix = '';
@@ -357,7 +452,7 @@ describe('XmlNamedNode/XmlAttribute', () => {
         });
 
         it('fails on unknown prefix', () => {
-            const newDoc = XmlDocument.fromString('<docs/>');
+            using newDoc = XmlDocument.fromString('<docs/>');
 
             expect(() => { newDoc.root.namespacePrefix = 'ex'; }).to.throw(XmlError, 'Namespace prefix "ex" not found');
         });
@@ -365,17 +460,18 @@ describe('XmlNamedNode/XmlAttribute', () => {
 
     describe('removeFromParent', () => {
         it('should remove the node from its parent', () => {
-            const newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
+            using newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
             const lang = newDoc.get('/docs/doc/@lang') as XmlAttribute;
-            lang.removeFromParent();
+            lang.remove();
             expect(newDoc.toString({ format: false })).to.equal('<?xml version="1.0"?>\n<docs><doc/></docs>\n');
         });
 
-        it('should fail if it is not attached to an element', () => {
-            const newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
+        it('2nd remove call do nothing', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
             const lang = newDoc.get('/docs/doc/@lang') as XmlAttribute;
-            lang.removeFromParent();
-            expect(() => lang.removeFromParent()).to.throw(XmlError, 'Failed to remove attribute');
+            lang.remove();
+            lang.remove();
+            expect(newDoc.toString({ format: false })).to.equal('<?xml version="1.0"?>\n<docs><doc/></docs>\n');
         });
     });
 });
@@ -411,7 +507,7 @@ describe('XmlElement', () => {
         });
 
         it('could add new attribute', () => {
-            const newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+            using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
             const attr = (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'en');
             expect(attr.name).to.equal('lang');
             expect(attr.content).to.equal('en');
@@ -420,7 +516,7 @@ describe('XmlElement', () => {
         });
 
         it('could add new attribute with namespace', () => {
-            const newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.net/"><doc/></docs>');
+            using newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.net/"><doc/></docs>');
             const attr = (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'en', 'ex');
             expect(attr.name).to.equal('lang');
             expect(attr.content).to.equal('en');
@@ -431,7 +527,7 @@ describe('XmlElement', () => {
         });
 
         it('could set attribute to a new value', () => {
-            const newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
+            using newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
             const attr = (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'de');
             expect(attr.content).to.equal('de');
             expect(newDoc.toString({ format: false }))
@@ -439,7 +535,7 @@ describe('XmlElement', () => {
         });
 
         it('fails on unknown prefix', () => {
-            const newDoc = XmlDocument.fromString('<docs><doc/></docs>');
+            using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
 
             expect(() => { (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'en', 'ex'); })
                 .to.throw(XmlError, 'Namespace prefix "ex" not found');
@@ -459,25 +555,98 @@ describe('XmlElement', () => {
         });
 
         it('could add namespace declaration on the element', () => {
-            const newDoc = XmlDocument.fromString('<docs/>');
+            using newDoc = XmlDocument.fromString('<docs/>');
             newDoc.root.addLocalNamespace('http://example.com', 'ex');
             expect(newDoc.toString()).to.equal('<?xml version="1.0"?>\n<docs xmlns:ex="http://example.com"/>\n');
         });
 
         it('throws when add namespace multiple times', () => {
-            const newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.com"/>');
+            using newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.com"/>');
             expect(() => newDoc.root.addLocalNamespace('http://xml.org', 'ex'))
                 .to.throw(XmlError, 'Failed to add namespace declaration "ex"');
         });
 
         it('could add default namespace declaration', () => {
-            const newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.com"/>');
+            using newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.com"/>');
             newDoc.root.addLocalNamespace('http://www.federalreserve.gov');
 
             expect(newDoc.root.localNamespaces).to.deep.equal({
                 '': 'http://www.federalreserve.gov',
                 ex: 'http://example.com',
             });
+        });
+    });
+
+    describe('addComment', () => {
+        it('adds a comment node', () => {
+            using newDoc = XmlDocument.fromString('<docs/>');
+            newDoc.root.addComment('This is a comment');
+
+            expect(newDoc.toString({ format: false }))
+                .to
+                .equal('<?xml version="1.0"?>\n<docs><!--This is a comment--></docs>\n');
+        });
+
+        it('adds two comment nodes', () => {
+            using newDoc = XmlDocument.fromString('<docs/>');
+            newDoc.root.addComment('comment1');
+            newDoc.root.addComment('comment2');
+
+            expect(newDoc.toString({ format: false }))
+                .to
+                .equal('<?xml version="1.0"?>\n<docs><!--comment1--><!--comment2--></docs>\n');
+        });
+    });
+
+    describe('addCData', () => {
+        it('adds a CDATA node', () => {
+            using newDoc = XmlDocument.fromString('<docs/>');
+            newDoc.root.addCData('This is a CDATA block');
+
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs><![CDATA[This is a CDATA block]]></docs>\n');
+        });
+
+        it('adds two CDATA nodes', () => {
+            using newDoc = XmlDocument.fromString('<docs/>');
+            newDoc.root.addCData('block1');
+            newDoc.root.addCData('block2');
+
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs><![CDATA[block1]]><![CDATA[block2]]></docs>\n');
+        });
+    });
+
+    describe('addText', () => {
+        it('adds a text node', () => {
+            using newDoc = XmlDocument.fromString('<docs/>');
+            newDoc.root.addText('This is a text node');
+
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs>This is a text node</docs>\n');
+        });
+
+        it('merge two text nodes', () => {
+            using newDoc = XmlDocument.fromString('<docs/>');
+            newDoc.root.addText('node1');
+            newDoc.root.addText('node2');
+
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<docs>node1node2</docs>\n');
+            expect(newDoc.root.firstChild).to.be.instanceOf(XmlText);
+            expect(newDoc.root.firstChild?.content).to.equal('node1node2');
+        });
+    });
+});
+
+describe('XmlText', () => {
+    describe('content setter', () => {
+        it('should set the text content', () => {
+            using newDoc = XmlDocument.fromString('<doc>Harry Potter</doc>');
+            const text = newDoc.root.firstChild as XmlText;
+            text.content = 'The Hobbit';
+            expect(newDoc.toString({ format: false }))
+                .to.equal('<?xml version="1.0"?>\n<doc>The Hobbit</doc>\n');
         });
     });
 });

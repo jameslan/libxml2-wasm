@@ -30,6 +30,9 @@ export class LibXml2 {
     _free(memblock: Pointer): void;
     _malloc(size: number): Pointer;
 
+    _xmlAddChild(parent: XmlNodePtr, cur: XmlNodePtr): XmlNodePtr;
+    _xmlAddNextSibling(prev: XmlNodePtr, cur: XmlNodePtr): XmlNodePtr;
+    _xmlAddPrevSibling(next: XmlNodePtr, cur: XmlNodePtr): XmlNodePtr;
     _xmlCleanupInputCallbacks(): void;
     _xmlCtxtReadMemory(
         ctxt: XmlParserCtxtPtr,
@@ -54,10 +57,14 @@ export class LibXml2 {
     _xmlHasNsProp(node: XmlNodePtr, name: CString, namespace: CString): XmlAttrPtr;
     _xmlInitParser(): void;
     _xmlNewDoc(): XmlDocPtr;
+    _xmlNewCDataBlock(doc: XmlDocPtr, content: CString, len: number): XmlNodePtr;
+    _xmlNewDocComment(doc: XmlDocPtr, content: CString): XmlNodePtr;
     _xmlNewDocNode(doc: XmlDocPtr, ns: XmlNsPtr, name: CString, content: CString): XmlNodePtr;
+    _xmlNewDocTextLen(doc: XmlDocPtr, content: CString, len: number): XmlNodePtr;
     _xmlNewNs(node: XmlNodePtr, href: CString, prefix: CString): XmlNsPtr;
     _xmlNewParserCtxt(): XmlParserCtxtPtr;
     _xmlNodeGetContent(node: XmlNodePtr): CString;
+    _xmlNodeSetContentLen(node: XmlNodePtr, content: CString, len: number): number;
     _xmlOutputBufferCreateIO(
         iowrite: XmlOutputWriteCallback,
         ioclose: XmlOutputCloseCallback,
@@ -131,6 +138,7 @@ export class LibXml2 {
         data: Pointer,
     ): void;
     _xmlSchemaValidateDoc(ctx: XmlSchemaValidCtxtPtr, doc: XmlDocPtr): number;
+    _xmlUnlinkNode(cur: XmlNodePtr): void;
     // runtime functions
     UTF8ToString(ptr: CString, maxBytesToRead?: number): string;
     addFunction(func: Function, sig: string): Pointer;
