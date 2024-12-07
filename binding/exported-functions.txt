@@ -1,5 +1,8 @@
 _free
 _malloc
+_xmlAddChild
+_xmlAddNextSibling
+_xmlAddPrevSibling
 _xmlCleanupInputCallbacks
 _xmlCtxtReadMemory
 _xmlCtxtSetErrorHandler
@@ -12,13 +15,16 @@ _xmlGetLastError
 _xmlGetNsList
 _xmlHasNsProp
 _xmlInitParser
+_xmlNewCDataBlock
 _xmlNewDoc
+_xmlNewDocComment
 _xmlNewDocNode
-_xmlNewDocText
+_xmlNewDocTextLen
 _xmlNewNode
 _xmlNewNs
 _xmlNewParserCtxt
 _xmlNodeGetContent
+_xmlNodeSetContentLen
 _xmlOutputBufferCreateIO
 _xmlRegisterInputCallbacks
 _xmlRelaxNGFree
@@ -45,6 +51,7 @@ _xmlSchemaValidateDoc
 _xmlSearchNs
 _xmlSetNs
 _xmlSetNsProp
+_xmlUnlinkNode
 _xmlXIncludeFreeContext
 _xmlXIncludeNewContext
 _xmlXIncludeProcessNode
