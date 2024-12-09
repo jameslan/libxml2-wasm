@@ -108,6 +108,53 @@ export interface SaveOptions {
     format?: boolean;
 }
 
+function parse<Input>(
+    parser: (
+    ctxt: XmlParserCtxtPtr,
+    source: Input,
+    url: string | null,
+    encoding: string | null,
+    options: number,
+) => XmlDocPtr,
+    source: Input,
+    url: string | null,
+    options: ParseOptions,
+): XmlDocument {
+    const ctxt = xmlNewParserCtxt();
+    const parseErr = error.storage.allocate([]);
+    xmlCtxtSetErrorHandler(ctxt, error.errorCollector, parseErr);
+    const xml = parser(
+        ctxt,
+        source,
+        url,
+        null,
+        options.option ?? ParseOption.XML_PARSE_DEFAULT,
+    );
+    try {
+        if (!xml) {
+            const errDetails = error.storage.get(parseErr);
+            throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
+        }
+    } finally {
+        error.storage.free(parseErr);
+        xmlFreeParserCtxt(ctxt);
+    }
+
+    const incErr = error.storage.allocate([]);
+    const xinc = xmlXIncludeNewContext(xml);
+    xmlXIncludeSetErrorHandler(xinc, error.errorCollector, incErr);
+    try {
+        if (xmlXIncludeProcessNode(xinc, xml) < 0) {
+            const errDetails = error.storage.get(incErr);
+            throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
+        }
+    } finally {
+        error.storage.free(incErr);
+        xmlXIncludeFreeContext(xinc);
+    }
+    return XmlDocument.getInstance(xml);
+}
+
 @disposeBy(xmlFreeDoc)
 export class XmlDocument extends XmlDisposable<XmlDocument> {
     /** Create a new document from scratch.
@@ -126,7 +173,7 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
         source: string,
         options: ParseOptions = {},
     ): XmlDocument {
-        return XmlDocument.parse(xmlReadString, source, options.url ?? null, options);
+        return parse(xmlReadString, source, options.url ?? null, options);
     }
 
     /**
@@ -138,54 +185,7 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
         source: Uint8Array,
         options: ParseOptions = {},
     ): XmlDocument {
-        return XmlDocument.parse(xmlReadMemory, source, options.url ?? null, options);
-    }
-
-    private static parse<Input>(
-        parser: (
-            ctxt: XmlParserCtxtPtr,
-            source: Input,
-            url: string | null,
-            encoding: string | null,
-            options: number,
-        ) => XmlDocPtr,
-        source: Input,
-        url: string | null,
-        options: ParseOptions,
-    ): XmlDocument {
-        const ctxt = xmlNewParserCtxt();
-        const parseErr = error.storage.allocate([]);
-        xmlCtxtSetErrorHandler(ctxt, error.errorCollector, parseErr);
-        const xml = parser(
-            ctxt,
-            source,
-            url,
-            null,
-            options.option ?? ParseOption.XML_PARSE_DEFAULT,
-        );
-        try {
-            if (!xml) {
-                const errDetails = error.storage.get(parseErr);
-                throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
-            }
-        } finally {
-            error.storage.free(parseErr);
-            xmlFreeParserCtxt(ctxt);
-        }
-
-        const incErr = error.storage.allocate([]);
-        const xinc = xmlXIncludeNewContext(xml);
-        xmlXIncludeSetErrorHandler(xinc, error.errorCollector, incErr);
-        try {
-            if (xmlXIncludeProcessNode(xinc, xml) < 0) {
-                const errDetails = error.storage.get(incErr);
-                throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
-            }
-        } finally {
-            error.storage.free(incErr);
-            xmlXIncludeFreeContext(xinc);
-        }
-        return XmlDocument.getInstance(xml);
+        return parse(xmlReadMemory, source, options.url ?? null, options);
     }
 
     /**
