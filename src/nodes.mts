@@ -2,7 +2,8 @@ import {
     xmlAddChild,
     xmlAddNextSibling,
     xmlAddPrevSibling,
-    XmlError, xmlFreeNode,
+    XmlError,
+    xmlFreeNode,
     xmlGetNsList,
     xmlHasNsProp,
     XmlNamedNodeStruct,
@@ -17,7 +18,8 @@ import {
     XmlNsStruct,
     xmlRemoveProp,
     xmlSearchNs,
-    xmlSetNs, xmlSetNsProp,
+    xmlSetNs,
+    xmlSetNsProp,
     xmlUnlinkNode,
     xmlXPathCompiledEval,
     xmlXPathFreeContext,
@@ -30,6 +32,53 @@ import {
 import { XmlDocument } from './document.mjs';
 import type { XmlNodePtr } from './libxml2raw.cjs';
 import { XmlXPath, NamespaceMap } from './xpath.mjs';
+
+function compiledXPathEval(nodePtr: XmlNodePtr, xpath: XmlXPath) {
+    const context = xmlXPathNewContext(XmlNodeStruct.doc(nodePtr));
+    if (xpath.namespaces) {
+        Object.entries(xpath.namespaces)
+            .forEach(([prefix, uri]) => {
+                xmlXPathRegisterNs(context, prefix, uri);
+            });
+    }
+    xmlXPathSetContextNode(nodePtr, context);
+    const xpathObj = xmlXPathCompiledEval(xpath._ptr, context);
+    xmlXPathFreeContext(context);
+    return xpathObj;
+}
+
+function xpathEval(nodePtr: XmlNodePtr, xpath: string | XmlXPath, namespaces?: NamespaceMap) {
+    const xpathCompiled = xpath instanceof XmlXPath
+        ? xpath
+        : XmlXPath.create(xpath, namespaces);
+    const ret = compiledXPathEval(nodePtr, xpathCompiled);
+    if (!(xpath instanceof XmlXPath)) {
+        xpathCompiled.dispose();
+    }
+    return ret;
+}
+
+function createNode(nodePtr: XmlNodePtr): XmlNode {
+    const nodeType = XmlNodeStruct.type(nodePtr);
+    switch (nodeType) {
+        case XmlNodeStruct.Type.XML_ELEMENT_NODE:
+            return new XmlElement(nodePtr);
+        case XmlNodeStruct.Type.XML_ATTRIBUTE_NODE:
+            return new XmlAttribute(nodePtr);
+        case XmlNodeStruct.Type.XML_TEXT_NODE:
+            return new XmlText(nodePtr);
+        case XmlNodeStruct.Type.XML_COMMENT_NODE:
+            return new XmlComment(nodePtr);
+        case XmlNodeStruct.Type.XML_CDATA_SECTION_NODE:
+            return new XmlCData(nodePtr);
+        default:
+            throw new XmlError(`Unsupported node type ${nodeType}`);
+    }
+}
+
+function createNullableNode(nodePtr: XmlNodePtr): XmlNode | null {
+    return nodePtr ? createNode(nodePtr) : null;
+}
 
 export abstract class XmlNode {
     /** @internal */
@@ -148,7 +197,7 @@ export abstract class XmlNode {
         if (!parent || parent === XmlNodeStruct.doc(this._nodePtr)) {
             return null;
         }
-        return XmlNode.createNode(parent);
+        return createNode(parent);
     }
 
     /**
@@ -165,7 +214,7 @@ export abstract class XmlNode {
      */
     get firstChild(): XmlNode | null {
         const child = XmlNodeStruct.children(this._nodePtr);
-        return XmlNode.createNullableNode(child);
+        return createNullableNode(child);
     }
 
     /**
@@ -182,7 +231,7 @@ export abstract class XmlNode {
      */
     get lastChild(): XmlNode | null {
         const child = XmlNodeStruct.last(this._nodePtr);
-        return XmlNode.createNullableNode(child);
+        return createNullableNode(child);
     }
 
     /**
@@ -197,7 +246,7 @@ export abstract class XmlNode {
      */
     get next(): XmlNode | null {
         const child = XmlNodeStruct.next(this._nodePtr);
-        return XmlNode.createNullableNode(child);
+        return createNullableNode(child);
     }
 
     /**
@@ -212,7 +261,7 @@ export abstract class XmlNode {
      */
     get prev(): XmlNode | null {
         const child = XmlNodeStruct.prev(this._nodePtr);
-        return XmlNode.createNullableNode(child);
+        return createNullableNode(child);
     }
 
     /**
@@ -262,7 +311,7 @@ export abstract class XmlNode {
      *  - {@link get}
      */
     get(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode | null {
-        const xpathObj = this.xpathEval(xpath, namespaces);
+        const xpathObj = xpathEval(this._nodePtr, xpath, namespaces);
         if (!xpathObj) {
             return null;
         }
@@ -274,36 +323,11 @@ export abstract class XmlNode {
             if (nodeSet === 0 || XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
                 ret = null;
             } else {
-                ret = XmlNode.createNode(XmlNodeSetStruct.nodeTable(nodeSet, 1)[0]);
+                ret = createNode(XmlNodeSetStruct.nodeTable(nodeSet, 1)[0]);
             }
         }
         xmlXPathFreeObject(xpathObj);
         return ret;
-    }
-
-    private xpathEval(xpath: string | XmlXPath, namespaces?: NamespaceMap) {
-        const xpathCompiled = xpath instanceof XmlXPath
-            ? xpath
-            : XmlXPath.create(xpath, namespaces);
-        const ret = this.compiledXPathEval(xpathCompiled);
-        if (!(xpath instanceof XmlXPath)) {
-            xpathCompiled.dispose();
-        }
-        return ret;
-    }
-
-    private compiledXPathEval(xpath: XmlXPath) {
-        const context = xmlXPathNewContext(XmlNodeStruct.doc(this._nodePtr));
-        if (xpath.namespaces) {
-            Object.entries(xpath.namespaces)
-                .forEach(([prefix, uri]) => {
-                    xmlXPathRegisterNs(context, prefix, uri);
-                });
-        }
-        xmlXPathSetContextNode(this._nodePtr, context);
-        const xpathObj = xmlXPathCompiledEval(xpath._ptr, context);
-        xmlXPathFreeContext(context);
-        return xpathObj;
     }
 
     find(xpath: XmlXPath): XmlNode[];
@@ -318,7 +342,7 @@ export abstract class XmlNode {
      *  - {@link get}
      */
     find(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode[] {
-        const xpathObj = this.xpathEval(xpath, namespaces);
+        const xpathObj = xpathEval(this._nodePtr, xpath, namespaces);
         if (!xpathObj) {
             return [];
         }
@@ -330,34 +354,12 @@ export abstract class XmlNode {
             const nodeCount = XmlNodeSetStruct.nodeCount(nodeSet);
             const nodeTable = XmlNodeSetStruct.nodeTable(nodeSet, nodeCount);
             for (let i = 0; i < nodeCount; i += 1) {
-                nodes.push(XmlNode.createNode(nodeTable[i]));
+                nodes.push(createNode(nodeTable[i]));
             }
         }
 
         xmlXPathFreeObject(xpathObj);
         return nodes;
-    }
-
-    private static createNullableNode(nodePtr: XmlNodePtr): XmlNode | null {
-        return nodePtr ? XmlNode.createNode(nodePtr) : null;
-    }
-
-    private static createNode(nodePtr: XmlNodePtr): XmlNode {
-        const nodeType = XmlNodeStruct.type(nodePtr);
-        switch (nodeType) {
-            case XmlNodeStruct.Type.XML_ELEMENT_NODE:
-                return new XmlElement(nodePtr);
-            case XmlNodeStruct.Type.XML_ATTRIBUTE_NODE:
-                return new XmlAttribute(nodePtr);
-            case XmlNodeStruct.Type.XML_TEXT_NODE:
-                return new XmlText(nodePtr);
-            case XmlNodeStruct.Type.XML_COMMENT_NODE:
-                return new XmlComment(nodePtr);
-            case XmlNodeStruct.Type.XML_CDATA_SECTION_NODE:
-                return new XmlCData(nodePtr);
-            default:
-                throw new XmlError(`Unsupported node type ${nodeType}`);
-        }
     }
 }
 
