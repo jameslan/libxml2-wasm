@@ -9,6 +9,7 @@ import {
     XmlNamedNodeStruct,
     xmlNewCDataBlock,
     xmlNewDocComment,
+    xmlNewDocNode,
     xmlNewDocText,
     xmlNewNs,
     xmlNodeGetContent,
@@ -30,7 +31,7 @@ import {
     xmlXPathSetContextNode,
 } from './libxml2.mjs';
 import { XmlDocument } from './document.mjs';
-import type { XmlNodePtr } from './libxml2raw.cjs';
+import type { XmlDocPtr, XmlNodePtr, XmlNsPtr } from './libxml2raw.cjs';
 import { XmlXPath, NamespaceMap } from './xpath.mjs';
 
 function compiledXPathEval(nodePtr: XmlNodePtr, xpath: XmlXPath) {
@@ -80,6 +81,31 @@ function createNullableNode(nodePtr: XmlNodePtr): XmlNode | null {
     return nodePtr ? createNode(nodePtr) : null;
 }
 
+function addNode(
+    nodePtr: XmlNodePtr,
+    content: string,
+    create: (doc: XmlDocPtr, content: string) => XmlNodePtr,
+    process: (node: XmlNodePtr, cur: XmlNodePtr) => XmlNodePtr,
+): XmlNodePtr {
+    let newNode = create(XmlNodeStruct.doc(nodePtr), content);
+    newNode = process(nodePtr, newNode);
+    return newNode;
+}
+
+function findNamespace(nodePtr: XmlNodePtr, prefix?: string): XmlNsPtr {
+    // Check if the namespace prefix valid for the current node
+    const ns = xmlSearchNs(XmlNodeStruct.doc(nodePtr), nodePtr, prefix || null);
+    if (!ns && prefix) {
+        throw new XmlError(`Namespace prefix "${prefix}" not found`);
+    }
+    return ns;
+}
+
+function addElement(nodePtr: XmlNodePtr, name: string, prefix?: string): XmlNodePtr {
+    const ns = findNamespace(nodePtr, prefix);
+    return xmlNewDocNode(XmlNodeStruct.doc(nodePtr), ns, name);
+}
+
 export abstract class XmlNode {
     /** @internal */
     _nodePtr: XmlNodePtr;
@@ -117,9 +143,7 @@ export abstract class XmlNode {
      * @see {@link XmlElement#addComment}
      */
     appendComment(content: string): XmlComment {
-        let node = xmlNewDocComment(XmlNodeStruct.doc(this._nodePtr), content);
-        node = xmlAddNextSibling(this._nodePtr, node);
-        return new XmlComment(node);
+        return new XmlComment(addNode(this._nodePtr, content, xmlNewDocComment, xmlAddNextSibling));
     }
 
     /**
@@ -130,9 +154,7 @@ export abstract class XmlNode {
      * @see {@link XmlElement#addComment}
      */
     prependComment(content: string): XmlComment {
-        let node = xmlNewDocComment(XmlNodeStruct.doc(this._nodePtr), content);
-        node = xmlAddPrevSibling(this._nodePtr, node);
-        return new XmlComment(node);
+        return new XmlComment(addNode(this._nodePtr, content, xmlNewDocComment, xmlAddPrevSibling));
     }
 
     /**
@@ -143,9 +165,7 @@ export abstract class XmlNode {
      * @see {@link XmlElement#addCData}
      */
     appendCData(content: string): XmlCData {
-        let node = xmlNewCDataBlock(XmlNodeStruct.doc(this._nodePtr), content);
-        node = xmlAddNextSibling(this._nodePtr, node);
-        return new XmlCData(node);
+        return new XmlCData(addNode(this._nodePtr, content, xmlNewCDataBlock, xmlAddNextSibling));
     }
 
     /**
@@ -156,9 +176,35 @@ export abstract class XmlNode {
      * @see {@link XmlElement#addCData}
      */
     prependCData(content: string): XmlCData {
-        let node = xmlNewCDataBlock(XmlNodeStruct.doc(this._nodePtr), content);
-        node = xmlAddPrevSibling(this._nodePtr, node);
-        return new XmlCData(node);
+        return new XmlCData(addNode(this._nodePtr, content, xmlNewCDataBlock, xmlAddPrevSibling));
+    }
+
+    /**
+     * Add an element sibling node after this node.
+     * @param name the element name
+     * @param prefix the prefix of the element for the namespace
+     *
+     * @see {@link prependElement}
+     * @see {@link XmlElement#addElement}
+     */
+    appendElement(name: string, prefix?: string): XmlElement {
+        const node = addElement(this._nodePtr, name, prefix);
+        xmlAddNextSibling(this._nodePtr, node);
+        return new XmlElement(node);
+    }
+
+    /**
+     * Add an element sibling node before this node.
+     * @param name the element name
+     * @param prefix the prefix of the element for the namespace
+     *
+     * @see {@link appendElement}
+     * @see {@link XmlElement#addElement}
+     */
+    prependElement(name: string, prefix?: string): XmlElement {
+        const node = addElement(this._nodePtr, name, prefix);
+        xmlAddPrevSibling(this._nodePtr, node);
+        return new XmlElement(node);
     }
 
     /**
@@ -169,9 +215,7 @@ export abstract class XmlNode {
      * @see {@link XmlElement#addText}
      */
     appendText(text: string): XmlText {
-        let node = xmlNewDocText(XmlNodeStruct.doc(this._nodePtr), text);
-        node = xmlAddNextSibling(this._nodePtr, node);
-        return new XmlText(node);
+        return new XmlText(addNode(this._nodePtr, text, xmlNewDocText, xmlAddNextSibling));
     }
 
     /**
@@ -182,9 +226,7 @@ export abstract class XmlNode {
      * @see {@link XmlElement#addText}
      */
     prependText(text: string): XmlText {
-        let node = xmlNewDocText(XmlNodeStruct.doc(this._nodePtr), text);
-        node = xmlAddPrevSibling(this._nodePtr, node);
-        return new XmlText(node);
+        return new XmlText(addNode(this._nodePtr, text, xmlNewDocText, xmlAddPrevSibling));
     }
 
     /**
@@ -192,12 +234,12 @@ export abstract class XmlNode {
      *
      * For root node, it's parent is null.
      */
-    get parent(): XmlNode | null { // TODO: should it return XmlElement?
+    get parent(): XmlElement | null {
         const parent = XmlNodeStruct.parent(this._nodePtr);
         if (!parent || parent === XmlNodeStruct.doc(this._nodePtr)) {
             return null;
         }
-        return createNode(parent);
+        return new XmlElement(parent);
     }
 
     /**
@@ -400,11 +442,7 @@ class XmlNamedNode extends XmlNode {
      * or to remove the prefix (if no default namespace declared).
      */
     set namespacePrefix(prefix: string) {
-        // Check if the namespace prefix valid for the current node
-        const ns = xmlSearchNs(XmlNodeStruct.doc(this._nodePtr), this._nodePtr, prefix || null);
-        if (!ns && prefix) {
-            throw new XmlError(`Namespace prefix "${prefix}" not found`);
-        }
+        const ns = findNamespace(this._nodePtr, prefix);
         xmlSetNs(this._nodePtr, ns);
     }
 }
@@ -477,10 +515,7 @@ export class XmlElement extends XmlNamedNode {
      * @param prefix The namespace prefix to the attribute.
      */
     setAttr(name: string, value: string, prefix?: string): XmlAttribute {
-        const ns = xmlSearchNs(XmlNodeStruct.doc(this._nodePtr), this._nodePtr, prefix || null);
-        if (!ns && prefix) {
-            throw new XmlError(`Namespace prefix "${prefix}" not found`);
-        }
+        const ns = findNamespace(this._nodePtr, prefix);
         return new XmlAttribute(xmlSetNsProp(this._nodePtr, ns, name, value));
     }
 
@@ -492,9 +527,7 @@ export class XmlElement extends XmlNamedNode {
      * @see {@link prependComment}
      */
     addComment(content: string): XmlComment {
-        let node = xmlNewDocComment(XmlNodeStruct.doc(this._nodePtr), content);
-        node = xmlAddChild(this._nodePtr, node);
-        return new XmlComment(node);
+        return new XmlComment(addNode(this._nodePtr, content, xmlNewDocComment, xmlAddChild));
     }
 
     /**
@@ -505,9 +538,21 @@ export class XmlElement extends XmlNamedNode {
      * @see {@link prependCData}
      */
     addCData(content: string): XmlCData {
-        let node = xmlNewCDataBlock(XmlNodeStruct.doc(this._nodePtr), content);
-        node = xmlAddChild(this._nodePtr, node);
-        return new XmlCData(node);
+        return new XmlCData(addNode(this._nodePtr, content, xmlNewCDataBlock, xmlAddChild));
+    }
+
+    /**
+     * Add a new element to the end of the children list.
+     * @param name the element name
+     * @param prefix the prefix of the element for the namespace
+     *
+     * @see {@link appendElement}
+     * @see {@link prependElement}
+     */
+    addElement(name: string, prefix?: string): XmlElement {
+        const node = addElement(this._nodePtr, name, prefix);
+        xmlAddChild(this._nodePtr, node);
+        return new XmlElement(node);
     }
 
     /**
@@ -519,9 +564,7 @@ export class XmlElement extends XmlNamedNode {
      * @see {@link prependText}
      */
     addText(text: string): XmlText {
-        let node = xmlNewDocText(XmlNodeStruct.doc(this._nodePtr), text);
-        node = xmlAddChild(this._nodePtr, node);
-        return new XmlText(node);
+        return new XmlText(addNode(this._nodePtr, text, xmlNewDocText, xmlAddChild));
     }
 }
 
