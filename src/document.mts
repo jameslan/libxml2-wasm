@@ -281,9 +281,9 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
     /**
      * Create the root element.
      * @param name The name of the root node.
-     * @param namespace The namespace of the root node. Optional.
-     * @param prefix The namespace prefix of the root node.
-     * If it is not provided, the namespace will be default.
+     * @param namespace The namespace of the root node.
+     * @param prefix The prefix of the root node to represent the provided namespace.
+     * If it is not provided, the provided namespace will be default.
      */
     createRoot(name: string, namespace?: string, prefix?: string): XmlElement {
         const elem = xmlNewDocNode(this._ptr, 0, name);
