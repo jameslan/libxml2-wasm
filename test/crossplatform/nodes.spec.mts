@@ -100,19 +100,14 @@ describe('XmlNode', () => {
     });
 
     describe('firstChild getter', () => {
-        it('should return null for a leaf node', () => {
-            const titleText = doc.get('book/title/text()');
-            expect(titleText?.firstChild).to.be.null;
-        });
-
         it('should return text if has not sub element', () => {
-            const text = doc.get('book/title')?.firstChild;
+            const text = (doc.get('book/title') as XmlElement).firstChild;
             expect(text).to.be.instanceOf(XmlText);
             expect((text as XmlText).content).to.equal('Harry Potter');
         });
 
         it('should return first sub-element', () => {
-            const title = doc.get('book')?.firstChild;
+            const title = (doc.get('book') as XmlElement).firstChild;
             expect(title).to.be.instanceOf(XmlElement);
             expect((title as XmlElement).name).to.equal('title');
         });
@@ -124,26 +119,21 @@ describe('XmlNode', () => {
         });
 
         it('should be able to return cdata node', () => {
-            const cdata = doc.get('book/price')?.firstChild;
+            const cdata = (doc.get('book/price') as XmlElement).firstChild;
             expect(cdata).to.be.instanceOf(XmlCData);
             expect(cdata?.content).to.equal('29.99');
         });
     });
 
     describe('lastChild getter', () => {
-        it('should return null for a leaf node', () => {
-            const titleText = doc.get('book/title/text()');
-            expect(titleText?.lastChild).to.be.null;
-        });
-
         it('should return text if has not sub element', () => {
-            const text = doc.get('book/title')?.lastChild;
+            const text = (doc.get('book/title') as XmlElement).lastChild;
             expect(text).to.be.instanceOf(XmlText);
             expect((text as XmlText).content).to.equal('Harry Potter');
         });
 
         it('should return last sub-element', () => {
-            const price = doc.get('book')?.lastChild;
+            const price = (doc.get('book') as XmlElement).lastChild;
             expect(price).to.be.instanceOf(XmlElement);
             expect((price as XmlElement).name).to.equal('price');
         });
@@ -156,39 +146,27 @@ describe('XmlNode', () => {
 
     describe('next getter', () => {
         it('should return null for the last node', () => {
-            const price = doc.get('book')?.lastChild;
+            const price = (doc.get('book') as XmlElement).lastChild;
             expect(price?.next).to.be.null;
         });
 
         it('should return next sibling element', () => {
-            const price = doc.get('book/title')?.next;
+            const price = (doc.get('book/title') as XmlElement).next;
             expect(price).to.be.instanceOf(XmlElement);
             expect((price as XmlElement).name).to.equal('price');
-        });
-
-        it('should return next attribute', () => {
-            const author = doc.get('book/title/@lang')?.next;
-            expect(author).to.be.instanceOf(XmlAttribute);
-            expect((author as XmlAttribute).name).to.equal('author');
         });
     });
 
     describe('prev getter', () => {
         it('should return null for the first node', () => {
-            const price = doc.get('book')?.firstChild;
+            const price = (doc.get('book') as XmlElement).firstChild;
             expect(price?.prev).to.be.null;
         });
 
         it('should return previous sibling element', () => {
-            const title = doc.get('book/price')?.prev;
+            const title = (doc.get('book/price') as XmlElement).prev;
             expect(title).to.be.instanceOf(XmlElement);
             expect((title as XmlElement).name).to.equal('title');
-        });
-
-        it('should return previous attribute', () => {
-            const lang = doc.get('book/title/@author')?.prev;
-            expect(lang).to.be.instanceOf(XmlAttribute);
-            expect((lang as XmlAttribute).name).to.equal('lang');
         });
     });
 
@@ -219,7 +197,7 @@ describe('XmlNode', () => {
 
     describe('namespaces getter', () => {
         it('should get namespaces inherited for the element', () => {
-            expect(doc.get('book')?.namespaces).to.deep.equal({
+            expect((doc.get('book') as XmlElement).namespaces).to.deep.equal({
                 m: 'http://www.federalreserve.gov',
                 n: 'http://www.xml.org',
             });
@@ -232,7 +210,7 @@ describe('XmlNode', () => {
         });
 
         it('should get namespaces on an attribute', () => {
-            expect(doc.get('book/title/@lang')?.namespaces).to.deep.equal({
+            expect((doc.get('book/title/@lang') as XmlElement).namespaces).to.deep.equal({
                 m: 'http://www.federalreserve.gov',
                 n: 'http://www.xml.org',
             });
@@ -293,56 +271,56 @@ describe('XmlNode', () => {
     describe('addSibling', () => {
         it('adds a new comment node after the current node', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
-            newDoc.get('/docs/doc')?.appendComment('comment');
+            (newDoc.get('/docs/doc') as XmlElement).appendComment('comment');
             expect(newDoc.toString({ format: false }))
                 .to.equal('<?xml version="1.0"?>\n<docs><doc/><!--comment--></docs>\n');
         });
 
         it('adds a new comment node before the current node', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
-            newDoc.get('/docs/doc')?.prependComment('comment');
+            (newDoc.get('/docs/doc') as XmlElement).prependComment('comment');
             expect(newDoc.toString({ format: false }))
                 .to.equal('<?xml version="1.0"?>\n<docs><!--comment--><doc/></docs>\n');
         });
 
         it('adds a new CDATA node after the current node', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
-            newDoc.get('/docs/doc')?.appendCData('content');
+            (newDoc.get('/docs/doc') as XmlElement).appendCData('content');
             expect(newDoc.toString({ format: false }))
                 .to.equal('<?xml version="1.0"?>\n<docs><doc/><![CDATA[content]]></docs>\n');
         });
 
         it('adds a new CDATA node before the current node', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
-            newDoc.get('/docs/doc')?.prependCData('content');
+            (newDoc.get('/docs/doc') as XmlElement).prependCData('content');
             expect(newDoc.toString({ format: false }))
                 .to.equal('<?xml version="1.0"?>\n<docs><![CDATA[content]]><doc/></docs>\n');
         });
 
         it('adds a new element after the current node', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
-            newDoc.get('/docs/doc')?.appendElement('new');
+            (newDoc.get('/docs/doc') as XmlElement).appendElement('new');
             expect(newDoc.toString({ format: false }))
                 .to.equal('<?xml version="1.0"?>\n<docs><doc/><new/></docs>\n');
         });
 
         it('adds a new element before the current node', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
-            newDoc.get('/docs/doc')?.prependElement('new');
+            (newDoc.get('/docs/doc') as XmlElement).prependElement('new');
             expect(newDoc.toString({ format: false }))
                 .to.equal('<?xml version="1.0"?>\n<docs><new/><doc/></docs>\n');
         });
 
         it('adds a new text node after the current node', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
-            newDoc.get('/docs/doc')?.appendText('content');
+            (newDoc.get('/docs/doc') as XmlElement).appendText('content');
             expect(newDoc.toString({ format: false }))
                 .to.equal('<?xml version="1.0"?>\n<docs><doc/>content</docs>\n');
         });
 
         it('adds a new text node before the current node', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
-            newDoc.get('/docs/doc')?.prependText('content');
+            (newDoc.get('/docs/doc') as XmlElement).prependText('content');
             expect(newDoc.toString({ format: false }))
                 .to.equal('<?xml version="1.0"?>\n<docs>content<doc/></docs>\n');
         });
@@ -391,7 +369,7 @@ describe('XmlNode', () => {
     describe('namespaceForPrefix', () => {
         it('should return uri of a prefix', () => {
             expect(doc.root.namespaceForPrefix('m')).to.equal('http://www.federalreserve.gov');
-            expect(doc.get('book')?.namespaceForPrefix('m')).to.equal(
+            expect((doc.get('book') as XmlElement).namespaceForPrefix('m')).to.equal(
                 'http://www.federalreserve.gov',
             );
         });
@@ -483,6 +461,28 @@ describe('XmlNamedNode/XmlAttribute', () => {
             lang.remove();
             lang.remove();
             expect(newDoc.toString({ format: false })).to.equal('<?xml version="1.0"?>\n<docs><doc/></docs>\n');
+        });
+    });
+
+    describe('value/content', () => {
+        it('should return value of the attribute', () => {
+            const attr = doc.get('/bookstore/book/title/@lang');
+            expect(attr).to.be.an.instanceOf(XmlAttribute);
+            expect(attr?.content).to.equal('en');
+            expect((attr as XmlAttribute).value).to.equal('en');
+        });
+
+        it('should return value of the element', () => {
+            expect((doc.get('book/title') as XmlElement).content).to.equal('Harry Potter');
+        });
+
+        it('should set value of the attribute', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
+            const lang = newDoc.get('/docs/doc/@lang') as XmlAttribute;
+            lang.value = 'de';
+            expect(newDoc.toString({ format: false })).to.equal('<?xml version="1.0"?>\n<docs><doc lang="de"/></docs>\n');
+            lang.content = 'fr';
+            expect(newDoc.toString({ format: false })).to.equal('<?xml version="1.0"?>\n<docs><doc lang="fr"/></docs>\n');
         });
     });
 });
