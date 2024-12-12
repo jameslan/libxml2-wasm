@@ -135,6 +135,102 @@ export abstract class XmlNode {
     }
 
     /**
+     * The parent node of this node.
+     *
+     * For root node, it's parent is null.
+     */
+    get parent(): XmlElement | null {
+        const parent = XmlNodeStruct.parent(this._nodePtr);
+        if (!parent || parent === XmlNodeStruct.doc(this._nodePtr)) {
+            return null;
+        }
+        return new XmlElement(parent);
+    }
+
+    /**
+     * The content string of the node.
+     */
+    get content(): string {
+        return xmlNodeGetContent(this._nodePtr);
+    }
+
+    /**
+     * The line number of the node.
+     */
+    get line(): number {
+        return XmlNodeStruct.line(this._nodePtr);
+    }
+
+    get(xpath: XmlXPath): XmlNode | null;
+    get(xpath: string, namespaces?: NamespaceMap): XmlNode | null;
+    get(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode | null;
+    /**
+     * Find the first descendant node matching the given xpath selector
+     *
+     * @param xpath XPath selector
+     * @param namespaces mapping between prefix and uri, used in the XPath
+     * @returns null if not found, otherwise an instance of {@link XmlNode}'s subclass.
+     * @see
+     *  - {@link get}
+     */
+    get(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode | null {
+        const xpathObj = xpathEval(this._nodePtr, xpath, namespaces);
+        if (!xpathObj) {
+            return null;
+        }
+        let ret: XmlNode | null;
+        if (XmlXPathObjectStruct.type(xpathObj) !== XmlXPathObjectStruct.Type.XPATH_NODESET) {
+            ret = null;
+        } else {
+            const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
+            if (nodeSet === 0 || XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
+                ret = null;
+            } else {
+                ret = createNode(XmlNodeSetStruct.nodeTable(nodeSet, 1)[0]);
+            }
+        }
+        xmlXPathFreeObject(xpathObj);
+        return ret;
+    }
+
+    find(xpath: XmlXPath): XmlNode[];
+    find(xpath: string, namespaces?: NamespaceMap): XmlNode[];
+    find(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode[];
+    /**
+     * Find all the descendant nodes matching the given xpath selector.
+     * @param xpath XPath selector
+     * @param namespaces mapping between prefix and uri, used in the XPath
+     * @returns Empty array if invalid xpath or not found any node.
+     * @see
+     *  - {@link get}
+     */
+    find(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode[] {
+        const xpathObj = xpathEval(this._nodePtr, xpath, namespaces);
+        if (!xpathObj) {
+            return [];
+        }
+
+        const nodes: XmlNode[] = [];
+
+        if (XmlXPathObjectStruct.type(xpathObj) === XmlXPathObjectStruct.Type.XPATH_NODESET) {
+            const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
+            const nodeCount = XmlNodeSetStruct.nodeCount(nodeSet);
+            const nodeTable = XmlNodeSetStruct.nodeTable(nodeSet, nodeCount);
+            for (let i = 0; i < nodeCount; i += 1) {
+                nodes.push(createNode(nodeTable[i]));
+            }
+        }
+
+        xmlXPathFreeObject(xpathObj);
+        return nodes;
+    }
+}
+
+/**
+ * A node that can have children.
+ */
+export abstract class XmlHierarchyNode extends XmlNode {
+    /**
      * Add a comment sibling node after this node.
      *
      * @param content the content of the comment
@@ -230,18 +326,151 @@ export abstract class XmlNode {
     }
 
     /**
-     * The parent node of this node.
+     * The node of next sibling.
      *
-     * For root node, it's parent is null.
+     * Return null if this node is the last one.
+     *
+     * @see
+     *  - {@link XmlElement#firstChild}
+     *  - {@link XmlElement#lastChild}
+     *  - {@link prev}
      */
-    get parent(): XmlElement | null {
-        const parent = XmlNodeStruct.parent(this._nodePtr);
-        if (!parent || parent === XmlNodeStruct.doc(this._nodePtr)) {
-            return null;
-        }
-        return new XmlElement(parent);
+    get next(): XmlHierarchyNode | null {
+        const child = XmlNodeStruct.next(this._nodePtr);
+        return createNullableNode(child) as XmlHierarchyNode | null;
     }
 
+    /**
+     * The node of previous sibling.
+     *
+     * Return null if this node is the first one.
+     *
+     * @see
+     *  - {@link XmlElement#firstChild}
+     *  - {@link XmlElement#lastChild}
+     *  - {@link next}
+     */
+    get prev(): XmlHierarchyNode | null {
+        const child = XmlNodeStruct.prev(this._nodePtr);
+        return createNullableNode(child) as XmlHierarchyNode | null;
+    }
+}
+
+export interface XmlNamedNode {
+    /**
+     * The name of this node.
+     */
+    get name(): string;
+
+    /**
+     * The URI of the namespace applied to this node.
+     */
+    get namespaceUri(): string;
+
+    /**
+     * The prefix representing the namespace applied to this node.
+     */
+    get prefix(): string;
+
+    /**
+     * Alias of {@link prefix}
+     */
+    get namespacePrefix(): string;
+
+    /**
+     * Set the namespace prefix of this node.
+     * @param prefix The new prefix to set.
+     * Use empty string to set to default namespace,
+     * or to remove the prefix (if no default namespace declared).
+     */
+    set prefix(prefix: string);
+
+    /**
+     * Alias of {@link prefix}
+     */
+    set namespacePrefix(prefix: string);
+
+    /**
+     * Namespace definitions on this node, including inherited
+     */
+    get namespaces(): NamespaceMap;
+
+    /**
+     * Find out corresponding namespace uri of a prefix
+     * @param prefix
+     */
+    namespaceForPrefix(prefix: string): string | null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function namedNode<T>(target: { new (...args: any[]): T }, context: ClassDecoratorContext) {
+    Object.defineProperties(target.prototype, {
+        namespaces: {
+            get() {
+                return xmlGetNsList(XmlNodeStruct.doc(this._nodePtr), this._nodePtr).reduce(
+                    // convert to object
+                    (prev, curr) => ({
+                        ...prev,
+                        [XmlNsStruct.prefix(curr)]: XmlNsStruct.href(curr),
+                    }),
+                    {},
+                );
+            },
+        },
+
+        namespaceForPrefix: {
+            value(prefix: string): string | null {
+                const ns = xmlSearchNs(XmlNodeStruct.doc(this._nodePtr), this._nodePtr, prefix);
+                return ns ? XmlNsStruct.href(ns) : null;
+            },
+        },
+
+        name: {
+            get() {
+                return XmlNodeStruct.name_(this._nodePtr);
+            },
+        },
+
+        namespaceUri: {
+            get() {
+                const namespace = XmlNamedNodeStruct.namespace(this._nodePtr);
+                if (namespace) {
+                    return XmlNsStruct.href(namespace);
+                }
+                return '';
+            },
+        },
+
+        namespacePrefix: {
+            get() {
+                return this.prefix;
+            },
+
+            set(prefix: string) {
+                this.prefix = prefix;
+            },
+        },
+
+        prefix: {
+            get() {
+                const namespace = XmlNamedNodeStruct.namespace(this._nodePtr);
+                if (namespace) {
+                    return XmlNsStruct.prefix(namespace);
+                }
+                return '';
+            },
+            set(prefix: string) {
+                const ns = findNamespace(this._nodePtr, prefix);
+                xmlSetNs(this._nodePtr, ns);
+            },
+        },
+    });
+}
+
+export interface XmlElement extends XmlNamedNode {}
+
+@namedNode
+export class XmlElement extends XmlHierarchyNode {
     /**
      * The node of first child.
      *
@@ -254,9 +483,9 @@ export abstract class XmlNode {
      *  - {@link next}
      *  - {@link prev}
      */
-    get firstChild(): XmlNode | null {
+    get firstChild(): XmlHierarchyNode | null {
         const child = XmlNodeStruct.children(this._nodePtr);
-        return createNullableNode(child);
+        return createNullableNode(child) as XmlHierarchyNode | null;
     }
 
     /**
@@ -271,183 +500,11 @@ export abstract class XmlNode {
      *  - {@link next}
      *  - {@link prev}
      */
-    get lastChild(): XmlNode | null {
+    get lastChild(): XmlHierarchyNode | null {
         const child = XmlNodeStruct.last(this._nodePtr);
-        return createNullableNode(child);
+        return createNullableNode(child) as XmlHierarchyNode | null;
     }
 
-    /**
-     * The node of next sibling.
-     *
-     * Return null if this node is the last one.
-     *
-     * @see
-     *  - {@link firstChild}
-     *  - {@link lastChild}
-     *  - {@link prev}
-     */
-    get next(): XmlNode | null {
-        const child = XmlNodeStruct.next(this._nodePtr);
-        return createNullableNode(child);
-    }
-
-    /**
-     * The node of previous sibling.
-     *
-     * Return null if this node is the first one.
-     *
-     * @see
-     *  - {@link firstChild}
-     *  - {@link lastChild}
-     *  - {@link next}
-     */
-    get prev(): XmlNode | null {
-        const child = XmlNodeStruct.prev(this._nodePtr);
-        return createNullableNode(child);
-    }
-
-    /**
-     * The content string of the node.
-     */
-    get content(): string {
-        return xmlNodeGetContent(this._nodePtr);
-    }
-
-    /**
-     * The line number of the node.
-     */
-    get line(): number {
-        return XmlNodeStruct.line(this._nodePtr);
-    }
-
-    /**
-     * Namespace definitions on this node, including inherited
-     */
-    get namespaces(): NamespaceMap {
-        return xmlGetNsList(XmlNodeStruct.doc(this._nodePtr), this._nodePtr).reduce(
-            // convert to object
-            (prev, curr) => ({ ...prev, [XmlNsStruct.prefix(curr)]: XmlNsStruct.href(curr) }),
-            {},
-        );
-    }
-
-    /**
-     * Find out corresponding namespace uri of a prefix
-     * @param prefix
-     */
-    namespaceForPrefix(prefix: string): string | null {
-        const ns = xmlSearchNs(XmlNodeStruct.doc(this._nodePtr), this._nodePtr, prefix);
-        return ns ? XmlNsStruct.href(ns) : null;
-    }
-
-    get(xpath: XmlXPath): XmlNode | null;
-    get(xpath: string, namespaces?: NamespaceMap): XmlNode | null;
-    get(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode | null;
-    /**
-     * Find the first descendant node matching the given xpath selector
-     *
-     * @param xpath XPath selector
-     * @param namespaces mapping between prefix and uri, used in the XPath
-     * @returns null if not found, otherwise an instance of {@link XmlNode}'s subclass.
-     * @see
-     *  - {@link get}
-     */
-    get(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode | null {
-        const xpathObj = xpathEval(this._nodePtr, xpath, namespaces);
-        if (!xpathObj) {
-            return null;
-        }
-        let ret: XmlNode | null;
-        if (XmlXPathObjectStruct.type(xpathObj) !== XmlXPathObjectStruct.Type.XPATH_NODESET) {
-            ret = null;
-        } else {
-            const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
-            if (nodeSet === 0 || XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
-                ret = null;
-            } else {
-                ret = createNode(XmlNodeSetStruct.nodeTable(nodeSet, 1)[0]);
-            }
-        }
-        xmlXPathFreeObject(xpathObj);
-        return ret;
-    }
-
-    find(xpath: XmlXPath): XmlNode[];
-    find(xpath: string, namespaces?: NamespaceMap): XmlNode[];
-    find(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode[];
-    /**
-     * Find all the descendant nodes matching the given xpath selector.
-     * @param xpath XPath selector
-     * @param namespaces mapping between prefix and uri, used in the XPath
-     * @returns Empty array if invalid xpath or not found any node.
-     * @see
-     *  - {@link get}
-     */
-    find(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode[] {
-        const xpathObj = xpathEval(this._nodePtr, xpath, namespaces);
-        if (!xpathObj) {
-            return [];
-        }
-
-        const nodes: XmlNode[] = [];
-
-        if (XmlXPathObjectStruct.type(xpathObj) === XmlXPathObjectStruct.Type.XPATH_NODESET) {
-            const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
-            const nodeCount = XmlNodeSetStruct.nodeCount(nodeSet);
-            const nodeTable = XmlNodeSetStruct.nodeTable(nodeSet, nodeCount);
-            for (let i = 0; i < nodeCount; i += 1) {
-                nodes.push(createNode(nodeTable[i]));
-            }
-        }
-
-        xmlXPathFreeObject(xpathObj);
-        return nodes;
-    }
-}
-
-class XmlNamedNode extends XmlNode {
-    /**
-     * The name of this node.
-     */
-    get name(): string {
-        return XmlNodeStruct.name_(this._nodePtr);
-    }
-
-    /**
-     * The URI of the namespace applied to this node.
-     */
-    get namespaceUri(): string {
-        const namespace = XmlNamedNodeStruct.namespace(this._nodePtr);
-        if (namespace) {
-            return XmlNsStruct.href(namespace);
-        }
-        return '';
-    }
-
-    /**
-     * The prefix representing the namespace applied to this node.
-     */
-    get namespacePrefix(): string {
-        const namespace = XmlNamedNodeStruct.namespace(this._nodePtr);
-        if (namespace) {
-            return XmlNsStruct.prefix(namespace);
-        }
-        return '';
-    }
-
-    /**
-     * Set the namespace prefix of this node.
-     * @param prefix The new prefix to set.
-     * Use empty string to set to default namespace,
-     * or to remove the prefix (if no default namespace declared).
-     */
-    set namespacePrefix(prefix: string) {
-        const ns = findNamespace(this._nodePtr, prefix);
-        xmlSetNs(this._nodePtr, ns);
-    }
-}
-
-export class XmlElement extends XmlNamedNode {
     /**
      * All attributes of this element.
      */
@@ -465,17 +522,24 @@ export class XmlElement extends XmlNamedNode {
     }
 
     /**
-     * Namespace declaration on this element
+     * Namespace declarations on this element
      *
      * @returns Empty object if there's no local namespace definition on this element.
      * Note that default namespace uses empty string as key.
      */
-    get localNamespaces(): NamespaceMap {
+    get nsDeclarations(): NamespaceMap {
         const namespaces: NamespaceMap = {};
         for (let ns = XmlNodeStruct.nsDef(this._nodePtr); ns; ns = XmlNsStruct.next(ns)) {
             namespaces[XmlNsStruct.prefix(ns)] = XmlNsStruct.href(ns);
         }
         return namespaces;
+    }
+
+    /**
+     * @deprecated use {@link nsDeclarations} instead.
+     */
+    get localNamespaces(): NamespaceMap {
+        return this.nsDeclarations;
     }
 
     /**
@@ -486,11 +550,18 @@ export class XmlElement extends XmlNamedNode {
      *
      * @throws XmlError if namespace declaration already exists.
      */
-    addLocalNamespace(uri: string, prefix?: string): void {
+    addNsDeclaration(uri: string, prefix?: string): void {
         const namespace = xmlNewNs(this._nodePtr, uri, prefix);
         if (!namespace) {
             throw new XmlError(`Failed to add namespace declaration "${prefix}"`);
         }
+    }
+
+    /**
+     * @deprecated use {@link addNsDeclaration} instead.
+     */
+    addLocalNamespace(uri: string, prefix?: string): void {
+        this.addNsDeclaration(uri, prefix);
     }
 
     /**
@@ -568,7 +639,10 @@ export class XmlElement extends XmlNamedNode {
     }
 }
 
-export class XmlAttribute extends XmlNamedNode {
+export interface XmlAttribute extends XmlNamedNode {}
+
+@namedNode
+export class XmlAttribute extends XmlNode {
     /**
      * Remove current attribute from the element and document.
      */
@@ -581,9 +655,41 @@ export class XmlAttribute extends XmlNamedNode {
         }
         this._nodePtr = 0;
     }
+
+    /**
+     * The value of this attribute.
+     */
+    get value(): string {
+        return super.content;
+    }
+
+    /**
+     * Set the value of this attribute.
+     */
+    set value(value: string) {
+        xmlNodeSetContent(this._nodePtr, value);
+    }
+
+    /**
+     * Alias of {@link value}.
+     */
+    get content(): string {
+        return this.value;
+    }
+
+    /**
+     * Alias of {@link value}.
+     * @param value
+     */
+    set content(value: string) {
+        this.value = value;
+    }
 }
 
-class XmlSimpleNode extends XmlNode {
+/**
+ * A simple node that contains only text content without children.
+ */
+export abstract class XmlSimpleNode extends XmlHierarchyNode {
     get content(): string {
         return super.content;
     }

@@ -17,6 +17,9 @@ export {
     XmlAttribute,
     XmlComment,
     XmlElement,
+    XmlHierarchyNode,
+    XmlNamedNode,
+    XmlSimpleNode,
     XmlText,
     XmlCData,
 } from './nodes.mjs';
