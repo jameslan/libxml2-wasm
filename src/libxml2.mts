@@ -18,40 +18,40 @@ const libxml2 = await moduleLoader();
 libxml2._xmlInitParser();
 
 /**
- * Base class for exceptions.
+ * The base class for exceptions in this library.
  *
- * All thrown exceptions in this library will be this class or the subclasses of this class.
+ * All exceptions thrown in this library will be instances of this class or its subclasses.
  */
 export class XmlError extends Error {}
 
 export interface ErrorDetail {
     /**
-     * The message of the error during processing.
+     * The error message during processing.
      */
     message: string;
 
     /**
-     * The filename
+     * The name of the XML file in which the error occurred.
      */
     file?: string;
 
     /**
-     * The line number of the xml file, where the error is occurred.
+     * The line number in the xml file where the error occurred.
      */
     line: number;
 
     /**
-     * The column number of the xml file, where the error is occurred.
+     * The column number in the XML file where the error occurred.
      */
     col: number;
 }
 
 /**
- * An exception class represents the error in libxml2
+ * An exception class represents the error in libxml2.
  */
 export class XmlLibError extends XmlError {
     /**
-     * The detail of errors provided by libxml2
+     * The detail of errors provided by libxml2.
      */
     details: ErrorDetail[];
 
@@ -389,39 +389,39 @@ export function xmlNewNs(
 /**
  * The input provider for Virtual IO.
  *
- * This interface defines 4 callbacks for reading content of xml,
- * where 4-bytes integer is used as the type of file descriptor.
+ * This interface defines four callbacks for reading the content of XML files.
+ * Each callback takes a 4-byte integer as the type of file descriptor.
  *
  * @see {@link xmlRegisterInputProvider}
  * @alpha
  */
 export interface XmlInputProvider {
     /**
-     * Check if this input provider should handle this file
+     * Determine if this input provider should handle this file.
      * @param filename The file name/path/url
-     * @returns true if the provider should handle
+     * @returns true if the provider should handle it.
      */
     match(filename: string): boolean;
 
     /**
-     * Open the file and return a file descriptor (handle)
-     * @param filename file path
-     * @returns undefined on error, FdType on success
+     * Open the file and return a file descriptor (handle) representing the file.
+     * @param filename The file name/path/url
+     * @returns undefined on error, number on success.
      */
-    open(filename: string): Pointer | undefined;
+    open(filename: string): number | undefined;
 
     /**
-     * Read from a file
+     * Read from the file.
      * @param fd File descriptor
-     * @param buf Buffer to read into, no more than its byteLength shall be read into.
-     * @returns number of bytes actually read, -1 on error
+     * @param buf Buffer to read into, with a maximum read size of its byteLength.
+     * @returns number of bytes actually read, -1 on error.
      */
     read(fd: Pointer, buf: Uint8Array): number;
 
     /**
-     * Close the file
-     * @param fd file descriptor
-     * @returns true if success
+     * Close the file.
+     * @param fd File descriptor
+     * @returns `true` if succeeded.
      */
     close(fd: Pointer): boolean;
 }
@@ -462,7 +462,7 @@ export function xmlRegisterInputProvider(
 }
 
 /**
- * Cleanup and remove all registered input providers.
+ * Remove and cleanup all registered input providers.
  * @alpha
  */
 export function xmlCleanupInputProvider(): void {
@@ -474,33 +474,32 @@ export function xmlCleanupInputProvider(): void {
  */
 export interface XmlOutputBufferHandler {
     /**
-     * The callback for consuming the content.
-     * @param buf The buffer containing output data
+     * The function that gets called when the content is consumed.
+     * @param buf The buffer that holds the output data.
      *
-     * @returns The bytes had been consumed or -1 to indicate errors
+     * @returns The bytes had been consumed or -1 on errors
      */
-    onWrite(buf: Uint8Array): number;
+    write(buf: Uint8Array): number;
 
     /**
-     * The callback for finishing output.
-     * Will be invoked when all data were consumed.
+     * The callback function that will be triggered once all the data has been consumed.
      *
      * @returns Whether the operation is succeeded.
      */
-    onClose(): boolean;
+    close(): boolean;
 }
 
 const saveHandlerStorage = new ContextStorage<XmlOutputBufferHandler>();
 
 const iowrite = libxml2.addFunction(
     (index: number, buf: Pointer, len: number) => saveHandlerStorage.get(index)
-        .onWrite(libxml2.HEAPU8.subarray(buf, buf + len)),
+        .write(libxml2.HEAPU8.subarray(buf, buf + len)),
     'iiii',
 );
 
 const ioclose = libxml2.addFunction(
     (index: number) => {
-        const ret = saveHandlerStorage.get(index).onClose();
+        const ret = saveHandlerStorage.get(index).close();
         saveHandlerStorage.free(index);
         return ret;
     },

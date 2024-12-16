@@ -1,5 +1,5 @@
 /**
- * A side module for Node.js user only.
+ * A side module for Node.js users only.
  *
  * ```ts
  * import { <symbol> } from 'libxml2-wasm/lib/nodejs.mjs';
@@ -26,9 +26,11 @@ function fileExists(filename: string): boolean {
 }
 
 /**
- * The virtual IO input providers using the fs module in Node.js.
+ * The virtual IO input providers for file operations in Node.js,
+ * utilizing the `node:fs` module.
  *
- * It supports file path (`path/to/file.xml`) or file url (`file:///path/to/file.xml`).
+ * These providers support both file paths (e.g., `path/to/file.xml`)
+ * and file URLs (e.g., `file:///path/to/file.xml`).
  *
  * @see {@link libxml2-wasm!xmlRegisterInputProvider}
  */
@@ -77,20 +79,20 @@ export function xmlRegisterFsInputProviders(): boolean {
 }
 
 /**
- * Synchronously save the {@link XmlDocument} to file.
+ * Synchronously save the {@link XmlDocument} to a file.
  * @param doc The XmlDocument to be saved.
- * @param fd File descriptor returned by fs.open or fs.openSync etc
- * @param options Options for saving
+ * @param fd The file descriptor returned by `fs.open` or `fs.openSync`, etc.
+ * @param options Options for saving.
  */
 export function saveDocSync(doc: XmlDocument, fd: number, options?: SaveOptions) {
     const handler = {
         fd,
 
-        onWrite(buf: Uint8Array) {
+        write(buf: Uint8Array) {
             return fs.writeSync(this.fd, buf);
         },
 
-        onClose(): boolean {
+        close(): boolean {
             fs.closeSync(this.fd);
             return true;
         },

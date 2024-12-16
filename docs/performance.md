@@ -2,19 +2,19 @@
 title: Performance
 ---
 
-One of the challenges of working with Javascript and libxml is that they use different encodings for strings.
-Javascript uses UTF-16/UCS-2, while libxml uses UTF-8.
-This means that we have to convert the strings every time we call a function from libxml.
+One of the challenges of working with JavaScript and libxml is that they employ different string encodings.
+JavaScript uses UTF-16/UCS-2, while libxml uses UTF-8.
+Consequently, we encounter the need to convert strings every time we invoke a function from libxml.
 
-To avoid this overhead, this library offers two types of parsing functions: String API and Buffer API.
-The String API takes a Javascript string as input and converts it to a UTF-8 buffer before parsing.
-The Buffer API takes a UTF-8 buffer as input and parses it directly.
-The Buffer API is faster than the String API, especially for large XML documents.
-Therefore, we recommend using the Buffer API whenever possible to improve the performance of your code.
+To mitigate this overhead, this library provides two types of parsing functions: String API and Buffer API.
+The String API accepts a JavaScript string as input and converts it into a UTF-8 buffer before processing.
+Conversely, the Buffer API takes a UTF-8 buffer as input and directly processes it.
+The Buffer API proves to be faster, particularly for large XML documents.
+Therefore, we strongly recommend using the Buffer API whenever feasible to enhance the performance of your code.
 
-## Benchmark
+## Benchmark Report
 
-The benchmark report below is for the performance of DOM tree parsing, among the following libraries
+The benchmark report below evaluates the performance of DOM tree parsing among the following libraries:
 
 - Bindings of libxml
   - String API of libxml2-wasm
@@ -25,13 +25,13 @@ The benchmark report below is for the performance of DOM tree parsing, among the
   - [fast-xml-parser](https://www.npmjs.com/package/fast-xml-parser)
   - [xmldoc](https://www.npmjs.com/package/xmldoc)
 
-To run the benchmark, build the lib first,
+To execute the benchmark, ensure that the lib is built first:
 
 ```sh
 npm ci && npm run build
 ```
 
-Then run test in `benchmark` directory,
+Then, navigate to the benchmark directory and execute the following commands:
 
 ```sh
 cd benchmark && npm ci

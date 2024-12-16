@@ -1,8 +1,8 @@
 /**
- * This is main script of the library.
+ * This is the main script of the library.
  *
- * After installation of the library into your `node_modules` directory,
- * you could import the class etc like
+ * After installing the library in your `node_modules` directory,
+ * you can import the class and other elements like this:
  *
  * ```ts
  * import { <symbol> } from 'libxml2-wasm';
@@ -17,10 +17,10 @@ export {
     XmlAttribute,
     XmlComment,
     XmlElement,
-    XmlHierarchyNode,
     XmlNamedNode,
     XmlSimpleNode,
     XmlText,
+    XmlTreeNode,
     XmlCData,
 } from './nodes.mjs';
 export {

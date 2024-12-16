@@ -81,9 +81,9 @@ export enum ParseOption {
 
 export interface ParseOptions {
     /**
-     * The url of the document.
+     * The URL of the document.
      *
-     * It may be used as a base to calculate the url of other included document.
+     * It can be used as a base to calculate the URL of other included documents.
      */
     url?: string;
     encoding?: string; // reserved
@@ -101,7 +101,8 @@ export class XmlParseError extends XmlLibError {
  */
 export interface SaveOptions {
     /**
-     * To enable format on the output: separate line for tags, indentation etc.
+     * To enable formatting on the output,
+     * creating a separate line for each tag and indent the text accordingly.
      *
      * @default true
      */
@@ -155,6 +156,9 @@ function parse<Input>(
     return XmlDocument.getInstance(xml);
 }
 
+/**
+ * The XML document.
+ */
 @disposeBy(xmlFreeDoc)
 export class XmlDocument extends XmlDisposable<XmlDocument> {
     /** Create a new document from scratch.
@@ -196,12 +200,12 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
         const decoder = new TextDecoder();
         const handler = {
             result: '',
-            onWrite(buf: Uint8Array) {
+            write(buf: Uint8Array) {
                 this.result += decoder.decode(buf);
                 return buf.length;
             },
 
-            onClose() {
+            close() {
                 return true;
             },
         };
@@ -221,40 +225,57 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
         xmlSaveFormatFileTo(buf, this._ptr, null, options?.format ?? true ? 1 : 0);
     }
 
+    /**
+     * Find the first descendant node of root element matching the given compiled xpath selector.
+     * @param xpath XPath selector
+     * @returns null if not found, otherwise an instance of the subclass of {@link XmlNode}.
+     * @see
+     *  - {@link XmlNode#get | XmlNode.get}
+     *  - {@link XmlXPath.compile | XmlXPath.compile}
+     *  - {@link find}
+     */
     get(xpath: XmlXPath): XmlNode | null;
-    get(xpath: string, namespaces?: NamespaceMap): XmlNode | null;
     /**
      * Find the first descendant node of root element matching the given xpath selector.
      * @param xpath XPath selector
-     * @param namespaces mapping between prefix and uri, used in the XPath
-     * @returns null if not found, otherwise an instance of {@link XmlNode}'s subclass.
+     * @param namespaces mapping between prefix and the namespace URI, used in the XPath
+     * @returns null if not found, otherwise an instance of the subclass of {@link XmlNode}.
      * @see
      *  - {@link XmlNode#get | XmlNode.get}
      *  - {@link find}
      */
+    get(xpath: string, namespaces?: NamespaceMap): XmlNode | null;
     get(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode | null {
         return this.root.get(xpath, namespaces);
     }
 
-    find(xpath: XmlXPath): XmlNode[];
-    find(xpath: string, namespaces?: NamespaceMap): XmlNode[];
     /**
-     * Find all the descendant nodes of root element matching the given xpath selector.
-     * @param xpath XPath selector
-     * @param namespaces mapping between prefix and uri, used in the XPath
-     * @returns Empty array if invalid xpath or not found any node.
+     * Find all the descendant nodes of root element matching the given compiled xpath selector.
+     * @param xpath Compiled XPath selector
+     * @returns An empty array if the provided XPath is invalid or if no nodes are found.
      * @see
      *  - {@link XmlNode#find | XmlNode.find}
      *  - {@link get}
      */
+    find(xpath: XmlXPath): XmlNode[];
+    /**
+     * Find all the descendant nodes of root element matching the given xpath selector.
+     * @param xpath XPath selector
+     * @param namespaces mapping between prefix and the namespace URI, used in the XPath
+     * @returns An empty array if the provided XPath is invalid or if no nodes are found.
+     * @see
+     *  - {@link XmlNode#find | XmlNode.find}
+     *  - {@link get}
+     */
+    find(xpath: string, namespaces?: NamespaceMap): XmlNode[];
     find(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode[] {
         return this.root.find(xpath, namespaces);
     }
 
     /**
      * The root element of the document.
-     * If the document is newly created and not yet set up a root,
-     * {@link XmlError} will be thrown.
+     * If the document is newly created and hasn’t been set up with a root,
+     * an {@link XmlError} will be thrown.
      */
     get root(): XmlElement {
         const root = xmlDocGetRootElement(this._ptr);
@@ -266,7 +287,7 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
     }
 
     /**
-     * Set the root of the document.
+     * Set the root element of the document.
      * @param value The new root.
      * If the node is from another document,
      * it and its subtree will be removed from the previous document.
@@ -280,10 +301,10 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
 
     /**
      * Create the root element.
-     * @param name The name of the root node.
-     * @param namespace The namespace of the root node.
-     * @param prefix The prefix of the root node to represent the provided namespace.
-     * If it is not provided, the provided namespace will be default.
+     * @param name The name of the root element.
+     * @param namespace The namespace of the root element.
+     * @param prefix The prefix of the root node that represents the given namespace.
+     * If not provided, the given namespace will be the default.
      */
     createRoot(name: string, namespace?: string, prefix?: string): XmlElement {
         const elem = xmlNewDocNode(this._ptr, 0, name);
