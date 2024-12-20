@@ -44,3 +44,9 @@ export {
     XsdValidator,
     XmlValidateError,
 } from './validates.mjs';
+export {
+    openBuffer,
+    readBuffer,
+    closeBuffer,
+    XmlBufferInputProvider,
+} from './utils.mjs';
