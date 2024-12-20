@@ -80,7 +80,7 @@ It’s important to note that the XML format is preserved using `XmlText`.
 For instance, in the following XML example,
 the children of the `docs` element are `XmlComment("First Comment")`, `XmlText("\n  ")`, `XmlElement("doc")` and `XmlText("\n")`.
 
-```
+```xml
 <docs><!--First Comment-->
   <doc/>
 </docs>

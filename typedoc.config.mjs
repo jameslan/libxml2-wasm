@@ -51,6 +51,7 @@ export default {
     },
     tsconfig: './tsconfig.prod.json',
     out: './_site',
+    highlightLanguages: ['js', 'sh', 'ts', 'xml'],
     navigationLinks: {
         GITHUB: 'https://github.com/jameslan/libxml2-wasm',
     },
