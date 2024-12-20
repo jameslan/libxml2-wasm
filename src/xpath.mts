@@ -6,17 +6,17 @@ import type { XmlXPathCompExprPtr } from './libxml2raw.cjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 /**
- * Map between the prefix and the uri of the namespace
+ * Map between the prefix and the URI of the namespace
  */
 export interface NamespaceMap {
     [prefix: string]: string;
 }
 
 /**
- * XPath object.
+ * The XPath object.
  *
- * This object compiles the xpath at creation,
- * which could be reused many times, even for different documents.
+ * At the time of creation, this object compiles the XPath expression,
+ * which can be reused multiple times, even for different documents.
  *
  * Note: This object requires to be {@link dispose}d explicitly.
  */
@@ -34,14 +34,14 @@ export class XmlXPath extends XmlDisposable<XmlXPath> {
     }
 
     /**
-     * Namespaces and prefixes used.
+     * Namespaces and prefixes used in the XPath.
      */
     get namespaces(): NamespaceMap | undefined {
         return this._namespaces;
     }
 
     /**
-     * XPath string.
+     * XPath selector string.
      */
     toString(): string {
         return this._xpathSource;
@@ -49,10 +49,10 @@ export class XmlXPath extends XmlDisposable<XmlXPath> {
 
     /**
      * Create a new XPath object.
-     * @param xpathStr The XPath string
-     * @param namespaces Namespace map for prefixes used in the xpathStr
+     * @param xpathStr The XPath selector string.
+     * @param namespaces Namespace map for prefixes used in the `xpathStr`.
      */
-    static create(xpathStr: string, namespaces?: NamespaceMap): XmlXPath {
+    static compile(xpathStr: string, namespaces?: NamespaceMap): XmlXPath {
         const xpath = XmlXPath.getInstance(xmlXPathCtxtCompile(0, xpathStr), xpathStr, namespaces);
         return xpath;
     }

@@ -26,7 +26,7 @@ import {
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 /**
- * Exception thrown during validating XML using a XSD schema.
+ * The exception that is thrown when validating XML against a schema.
  */
 export class XmlValidateError extends XmlLibError {
     static fromDetails(details: ErrorDetail[]): XmlValidateError {
@@ -38,19 +38,19 @@ export class DtdValidator {
 }
 
 /**
- * RelaxNG schema validator.
+ * The RelaxNG schema validator.
  *
- * NOTE: This validator needs to be disposed explicitly.
+ * Note: This validator must be disposed explicitly.
  */
 @disposeBy(xmlRelaxNGFree)
 export class RelaxNGValidator extends XmlDisposable<RelaxNGValidator> {
     /**
      * Validate the XmlDocument.
      *
-     * @param doc the XmlDocument to be validated.
-     * @throws {@link XmlValidateError} if the document is invalid;
-     * @throws {@link XmlError} or {@link XmlValidateError} if something wrong,
-     * such as validating a document already disposed, etc.
+     * @param doc The XmlDocument to be validated.
+     * @throws an {@link XmlValidateError} if the document is invalid;
+     * @throws an {@link XmlError} or {@link XmlValidateError} if there’s an error,
+     * such as validating a document that’s already disposed, etc.
      */
     validate(doc: XmlDocument): void {
         const ctxt = xmlRelaxNGNewValidCtxt(this._ptr);
@@ -70,9 +70,9 @@ export class RelaxNGValidator extends XmlDisposable<RelaxNGValidator> {
     }
 
     /**
-     * Create RelaxNGValidator from a byte buffer
-     * @param rng The buffer of rng
-     * @throws {@link XmlError} or {@link XmlValidateError} if something wrong.
+     * Creates a RelaxNGValidator instance from an XmlDocument.
+     * @param rng The XmlDocument representing the RelaxNG schema
+     * @throws an {@link XmlError} or {@link XmlValidateError} if something goes wrong.
      */
     static fromDoc(rng: XmlDocument): RelaxNGValidator {
         // prepare parsing context for Relax NG
@@ -100,19 +100,19 @@ export class RelaxNGValidator extends XmlDisposable<RelaxNGValidator> {
 }
 
 /**
- * XSD schema validator.
+ * The XSD schema validator.
  *
- * NOTE: This validator needs to be disposed explicitly.
+ * Note: This validator must to be disposed explicitly.
  */
 @disposeBy(xmlSchemaFree)
 export class XsdValidator extends XmlDisposable<XsdValidator> {
     /**
      * Validate the XmlDocument.
      *
-     * @param doc the XmlDocument to be validated.
-     * @throws {@link XmlValidateError} if the document is invalid;
-     * @throws {@link XmlError} or {@link XmlValidateError} if something wrong,
-     * such as validating a document already disposed, etc.
+     * @param doc The XmlDocument to be validated.
+     * @throws an {@link XmlValidateError} if the document is invalid;
+     * @throws an {@link XmlError} or {@link XmlValidateError} if there's an error,
+     * such as validating a document that's already disposed, etc.
      */
     validate(doc: XmlDocument): void {
         const ctx = xmlSchemaNewValidCtxt(this._ptr);
@@ -131,10 +131,10 @@ export class XsdValidator extends XmlDisposable<XsdValidator> {
     }
 
     /**
-     * Create an XsdValidator from an {@link XmlDocument} object.
+     * Create an XsdValidator instance from an {@link XmlDocument} object.
      *
      * @param xsd The XSD schema, parsed in to an XmlDocument object.
-     * @throws {@link XmlError} or {@link XmlValidateError} if something wrong.
+     * @throws an {@link XmlError} or {@link XmlValidateError} if something goes wrong.
      */
     static fromDoc(xsd: XmlDocument): XsdValidator {
         // prepare parsing context for XSD

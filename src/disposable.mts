@@ -30,11 +30,11 @@ export function disposeBy<T extends XmlDisposable<T>>(free: (value: Pointer) => 
 }
 
 /**
- * Base implementation of interface Disposable to handle wasm memory.
+ * The base implementation of the interface Disposable is designed to manage wasm memory.
  *
- * Remember to call `dispose()` for any subclass object.
+ * Please remember to call the `dispose()` method for any subclass object.
  *
- * @template T The subclass deriving from XmlDisposable.
+ * @template T The subclass that inherits from XmlDisposable.
  */
 export abstract class XmlDisposable<T extends XmlDisposable<T>> implements Disposable {
     /** @internal */
@@ -58,12 +58,12 @@ export abstract class XmlDisposable<T extends XmlDisposable<T>> implements Dispo
     /**
      * Dispose the object.
      *
-     * It releases the managed resource and unregisters them from FinalizationRegistry.
-     * So the release of the managed resource won't need to wait until
-     * this object is garbage collected.
+     * It releases the managed resource and unregisters it from FinalizationRegistry.
+     * This ensures that the release of the managed resource doesn’t have to wait until
+     * the object is garbage collected.
      *
-     * This needs to be called explicitly to avoid resource leak,
-     * or declare the object with `using` declaration.
+       To avoid resource leaks,
+       explicitly call the `Dispose` method or use the `using` declaration to declare the object.
      *
      * @see {@link dispose}
      */

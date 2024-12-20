@@ -108,20 +108,20 @@ class MemTrackerImpl implements MemTracker {
 }
 
 /**
- * Memory Diagnostic options.
+ * The options for memory diagnostic.
  */
 export interface DiagOptions {
     /**
-     * Enabling the memory diagnostics.
+     * Enables the memory diagnostics.
      * Note that the tracking information will be lost when it is disabled.
      */
     enabled: boolean;
     /**
-     * Generate the statistics of the callstack, for {@link disposable.XmlDisposable}.
+     * Generates statistics of the callstack for {@link disposable.XmlDisposable}.
      */
     callerStats?: boolean;
     /**
-     * Record the callstack of creating each {@link disposable.XmlDisposable}.
+     * Records the callstack of creating each {@link disposable.XmlDisposable}.
      */
     callerDetail?: boolean;
 }
@@ -129,11 +129,13 @@ export interface DiagOptions {
 /**
  * Set up memory diagnostic helpers.
  *
- * When enabled, it will record allocated {@link disposable.XmlDisposable} objects
- * (and its subclass objects) and track whether
- * {@link disposable.XmlDisposable#dispose} is called.
+ * When enabled,
+ * these helpers will record allocated {@link disposable.XmlDisposable} objects
+ * (and their subclass objects)
+ * and track whether the {@link disposable.XmlDisposable#dispose} method is called.
  *
- * Note that the allocation will not be monitored before memory diagnostics is enabled.
+ * Note that the allocation of these objects will not be monitored
+ * before memory diagnostics is enabled.
  *
  * @param options
  * @see {@link report}
@@ -150,10 +152,10 @@ export function configure(options: DiagOptions) {
 }
 
 /**
- * Get the report of un-disposed objects.
- * @returns The report (JSON) object, whose format may vary according to the settings,
+ * Obtain the report containing information about un-disposed objects.
+ * @returns The report (in JSON format) whose format may vary according to the settings,
  * and is subject to change.
- * Returns undefined if memory diagnostic is not enabled.
+ * If memory diagnostic is not enabled, the report will be undefined.
  * @see {@link configure}
  */
 export function report(): any {

@@ -3,29 +3,29 @@
 [![CI Build on master](https://github.com/jameslan/libxml2-wasm/actions/workflows/build.yml/badge.svg)](https://github.com/jameslan/libxml2-wasm/actions/workflows/build.yml)
 [![npm](https://img.shields.io/npm/v/libxml2-wasm?logo=npm)](https://www.npmjs.com/package/libxml2-wasm)
 
-## Why another xml lib?
+# Why Choose Another XML Library?
 
-Comparing to the previous two main approaches,
-pure javascript implementation as well as traditional C implementation binding,
-using WebAssembly combines the pros from both sides,
-providing good performance while keeping best compatibility with modern Javascript runtime.
+When comparing the previous two main approaches —
+pure JavaScript implementation and traditional C implementation binding —
+WebAssembly offers a unique combination of advantages.
+It provides excellent performance while maintaining the best compatibility with modern JavaScript runtimes.
 
-| | Javascript Implementation | Traditional C Binding | WebAssembly |
-|-|:---:|:---:|:---:|
-| Parsing Speed[^1] | Average | Fast | Fast |
-| C/C++ Toolchain | Not required | Required[^2] | Not Required |
-| Prebuilt Binaries | N/A | One for each OS/Runtime version | Universal for all OS/Runtime versions |
-| Prebuilt Binary Compatibility | N/A | May broke across libc versions | Very Good |
-| Browser Compatibility | Yes | No | Yes |
+|                               | Javascript Implementation |       Traditional C Binding        |    WebAssembly    |
+|-------------------------------|:-------------------------:|:----------------------------------:|:-----------------:|
+| Parsing Speed                 |        Average[^1]        |                Fast                |       Fast        |
+| C/C++ Toolchain at Runtime    |       Not required        |            Required[^2]            |   Not Required    |
+| Prebuilt Binaries             |            N/A            |  One for each OS / Runtime / Arch  | Universal for all |
+| Prebuilt Binary Compatibility |            N/A            | May be broken across libc versions |     Very Good     |
+| Browser Compatibility         |            Yes            |                 No                 |        Yes        |
 
 ## Documentation
 
 https://jameslan.github.io/libxml2-wasm/index.html
 
-## Supported Environments
+# Supported Environments
 
 Due to the usage of WebAssembly, ES module and [top level await](https://caniuse.com/?search=top%20level%20await) etc,
-it requires the minimum version of the following environments,
+this library requires the minimum version of the following environments,
 
 | Environment |Version|
 |:-----------:|:---:|
@@ -34,9 +34,11 @@ it requires the minimum version of the following environments,
 |    Edge     |V89+|
 |   Safari    |v15+|
 
-## Features
-- Parsing
+# Features
+- Parsing & Querying
 - Validating
+- Modifying
+- Serializing
 - XInclude and XSD include/import (experimental)
  
 ## Getting started
@@ -47,11 +49,10 @@ Install `libxml2-wasm` package:
 npm i libxml2-wasm
 ```
 
-`libxml2-wasm` is an ES module, importing it are different between ES module and commonJS module.
+`libxml2-wasm` is an ES module,
+the import process differs between ES modules and CommonJS modules.
 
-### ESM
-
-Import it directly.
+### From ES Module
 
 ```js
 import fs from 'node:fs';
@@ -62,9 +63,7 @@ doc1.dispose();
 doc2.dispose();
 ```
 
-### CommonJS
-
-Dynamic import is needed:
+### From CommonJS
 
 ```js
 const fs = require('node:fs');
@@ -80,5 +79,6 @@ import('libxml2-wasm').then(({ XmlDocument }) => {
 
 For more detail, see the [Doc](https://jameslan.github.io/libxml2-wasm/index.html).
 
-[^1]: The speed of different libraries varies a lot, see [benchmark](performance.md).
-[^2]: The requirement of C/C++ toolchain may be waived if prebuilt binary is available.
+[^1]: The performance of different XML libraries can vary significantly.
+For more information, refer to the [benchmark](performance.md) provided.
+[^2]: The requirement of a C/C++ toolchain at runtime can be waived if prebuilt binaries are available.

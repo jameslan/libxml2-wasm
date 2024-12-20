@@ -6,7 +6,8 @@ title: Getting Started
 
 ## Install
 
-Install the [`libxml2-wasm` npm package](https://www.npmjs.com/package/libxml2-wasm) in your most convenient way, e.g.
+Install the [`libxml2-wasm` npm package](https://www.npmjs.com/package/libxml2-wasm) using your preferred method,
+such as:
 
 ```shell
 npm install libxml2-wasm
@@ -14,9 +15,11 @@ npm install libxml2-wasm
 
 ## Import The Lib
 
-`libxml2-wasm` is an ES module, importing it are different between ES module and commonJS module.
+Now, let’s import the libxml2-wasm module.
+Since it’s an ES module,
+the import process differs between ES modules and CommonJS modules.
 
-### From ESM
+### From ES Module
 
 Import it directly.
 
@@ -37,9 +40,13 @@ import('libxml2-wasm').then(({ XmlDocument }) => {
 });
 ```
 
-**IMPORTANT**: {@link libxml2-wasm!disposable.XmlDisposable#dispose | `dispose()`} is required to avoid memory leak.
-For more details please see [Memory Management](mem.md).
+**Important Note:**
 
-**Troubleshooting**: If the target environment set too low,
-the transpiler(typescript, or babel etc) may convert `import` to a call to the function `require()`,
-which may lead to runtime error.
+Remember to call the {@link libxml2-wasm!disposable.XmlDisposable#dispose | `dispose()`} method on the XmlDocument instance to prevent memory leaks.
+For more detailed information on memory management, refer to [Memory Management](mem.md).
+
+**Troubleshooting:**
+
+If the target environment version is set too low,
+the transpiler (e.g., TypeScript, Babel, etc.) may convert the `import` statement to a function call to `require()`.
+This can lead to runtime errors.

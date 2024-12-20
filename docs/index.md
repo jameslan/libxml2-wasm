@@ -1,22 +1,22 @@
-# Why Another Xml Lib?
+# Why Choose Another XML Library?
 
-Comparing to the previous two main approaches,
-pure javascript implementation as well as traditional C implementation binding,
-using WebAssembly combines the pros from both sides,
-providing good performance while keeping the best compatibility with modern Javascript runtime.
+When comparing the previous two main approaches — 
+pure JavaScript implementation and traditional C implementation binding — 
+WebAssembly offers a unique combination of advantages.
+It provides excellent performance while maintaining the best compatibility with modern JavaScript runtimes.
 
-| | Javascript Implementation | Traditional C Binding | WebAssembly |
-|-|:---:|:---:|:---:|
-| Parsing Speed | Average[^1] | Fast | Fast |
-| C/C++ Toolchain at Runtime Environment | Not required | Required[^2] | Not Required |
-| Prebuilt Binaries | N/A | One for each OS/Runtime version | Universal for all OS/Runtime versions |
-| Prebuilt Binary Compatibility | N/A | May broke across libc versions | Very Good |
-| Browser Compatibility | Yes | No | Yes |
+|                               | Javascript Implementation |       Traditional C Binding        |    WebAssembly    |
+|-------------------------------|:-------------------------:|:----------------------------------:|:-----------------:|
+| Parsing Speed                 |        Average[^1]        |                Fast                |       Fast        |
+| C/C++ Toolchain at Runtime    |       Not required        |            Required[^2]            |   Not Required    |
+| Prebuilt Binaries             |            N/A            |  One for each OS / Runtime / Arch  | Universal for all |
+| Prebuilt Binary Compatibility |            N/A            | May be broken across libc versions |     Very Good     |
+| Browser Compatibility         |            Yes            |                 No                 |        Yes        |
 
 # Supported Environments
 
 Due to the usage of WebAssembly, ES module and [top level await](https://caniuse.com/?search=top%20level%20await) etc,
-it requires the minimum version of the following environments,
+this library requires the minimum version of the following environments,
 
 | Environment |Version|
 |:-----------:|:---:|
@@ -26,9 +26,12 @@ it requires the minimum version of the following environments,
 |   Safari    |v15+|
 
 # Features
-- Parsing
+- Parsing & Querying
 - Validating
+- Modifying
+- Serializing
 - XInclude and XSD include/import (experimental)
 
-[^1]: The speed of different libraries varies a lot, see [benchmark](performance.md).
-[^2]: The requirement of C/C++ toolchain may be waived if prebuilt binary is available.
+[^1]: The performance of different XML libraries can vary significantly.
+For more information, refer to the [benchmark](performance.md) provided.
+[^2]: The requirement of a C/C++ toolchain at runtime can be waived if prebuilt binaries are available.
