@@ -62,6 +62,22 @@ doc.dispose();
 
 The registered callbacks will be invoked with the file name `file:///path/to/sub.xml`.
 
+### Buffer provider
+
+For the scenario where the included XMLs are stored in memory buffers,
+two sets of helper functions are provided:
+
+- Lower level:
+These functions are similar to `fs.open`, `fs.read`, and `fs.close`.
+{@link libxml2-wasm!openBuffer | `openBuffer`} opens a buffer and returns a file descriptor
+that can be used by {@link libxml2-wasm!readBuffer | `readBuffer`} and {@link libxml2-wasm!closeBuffer | `closeBuffer`}
+read and close the buffer, respectively.
+You can call these functions when implementing your own provider callbacks.
+
+- Higher level: If all your sources are memory buffers and each has a name specified in the container XML,
+you can simply use {@link libxml2-wasm!XmlBufferInputProvider | `XmlBufferInputProvider`}
+which implements {@link libxml2-wasm!XmlInputProvider | `XmlInputProvider`} and manages buffers by their names.
+
 ### Node.js
 
 For Node.js users who require callbacks for accessing local files,
