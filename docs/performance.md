@@ -6,7 +6,8 @@ One of the challenges of working with JavaScript and libxml is that they employ 
 JavaScript uses UTF-16/UCS-2, while libxml uses UTF-8.
 Consequently, we encounter the need to convert strings every time we invoke a function from libxml.
 
-To mitigate this overhead, this library provides two types of parsing functions: String API and Buffer API.
+To mitigate this overhead, this library provides two types of parsing functions:
+{@link libxml2-wasm!XmlDocument.fromString | String API} and {@link libxml2-wasm!XmlDocument.fromBuffer |Buffer API}.
 The String API accepts a JavaScript string as input and converts it into a UTF-8 buffer before processing.
 Conversely, the Buffer API takes a UTF-8 buffer as input and directly processes it.
 The Buffer API proves to be faster, particularly for large XML documents.
