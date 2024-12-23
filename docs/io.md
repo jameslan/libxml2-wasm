@@ -68,20 +68,40 @@ For the scenario where the included XMLs are stored in memory buffers,
 two sets of helper functions are provided:
 
 - Lower level:
-These functions are similar to `fs.open`, `fs.read`, and `fs.close`.
+Similar to `fs.open`, `fs.read`, and `fs.close`,
 {@link libxml2-wasm!openBuffer | `openBuffer`} opens a buffer and returns a file descriptor
 that can be used by {@link libxml2-wasm!readBuffer | `readBuffer`} and {@link libxml2-wasm!closeBuffer | `closeBuffer`}
-read and close the buffer, respectively.
+to read and close the buffer, respectively.
 You can call these functions when implementing your own provider callbacks.
 
 - Higher level: If all your sources are memory buffers and each has a name specified in the container XML,
 you can simply use {@link libxml2-wasm!XmlBufferInputProvider | `XmlBufferInputProvider`}
 which implements {@link libxml2-wasm!XmlInputProvider | `XmlInputProvider`} and manages buffers by their names.
 
-### Node.js
+# Serialize an XML
+
+{@link libxml2-wasm!XmlDocument.toBuffer | `XmlDocument.toBuffer`} gradually dumps the content of the XML DOM tree into a buffer 
+and calls the {@link libxml2-wasm!XmlOutputBufferHandler | `XmlOutputBufferHandler`} to process the data.
+
+Please note that UTF-8 is the only supported encoding at this time.
+
+Based on `toBuffer`, 
+{@link libxml2-wasm!XmlDocument.toString | `XmlDocument.toString`} is a convenience functions to get an XML string.
+
+For instance, to save an XML as a compact string, use:
+
+```js
+xml.toString({ format: false });
+```
+
+# Node.js
 
 For Node.js users who require callbacks for accessing local files,
-the module {@link nodejs!} predefines {@link nodejs!fsInputProviders | `fsInputProviders`},
+the module {@link nodejs!} predefines convenience helper functions.
+
+## Input callbacks
+
+{@link nodejs!fsInputProviders | `fsInputProviders`} is the callback implementation reading local files using `node:fs` module,
 which supports both file paths and file URLs.
 To enable this feature, either register the provider or simply call {@link nodejs!xmlRegisterFsInputProviders | `xmlRegisterFsInputProviders`}:
 
@@ -98,26 +118,19 @@ const doc = XmlDocument.fromBuffer(
 doc.dispose();
 ```
 
-# Serialize an XML
+## Output callbacks
 
-{@link libxml2-wasm!XmlDocument.toBuffer | `XmlDocument.toBuffer`} gradually dumps the content of the XML DOM tree into a buffer 
-and calls the {@link libxml2-wasm!XmlOutputBufferHandler | `XmlOutputBufferHandler`} to process the data.
-
-Please note that UTF-8 is the only supported encoding at this time.
-
-Based on `toBuffer`, two additional convenience functions are provided:
-{@link libxml2-wasm!XmlDocument.toString | `XmlDocument.toString`}  and {@link nodejs!saveDocSync | `saveDocSync`}.
-
-For instance, to save an XML as a compact string, use:
+To save an XML to a file in a Node.js environment, open a file and use {@link nodejs!saveDocSync | `saveDocSync`}:
 
 ```js
-xml.toString({ format: false });
-```
-
-To save a formatted XML to a file in a Node.js environment, use:
-
-```js
+import fs from 'node:fs';
 import { saveDocSync } from 'libxml2-wasm/lib/nodejs.mjs';
 
-saveDocSync(xml);
+const fd = fs.openSync('doc.xml', 'w');
+saveDocSync(xml, fd);
 ```
+
+`saveDocSync` uses {@link libxml2-wasm!XmlDocument.toBuffer | `XmlDocument.toBuffer`},
+which is faster than {@link libxml2-wasm!XmlDocument.toString | `XmlDocument.toString`}
+because similar to [`XmlDocument.fromBuffer` and `XmlDocument.fromString`](performance.md),
+it doesn't need to convert UTF-8 to UTF-16 and then convert it back.
