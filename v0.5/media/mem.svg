@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" viewBox="299 89 490 293" width="490" height="293">
+  <defs>
+    <filter id="Shadow" filterUnits="userSpaceOnUse" x="250" y="59.7">
+      <feGaussianBlur in="SourceAlpha" result="blur" stdDeviation="1.308"/>
+      <feOffset in="blur" result="offset" dx="0" dy="2"/>
+      <feFlood flood-color="black" flood-opacity=".5" result="flood"/>
+      <feComposite in="flood" in2="offset" operator="in" result="color"/>
+      <feMerge>
+        <feMergeNode in="color"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="FilledArrow_Marker" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-1 -4 8 8" markerWidth="8" markerHeight="8" color="black">
+      <g>
+        <path d="M 6 0 L 0 -2.25 L 0 2.25 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+      </g>
+    </marker>
+    <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="FilledArrow_Marker_2" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-1 -4 10 8" markerWidth="10" markerHeight="8" color="black">
+      <g>
+        <path d="M 8 0 L 0 -3 L 0 3 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+      </g>
+    </marker>
+    <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="FilledArrow_Marker_3" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-1 -4 10 8" markerWidth="10" markerHeight="8" color="black">
+      <g>
+        <path d="M 8 0 L 0 -3 L 0 3 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+      </g>
+    </marker>
+  </defs>
+  <g id="Canvas_1" fill-opacity="1" stroke-opacity="1" stroke-dasharray="none" stroke="none" fill="none">
+    <title>Canvas 1</title>
+    <rect fill="white" x="299" y="89" width="490" height="293"/>
+    <g id="Canvas_1_Layer_1">
+      <title>Layer 1</title>
+      <g id="Graphic_18" filter="url(#Shadow)">
+        <path d="M 306.5 91 L 781.5 91 C 783.7091 91 785.5 92.79086 785.5 95 L 785.5 372 C 785.5 374.20914 783.7091 376 781.5 376 L 306.5 376 C 304.29086 376 302.5 374.20914 302.5 372 L 302.5 95 C 302.5 92.79086 304.29086 91 306.5 91 Z" fill="white"/>
+        <path d="M 306.5 91 L 781.5 91 C 783.7091 91 785.5 92.79086 785.5 95 L 785.5 372 C 785.5 374.20914 783.7091 376 781.5 376 L 306.5 376 C 304.29086 376 302.5 374.20914 302.5 372 L 302.5 95 C 302.5 92.79086 304.29086 91 306.5 91 Z" stroke="gray" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(307.5 96)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="12" fill="black" x="191.158" y="11">Process Memory</tspan>
+        </text>
+      </g>
+      <g id="Graphic_10" filter="url(#Shadow)">
+        <path d="M 528.5 133.5 L 654 133.5 C 656.2091 133.5 658 135.29086 658 137.5 L 658 348 C 658 350.20914 656.2091 352 654 352 L 528.5 352 C 526.29086 352 524.5 350.20914 524.5 348 L 524.5 137.5 C 524.5 135.29086 526.29086 133.5 528.5 133.5 Z" fill="white"/>
+        <path d="M 528.5 133.5 L 654 133.5 C 656.2091 133.5 658 135.29086 658 137.5 L 658 348 C 658 350.20914 656.2091 352 654 352 L 528.5 352 C 526.29086 352 524.5 350.20914 524.5 348 L 524.5 137.5 C 524.5 135.29086 526.29086 133.5 528.5 133.5 Z" stroke="gray" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(529.5 138.5)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="12" fill="black" x="18.958" y="11">Shared Memory</tspan>
+        </text>
+      </g>
+      <g id="Graphic_2" filter="url(#Shadow)">
+        <circle cx="591.25" cy="189.5" r="20.5000327569888" fill="white"/>
+        <circle cx="591.25" cy="189.5" r="20.5000327569888" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(579.85 184.388)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="8" fill="black" x="4.5839996" y="8">doc</tspan>
+        </text>
+      </g>
+      <g id="Graphic_3" filter="url(#Shadow)">
+        <circle cx="591.25" cy="255.75" r="20.5000327569888" fill="white"/>
+        <circle cx="591.25" cy="255.75" r="20.5000327569888" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(579.85 250.638)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="8" fill="black" x="2.3599996" y="8">node</tspan>
+        </text>
+      </g>
+      <g id="Line_6">
+        <line x1="591.25" y1="210" x2="591.25" y2="227.35" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Graphic_11" filter="url(#Shadow)">
+        <circle cx="455.25" cy="263.75" r="10.7500171774454" fill="white"/>
+        <circle cx="455.25" cy="263.75" r="10.7500171774454" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_12">
+        <line x1="464.68785" y1="258.59735" x2="564.5629" y2="204.06997" marker-end="url(#FilledArrow_Marker_2)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Graphic_13" filter="url(#Shadow)">
+        <path d="M 672 257.5 L 761 257.5 C 763.2091 257.5 765 259.29086 765 261.5 L 765 348 C 765 350.20914 763.2091 352 761 352 L 672 352 C 669.7909 352 668 350.20914 668 348 L 668 261.5 C 668 259.29086 669.7909 257.5 672 257.5 Z" fill="white"/>
+        <path d="M 672 257.5 L 761 257.5 C 763.2091 257.5 765 259.29086 765 261.5 L 765 348 C 765 350.20914 763.2091 352 761 352 L 672 352 C 669.7909 352 668 350.20914 668 348 L 668 261.5 C 668 259.29086 669.7909 257.5 672 257.5 Z" stroke="gray" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(673 277.078)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="27.508" y="15">Web </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="8.676" y="33.448">Assembly </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="16.676" y="51.895996">Module</tspan>
+        </text>
+      </g>
+      <g id="Graphic_14" filter="url(#Shadow)">
+        <circle cx="455.25" cy="298.25" r="10.7500171774454" fill="white"/>
+        <circle cx="455.25" cy="298.25" r="10.7500171774454" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Graphic_17" filter="url(#Shadow)">
+        <path d="M 327 257.5 L 416 257.5 C 418.20914 257.5 420 259.29086 420 261.5 L 420 348 C 420 350.20914 418.20914 352 416 352 L 327 352 C 324.79086 352 323 350.20914 323 348 L 323 261.5 C 323 259.29086 324.79086 257.5 327 257.5 Z" fill="white"/>
+        <path d="M 327 257.5 L 416 257.5 C 418.20914 257.5 420 259.29086 420 261.5 L 420 348 C 420 350.20914 418.20914 352 416 352 L 327 352 C 324.79086 352 323 350.20914 323 348 L 323 261.5 C 323 259.29086 324.79086 257.5 327 257.5 Z" stroke="gray" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(328 286.302)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="6.756" y="15">Javascript </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="black" x="16.676" y="33.448">Module</tspan>
+        </text>
+      </g>
+      <g id="Graphic_19" filter="url(#Shadow)">
+        <circle cx="617.5" cy="317.625" r="20.5000327569889" fill="white"/>
+        <circle cx="617.5" cy="317.625" r="20.5000327569889" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(606.1 312.513)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="8" fill="black" x="2.3599996" y="8">node</tspan>
+        </text>
+      </g>
+      <g id="Graphic_20" filter="url(#Shadow)">
+        <circle cx="558.5" cy="317.625" r="20.5000327569889" fill="white"/>
+        <circle cx="558.5" cy="317.625" r="20.5000327569889" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(547.1 312.513)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="8" fill="black" x="2.3599996" y="8">node</tspan>
+        </text>
+      </g>
+      <g id="Line_22">
+        <line x1="581.65744" y1="273.87335" x2="572.72384" y2="290.7517" marker-end="url(#FilledArrow_Marker_3)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_23">
+        <line x1="599.2584" y1="274.62692" x2="605.6252" y2="289.63432" marker-end="url(#FilledArrow_Marker_3)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_24">
+        <line x1="579" y1="317.625" x2="587.1" y2="317.625" marker-end="url(#FilledArrow_Marker_3)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_25">
+        <line x1="465.8166" y1="300.23284" x2="528.6196" y2="312.0179" marker-end="url(#FilledArrow_Marker_3)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+    </g>
+  </g>
+</svg>
