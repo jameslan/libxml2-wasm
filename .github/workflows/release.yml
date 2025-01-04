@@ -33,6 +33,7 @@ jobs:
           body: ${{ inputs.note }}
           tag: v${{ inputs.version }}
           artifacts: ./artifact/*
+          commit: ${{ github.sha }}
       - uses: actions/setup-node@v3
         with:
           node-version: 20.x
