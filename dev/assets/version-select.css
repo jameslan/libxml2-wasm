@@ -1,0 +1,11 @@
+#tsd-search #version-select {
+  border: none;
+  background: none;
+  margin: 8px;
+  font: inherit;
+  font-weight: 700;
+}
+
+#tsd-search #version-select.loading {
+    display: none;
+}
