@@ -12,29 +12,6 @@ function inject() {
             e.innerHTML = '${github}';
         }
     };
-    var entry = document.getElementsByClassName('title')[0].href;
-    fetch(new URL('../versions.json', entry).href)
-        .then(function(resp) {
-            return resp.json();
-        })
-        .then(function(versions) {
-            var s = document.createElement('select');
-            s.onchange = function(event) {
-                window.location.href = event.target.value;
-            }
-            var i;
-            for (i = 0; i < versions.length; i++) {
-                var e = new URL('index.html', versions[i].url).href;
-                var o = document.createElement('option');
-                o.text = versions[i].version;
-                o.value = versions[i].url;
-                if (e == entry) {
-                    o.selected = true;
-                }
-                s.appendChild(o);
-            }
-            toolbar.insertBefore(s, toolbar.firstChild);
-        });
 }
 window.onload = inject;
 `;
@@ -49,6 +26,9 @@ export default {
         external: false,
         '@internal': false,
     },
+    plugin: [
+        'typedoc-plugin-version-select'
+    ],
     tsconfig: './tsconfig.prod.json',
     out: './_site',
     highlightLanguages: ['js', 'sh', 'ts', 'xml'],
