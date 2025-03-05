@@ -17,9 +17,12 @@ describe('Disposable', () => {
         Fixture.getInstance(51);
 
         await new Promise((resolve) => { setTimeout(resolve, 0); });
-        (global as any).gc();
-        // allow finalizer to run
-        await new Promise((resolve) => { setTimeout(resolve, 0); });
+        for (let i = 0; i < 3; i += 1) { // try 3 times
+            (global as any).gc();
+            // allow finalizer to run
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise((resolve) => { setTimeout(resolve, 0); });
+        }
 
         expect(f1).to.deep.equal([51]);
     });
@@ -33,7 +36,7 @@ describe('Disposable', () => {
             obj.dispose();
         }
 
-        // explict call to dispose already freed the resource and record it in f1 array, reset it.
+        // explicit call to dispose already freed the resource and record it in f1 array, reset it.
         f1.length = 0;
         await new Promise((resolve) => { setTimeout(resolve, 0); });
         (global as any).gc();

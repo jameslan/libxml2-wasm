@@ -28,6 +28,7 @@ rules:
     - error
     - allow:
         - <<
+        - "&"
   eol-last:
     - error
     - always

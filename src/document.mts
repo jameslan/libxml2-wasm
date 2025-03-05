@@ -111,49 +111,42 @@ export interface SaveOptions {
 
 function parse<Input>(
     parser: (
-    ctxt: XmlParserCtxtPtr,
-    source: Input,
-    url: string | null,
-    encoding: string | null,
-    options: number,
-) => XmlDocPtr,
+        ctxt: XmlParserCtxtPtr,
+        source: Input,
+        url: string | null,
+        encoding: string | null,
+        options: number,
+    ) => XmlDocPtr,
     source: Input,
     url: string | null,
     options: ParseOptions,
 ): XmlDocument {
+    const xmlOptions = options.option ?? ParseOption.XML_PARSE_DEFAULT;
     const ctxt = xmlNewParserCtxt();
-    const parseErr = error.storage.allocate([]);
-    xmlCtxtSetErrorHandler(ctxt, error.errorCollector, parseErr);
+    const errIndex = error.storage.allocate([]);
+    xmlCtxtSetErrorHandler(ctxt, error.errorCollector, errIndex);
     const xml = parser(
         ctxt,
         source,
         url,
         null,
-        options.option ?? ParseOption.XML_PARSE_DEFAULT,
+        xmlOptions,
     );
     try {
         if (!xml) {
-            const errDetails = error.storage.get(parseErr);
+            const errDetails = error.storage.get(errIndex);
             throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
         }
     } finally {
-        error.storage.free(parseErr);
+        error.storage.free(errIndex);
         xmlFreeParserCtxt(ctxt);
     }
 
-    const incErr = error.storage.allocate([]);
-    const xinc = xmlXIncludeNewContext(xml);
-    xmlXIncludeSetErrorHandler(xinc, error.errorCollector, incErr);
-    try {
-        if (xmlXIncludeProcessNode(xinc, xml) < 0) {
-            const errDetails = error.storage.get(incErr);
-            throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
-        }
-    } finally {
-        error.storage.free(incErr);
-        xmlXIncludeFreeContext(xinc);
+    const xmlDocument = XmlDocument.getInstance(xml);
+    if (xmlOptions & ParseOption.XML_PARSE_XINCLUDE) {
+        xmlDocument.processXIncludeSync();
     }
-    return XmlDocument.getInstance(xml);
+    return xmlDocument;
 }
 
 /**
@@ -315,5 +308,27 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
         }
         this.root = root;
         return root;
+    }
+
+    /**
+     * Process the XInclude directives in the document synchronously.
+     *
+     * @returns the number of XInclude nodes processed.
+     */
+    processXIncludeSync(): number {
+        const errIndex = error.storage.allocate([]);
+        const xinc = xmlXIncludeNewContext(this._ptr);
+        xmlXIncludeSetErrorHandler(xinc, error.errorCollector, errIndex);
+        try {
+            const ret = xmlXIncludeProcessNode(xinc, this._ptr);
+            if (ret < 0) {
+                const errDetails = error.storage.get(errIndex);
+                throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
+            }
+            return ret;
+        } finally {
+            error.storage.free(errIndex);
+            xmlXIncludeFreeContext(xinc);
+        }
     }
 }

@@ -1,8 +1,9 @@
 import { expect } from 'chai';
 import {
-    openBuffer,
-    readBuffer,
     closeBuffer,
+    openBuffer,
+    ParseOption,
+    readBuffer,
     XmlBufferInputProvider,
     xmlCleanupInputProvider,
     XmlDocument,
@@ -52,7 +53,7 @@ describe('buffer reader', () => {
   <xi:include href="a.xml"/>
   <xi:include href="b.xml"/>
 </docs>
-`);
+`, { option: ParseOption.XML_PARSE_XINCLUDE });
 
         expect(doc.get('/docs/a')).to.not.be.null;
         expect(doc.get('/docs/b')).to.not.be.null;
@@ -68,7 +69,7 @@ describe('buffer reader', () => {
 <docs xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="a.xml"/>
 </docs>
-`);
+`, { option: ParseOption.XML_PARSE_XINCLUDE });
 
         expect(doc.get('/docs/a')).to.not.be.null;
     });
@@ -85,6 +86,6 @@ describe('buffer reader', () => {
 <docs xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="a.xml"/>
 </docs>
-`)).to.throw();
+`, { option: ParseOption.XML_PARSE_XINCLUDE })).to.throw();
     });
 });
