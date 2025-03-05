@@ -5,6 +5,7 @@ import * as chai from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import {
+    ParseOption,
     xmlCleanupInputProvider,
     XmlDocument,
     XmlValidateError,
@@ -31,7 +32,10 @@ describe('Node.js input callbacks', () => {
     it('handles includes with relative path', () => {
         using schemaDoc = XmlDocument.fromBuffer(fs.readFileSync('test/testfiles/book.xsd'), { url: 'test/testfiles/book.xsd' });
         using validator = XsdValidator.fromDoc(schemaDoc);
-        using doc = XmlDocument.fromBuffer(fs.readFileSync('test/testfiles/book.xml'), { url: 'test/testfiles/book.xml' });
+        using doc = XmlDocument.fromBuffer(
+            fs.readFileSync('test/testfiles/book.xml'),
+            { url: 'test/testfiles/book.xml', option: ParseOption.XML_PARSE_XINCLUDE },
+        );
         validator.validate(doc);
     });
 
@@ -43,7 +47,7 @@ describe('Node.js input callbacks', () => {
         using validator = XsdValidator.fromDoc(schemaDoc);
         using doc = XmlDocument.fromBuffer(
             fs.readFileSync('test/testfiles/book.xml'),
-            { url: `file://${resolve('test/testfiles/book.xml')}` },
+            { url: `file://${resolve('test/testfiles/book.xml')}`, option: ParseOption.XML_PARSE_XINCLUDE },
         );
         validator.validate(doc);
     });
@@ -51,7 +55,7 @@ describe('Node.js input callbacks', () => {
     it('can read big file', () => {
         using doc = XmlDocument.fromBuffer(
             fs.readFileSync('test/testfiles/geography.xml'),
-            { url: 'test/testfiles/geography.xml' },
+            { url: 'test/testfiles/geography.xml', option: ParseOption.XML_PARSE_XINCLUDE },
         );
 
         expect(doc.get('//country/capital[../name="United States"]')?.content).to.equal('Washington D.C.');

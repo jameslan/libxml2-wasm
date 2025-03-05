@@ -1,5 +1,12 @@
 import { expect } from 'chai';
-import { XmlDocument, XmlElement, XmlError } from '@libxml2-wasm/lib/index.mjs';
+import {
+    XmlBufferInputProvider,
+    xmlCleanupInputProvider,
+    XmlDocument,
+    XmlElement,
+    XmlError,
+    xmlRegisterInputProvider,
+} from '@libxml2-wasm/lib/index.mjs';
 
 describe('XmlDocument', () => {
     const doc = XmlDocument.fromString('<docs><doc></doc></docs>');
@@ -93,6 +100,32 @@ describe('XmlDocument', () => {
 <?xml version="1.0"?>
 <docs><doc/></docs>
 `);
+        });
+    });
+
+    describe('processXInclude', () => {
+        afterEach(() => {
+            xmlCleanupInputProvider();
+        });
+
+        it('does nothing w/o XInclude nodes', () => {
+            expect(doc.processXIncludeSync()).to.equal(0);
+            expect(doc.toString({ format: false })).to.equal('<?xml version="1.0"?>\n<docs><doc/></docs>\n');
+        });
+
+        it('processes XInclude nodes', () => {
+            const buffers = new XmlBufferInputProvider({});
+            buffers.addBuffer('a.xml', new TextEncoder().encode('<a/>'));
+            xmlRegisterInputProvider(buffers);
+
+            using xinc = XmlDocument.fromString(`\
+<?xml version="1.0"?>
+<docs xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="a.xml"/>
+</docs>
+`);
+            expect(xinc.processXIncludeSync()).to.equal(1);
+            expect(xinc.get('/docs/a')).to.not.be.null;
         });
     });
 });
