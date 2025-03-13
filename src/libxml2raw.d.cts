@@ -138,6 +138,7 @@ export class LibXml2 {
         data: Pointer,
     ): void;
     _xmlSchemaValidateDoc(ctx: XmlSchemaValidCtxtPtr, doc: XmlDocPtr): number;
+    _xmlSchemaValidateOneElement(ctx: XmlSchemaValidCtxtPtr, elem: XmlNodePtr): number;
     _xmlUnlinkNode(cur: XmlNodePtr): void;
     // runtime functions
     UTF8ToString(ptr: CString, maxBytesToRead?: number): string;

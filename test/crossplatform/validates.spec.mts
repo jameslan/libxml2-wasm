@@ -8,6 +8,7 @@ import {
     xmlCleanupInputProvider,
     XmlInputProvider,
     xmlRegisterInputProvider,
+    XmlElement,
 } from '@libxml2-wasm/lib/index.mjs';
 
 describe('XsdValidator', () => {
@@ -42,6 +43,24 @@ describe('XsdValidator', () => {
 
         xml.dispose();
         validator.dispose();
+    });
+
+    it('should validate subtree', () => {
+        using schema = XmlDocument.fromString(xsd);
+        using validator = XsdValidator.fromDoc(schema);
+        using xml = XmlDocument.fromString(`<?xml version="1.0" encoding="UTF-8"?>
+<market>
+    <bookstore>
+        <book><title>Harry Potter</title><price><![CDATA[29.99]]></price></book>
+        <book><title>Learning XML</title><price>39.95</price></book>
+    </bookstore>
+    <bookstore>
+        <book><title>Harry Potter</title><price><![CDATA[29.99]]></price></book>
+        <book><title>Learning XML</title><price>39.95</price></book>
+    </bookstore>
+</market>`);
+
+        xml.find('/market/bookstore').forEach((bookstore) => validator.validate(bookstore as XmlElement));
     });
 
     it('should fail on invalid xml', () => {

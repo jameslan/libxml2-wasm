@@ -553,6 +553,7 @@ export const xmlSchemaParse = libxml2._xmlSchemaParse;
 export const xmlSchemaSetParserStructuredErrors = libxml2._xmlSchemaSetParserStructuredErrors;
 export const xmlSchemaSetValidStructuredErrors = libxml2._xmlSchemaSetValidStructuredErrors;
 export const xmlSchemaValidateDoc = libxml2._xmlSchemaValidateDoc;
+export const xmlSchemaValidateOneElement = libxml2._xmlSchemaValidateOneElement;
 export const xmlSetNs = libxml2._xmlSetNs;
 export const xmlUnlinkNode = libxml2._xmlUnlinkNode;
 export const xmlXIncludeFreeContext = libxml2._xmlXIncludeFreeContext;

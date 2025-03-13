@@ -1,4 +1,5 @@
 import { XmlDocument } from './document.mjs';
+import { XmlElement } from './nodes.mjs';
 import {
     error,
     ErrorDetail,
@@ -22,6 +23,7 @@ import {
     xmlSchemaSetParserStructuredErrors,
     xmlSchemaSetValidStructuredErrors,
     xmlSchemaValidateDoc,
+    xmlSchemaValidateOneElement,
 } from './libxml2.mjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 
@@ -114,11 +116,22 @@ export class XsdValidator extends XmlDisposable<XsdValidator> {
      * @throws an {@link XmlError} or {@link XmlValidateError} if there's an error,
      * such as validating a document that's already disposed, etc.
      */
-    validate(doc: XmlDocument): void {
+    validate(doc: XmlDocument): void;
+    /**
+     * Validate a subtree of the document.
+     * @param elem The top most element of the subtree to be validated.
+     * @throws an {@link XmlValidateError} if the document is invalid;
+     * @throws an {@link XmlError} or {@link XmlValidateError} if there's an error,
+     * such as validating a document that's already disposed, etc.
+     */
+    validate(elem: XmlElement): void;
+    validate(docOrElem: XmlDocument | XmlElement): void {
         const ctx = xmlSchemaNewValidCtxt(this._ptr);
         const errIndex = error.storage.allocate([]);
         xmlSchemaSetValidStructuredErrors(ctx, error.errorCollector, errIndex);
-        const ret = xmlSchemaValidateDoc(ctx, doc._ptr);
+        const ret = docOrElem instanceof XmlDocument
+            ? xmlSchemaValidateDoc(ctx, docOrElem._ptr)
+            : xmlSchemaValidateOneElement(ctx, docOrElem._nodePtr);
         const errDetails = error.storage.get(errIndex);
         error.storage.free(errIndex);
         xmlSchemaFreeValidCtxt(ctx);
