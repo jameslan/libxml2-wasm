@@ -48,6 +48,7 @@ _xmlSchemaParse
 _xmlSchemaSetParserStructuredErrors
 _xmlSchemaSetValidStructuredErrors
 _xmlSchemaValidateDoc
+_xmlSchemaValidateOneElement
 _xmlSearchNs
 _xmlSetNs
 _xmlSetNsProp
