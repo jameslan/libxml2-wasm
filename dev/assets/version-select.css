@@ -1,9 +1,8 @@
-#tsd-search #version-select {
+#version-select {
   border: none;
   background: none;
   margin: 8px;
-  font: inherit;
-  font-weight: 700;
+  font-size: inherit;
 }
 
 #tsd-search #version-select.loading {
