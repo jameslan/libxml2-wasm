@@ -12,6 +12,7 @@ import {
     xmlNewDocNode,
     xmlNewDocText,
     xmlNewNs,
+    xmlNewReference,
     xmlNodeGetContent,
     xmlNodeSetContent,
     XmlNodeSetStruct,
@@ -70,6 +71,8 @@ function createNode(nodePtr: XmlNodePtr): XmlNode {
             return new XmlText(nodePtr);
         case XmlNodeStruct.Type.XML_COMMENT_NODE:
             return new XmlComment(nodePtr);
+        case XmlNodeStruct.Type.XML_ENTITY_REF_NODE:
+            return new XmlEntityReference(nodePtr);
         case XmlNodeStruct.Type.XML_CDATA_SECTION_NODE:
             return new XmlCData(nodePtr);
         default:
@@ -344,6 +347,30 @@ export abstract class XmlTreeNode extends XmlNode {
      */
     prependText(text: string): XmlText {
         return new XmlText(addNode(this._nodePtr, text, xmlNewDocText, xmlAddPrevSibling));
+    }
+
+    /**
+     * Add an entity reference sibling node after this node.
+     * @param name the name of the entity reference
+     * @see {@link prependEntityReference}
+     * @see {@link XmlElement#addEntityReference}
+     */
+    appendEntityReference(name: string): XmlEntityReference {
+        return new XmlEntityReference(
+            addNode(this._nodePtr, name, xmlNewReference, xmlAddNextSibling),
+        );
+    }
+
+    /**
+     * Insert an entity reference sibling node before this node.
+     * @param name the name of the entity reference
+     * @see {@link appendEntityReference}
+     * @see {@link XmlElement#addEntityReference}
+     */
+    prependEntityReference(name: string): XmlEntityReference {
+        return new XmlEntityReference(
+            addNode(this._nodePtr, name, xmlNewReference, xmlAddPrevSibling),
+        );
     }
 
     /**
@@ -660,6 +687,18 @@ export class XmlElement extends XmlTreeNode {
     addText(text: string): XmlText {
         return new XmlText(addNode(this._nodePtr, text, xmlNewDocText, xmlAddChild));
     }
+
+    /**
+     * Add a child entity reference node to the end of the children list.
+     * @param name the name of the entity reference
+     * @see {@link prependEntityReference}
+     * @see {@link appendEntityReference}
+     */
+    addEntityReference(name: string): XmlEntityReference {
+        return new XmlEntityReference(
+            addNode(this._nodePtr, name, xmlNewReference, xmlAddChild),
+        );
+    }
 }
 
 export interface XmlAttribute extends XmlNamedNode {}
@@ -732,4 +771,13 @@ export class XmlComment extends XmlSimpleNode {
 }
 
 export class XmlText extends XmlSimpleNode {
+}
+
+export class XmlEntityReference extends XmlTreeNode {
+    /**
+     * The name of the entity this node references.
+     */
+    get name(): string {
+        return XmlNodeStruct.name_(this._nodePtr);
+    }
 }

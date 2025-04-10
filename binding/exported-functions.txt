@@ -23,6 +23,7 @@ _xmlNewDocTextLen
 _xmlNewNode
 _xmlNewNs
 _xmlNewParserCtxt
+_xmlNewReference
 _xmlNodeGetContent
 _xmlNodeSetContentLen
 _xmlOutputBufferCreateIO

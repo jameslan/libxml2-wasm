@@ -326,6 +326,7 @@ export namespace XmlNodeStruct {
         XML_ATTRIBUTE_NODE = 2,
         XML_TEXT_NODE = 3,
         XML_CDATA_SECTION_NODE = 4,
+        XML_ENTITY_REF_NODE = 5,
         XML_COMMENT_NODE = 8,
     }
 }
@@ -384,6 +385,10 @@ export function xmlNewNs(
         href,
         prefix ?? null,
     );
+}
+
+export function xmlNewReference(doc: XmlDocPtr, name: string): XmlNodePtr {
+    return withStringUTF8(name, (buf) => libxml2._xmlNewReference(doc, buf));
 }
 
 /**
