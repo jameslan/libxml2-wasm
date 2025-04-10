@@ -63,6 +63,7 @@ export class LibXml2 {
     _xmlNewDocTextLen(doc: XmlDocPtr, content: CString, len: number): XmlNodePtr;
     _xmlNewNs(node: XmlNodePtr, href: CString, prefix: CString): XmlNsPtr;
     _xmlNewParserCtxt(): XmlParserCtxtPtr;
+    _xmlNewReference(doc: XmlDocPtr, name: CString): XmlNodePtr;
     _xmlNodeGetContent(node: XmlNodePtr): CString;
     _xmlNodeSetContentLen(node: XmlNodePtr, content: CString, len: number): number;
     _xmlOutputBufferCreateIO(

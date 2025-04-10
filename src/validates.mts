@@ -104,7 +104,7 @@ export class RelaxNGValidator extends XmlDisposable<RelaxNGValidator> {
 /**
  * The XSD schema validator.
  *
- * Note: This validator must to be disposed explicitly.
+ * Note: This validator needs to be disposed explicitly.
  */
 @disposeBy(xmlSchemaFree)
 export class XsdValidator extends XmlDisposable<XsdValidator> {

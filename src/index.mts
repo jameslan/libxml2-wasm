@@ -13,15 +13,16 @@ export * as diag from './diag.mjs';
 export * as disposable from './disposable.mjs';
 export { XmlXPath, NamespaceMap } from './xpath.mjs';
 export {
-    XmlNode,
     XmlAttribute,
+    XmlCData,
     XmlComment,
     XmlElement,
+    XmlEntityReference,
     XmlNamedNode,
+    XmlNode,
     XmlSimpleNode,
     XmlText,
     XmlTreeNode,
-    XmlCData,
 } from './nodes.mjs';
 export {
     ParseOption,
