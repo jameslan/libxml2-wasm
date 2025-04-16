@@ -60,24 +60,35 @@ function xpathEval(nodePtr: XmlNodePtr, xpath: string | XmlXPath, namespaces?: N
     return ret;
 }
 
+interface XmlNodeConstructor<T extends XmlNode> {
+    new (ptr: XmlNodePtr): T;
+}
+
+const nodeConstructors: Map<
+    XmlNodeStruct.Type,
+    XmlNodeConstructor<XmlNode>
+> = new Map();
+
+/** @internal */
+export function forNodeType<T extends XmlNode>(nodeType: XmlNodeStruct.Type) {
+    return function decorator(
+        constructor: XmlNodeConstructor<T>,
+        _context_: ClassDecoratorContext,
+    ) {
+        nodeConstructors.set(nodeType, constructor);
+        return constructor;
+    };
+}
+
 function createNode(nodePtr: XmlNodePtr): XmlNode {
     const nodeType = XmlNodeStruct.type(nodePtr);
-    switch (nodeType) {
-        case XmlNodeStruct.Type.XML_ELEMENT_NODE:
-            return new XmlElement(nodePtr);
-        case XmlNodeStruct.Type.XML_ATTRIBUTE_NODE:
-            return new XmlAttribute(nodePtr);
-        case XmlNodeStruct.Type.XML_TEXT_NODE:
-            return new XmlText(nodePtr);
-        case XmlNodeStruct.Type.XML_COMMENT_NODE:
-            return new XmlComment(nodePtr);
-        case XmlNodeStruct.Type.XML_ENTITY_REF_NODE:
-            return new XmlEntityReference(nodePtr);
-        case XmlNodeStruct.Type.XML_CDATA_SECTION_NODE:
-            return new XmlCData(nodePtr);
-        default:
-            throw new XmlError(`Unsupported node type ${nodeType}`);
+
+    const Constructor = nodeConstructors.get(nodeType);
+    if (!Constructor) {
+        throw new XmlError(`Unsupported node type ${nodeType}`);
     }
+
+    return new Constructor(nodePtr);
 }
 
 function createNullableNode(nodePtr: XmlNodePtr): XmlNode | null {
@@ -449,8 +460,10 @@ export interface XmlNamedNode {
     namespaceForPrefix(prefix: string): string | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function namedNode<T>(target: { new (...args: any[]): T }, context: ClassDecoratorContext) {
+function namedNode<T extends XmlNode>(
+    target: XmlNodeConstructor<T>,
+    _context_: ClassDecoratorContext,
+) {
     Object.defineProperties(target.prototype, {
         namespaces: {
             get() {
@@ -519,6 +532,7 @@ export interface XmlElement extends XmlNamedNode {}
 /**
  * The class representing an XML element node.
  */
+@forNodeType(XmlNodeStruct.Type.XML_ELEMENT_NODE)
 @namedNode
 export class XmlElement extends XmlTreeNode {
     /**
@@ -706,6 +720,7 @@ export interface XmlAttribute extends XmlNamedNode {}
 /**
  * The class representing an XML attribute node.
  */
+@forNodeType(XmlNodeStruct.Type.XML_ATTRIBUTE_NODE)
 @namedNode
 export class XmlAttribute extends XmlNode {
     /**
@@ -764,15 +779,19 @@ export abstract class XmlSimpleNode extends XmlTreeNode {
     }
 }
 
+@forNodeType(XmlNodeStruct.Type.XML_CDATA_SECTION_NODE)
 export class XmlCData extends XmlSimpleNode {
 }
 
+@forNodeType(XmlNodeStruct.Type.XML_COMMENT_NODE)
 export class XmlComment extends XmlSimpleNode {
 }
 
+@forNodeType(XmlNodeStruct.Type.XML_TEXT_NODE)
 export class XmlText extends XmlSimpleNode {
 }
 
+@forNodeType(XmlNodeStruct.Type.XML_ENTITY_REF_NODE)
 export class XmlEntityReference extends XmlTreeNode {
     /**
      * The name of the entity this node references.
