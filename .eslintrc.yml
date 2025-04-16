@@ -17,6 +17,9 @@ rules:
   '@typescript-eslint/prefer-literal-enum-member':
     - error
     - allowBitwiseExpressions: true
+  '@typescript-eslint/no-unused-vars':
+    - error
+    - argsIgnorePattern: '^_.*_$'
   import/extensions:
     - error
     - never

@@ -691,6 +691,45 @@ describe('XmlElement', () => {
             expect(newDoc.root.firstChild?.content).to.equal('node1node2');
         });
     });
+
+    describe('localNamespaces (deprecated)', () => {
+        it('should return the same value as nsDeclarations', () => {
+            using newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.com"/>');
+
+            // Get the namespaces using both methods
+            const { nsDeclarations, localNamespaces } = newDoc.root;
+
+            // Verify they return the same value
+            expect(localNamespaces).to.deep.equal(nsDeclarations);
+            expect(localNamespaces).to.deep.equal({
+                ex: 'http://example.com',
+            });
+        });
+
+        it('should return empty object when no namespaces are declared', () => {
+            using newDoc = XmlDocument.fromString('<docs/>');
+
+            // Get the namespaces using both methods
+            const { nsDeclarations, localNamespaces } = newDoc.root;
+
+            // Verify they return the same empty object
+            expect(localNamespaces).to.deep.equal(nsDeclarations);
+            expect(localNamespaces).to.be.empty;
+        });
+
+        it('should handle default namespace', () => {
+            using newDoc = XmlDocument.fromString('<docs xmlns="http://example.com"/>');
+
+            // Get the namespaces using both methods
+            const { nsDeclarations, localNamespaces } = newDoc.root;
+
+            // Verify they return the same value with default namespace
+            expect(localNamespaces).to.deep.equal(nsDeclarations);
+            expect(localNamespaces).to.deep.equal({
+                '': 'http://example.com',
+            });
+        });
+    });
 });
 
 describe('XmlText', () => {
