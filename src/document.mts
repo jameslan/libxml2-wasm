@@ -77,6 +77,14 @@ export enum ParseOption {
     XML_PARSE_IGNORE_ENC = 1 << 21,
     /** Store big lines numbers in text PSVI field */
     XML_PARSE_BIG_LINES = 1 << 22,
+    /** disable loading of external content */
+    XML_PARSE_NO_XXE = 1 << 23,
+    /** allow compressed content */
+    XML_PARSE_UNZIP = 1 << 24,
+    /** disable global system catalog */
+    XML_PARSE_NO_SYS_CATALOG = 1 << 25,
+    /** allow catalog PIs */
+    XML_PARSE_CATALOG_PI = 1 << 26,
 }
 
 export interface ParseOptions {
