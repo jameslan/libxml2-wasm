@@ -43,6 +43,8 @@ export class DtdValidator {
  * The RelaxNG schema validator.
  *
  * Note: This validator must be disposed explicitly.
+ *
+ * @deprecated libxml2 is planing to remove this: https://gitlab.gnome.org/GNOME/libxml2/-/releases/v2.14.0#planned-removals
  */
 @disposeBy(xmlRelaxNGFree)
 export class RelaxNGValidator extends XmlDisposable<RelaxNGValidator> {
