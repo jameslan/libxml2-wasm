@@ -328,6 +328,7 @@ export namespace XmlNodeStruct {
         XML_CDATA_SECTION_NODE = 4,
         XML_ENTITY_REF_NODE = 5,
         XML_COMMENT_NODE = 8,
+        XML_DTD_NODE = 14,
     }
 }
 
@@ -534,9 +535,12 @@ export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
 export const xmlDocSetRootElement = libxml2._xmlDocSetRootElement;
 export const xmlFreeDoc = libxml2._xmlFreeDoc;
 export const xmlFreeNode = libxml2._xmlFreeNode;
+export const xmlFreeDtd = libxml2._xmlFreeDtd;
 export const xmlFreeParserCtxt = libxml2._xmlFreeParserCtxt;
+export const xmlGetIntSubset = libxml2._xmlGetIntSubset;
 export const xmlGetLastError = libxml2._xmlGetLastError;
 export const xmlNewDoc = libxml2._xmlNewDoc;
+export const xmlNewDtd = libxml2._xmlNewDtd;
 export const xmlNewParserCtxt = libxml2._xmlNewParserCtxt;
 export const xmlRelaxNGFree = libxml2._xmlRelaxNGFree;
 export const xmlRelaxNGFreeParserCtxt = libxml2._xmlRelaxNGFreeParserCtxt;

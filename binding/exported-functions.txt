@@ -6,11 +6,14 @@ _xmlAddPrevSibling
 _xmlCleanupInputCallbacks
 _xmlCtxtReadMemory
 _xmlCtxtSetErrorHandler
+_xmlCtxtValidateDtd
 _xmlDocGetRootElement
 _xmlDocSetRootElement
 _xmlFreeDoc
+_xmlFreeDtd
 _xmlFreeNode
 _xmlFreeParserCtxt
+_xmlGetIntSubset
 _xmlGetLastError
 _xmlGetNsList
 _xmlHasNsProp
@@ -20,6 +23,7 @@ _xmlNewDoc
 _xmlNewDocComment
 _xmlNewDocNode
 _xmlNewDocTextLen
+_xmlNewDtd
 _xmlNewNode
 _xmlNewNs
 _xmlNewParserCtxt

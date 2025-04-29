@@ -12,6 +12,7 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/node_modules/.bin/mocha",
+            "args": ["--v8-expose-gc"],
             "env": {
             }
         }
