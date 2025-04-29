@@ -7,6 +7,7 @@ import {
     xmlFreeDoc,
     xmlFreeNode,
     xmlFreeParserCtxt,
+    xmlGetIntSubset,
     XmlLibError,
     xmlNewDoc,
     xmlNewDocNode,
@@ -25,6 +26,7 @@ import { XmlElement, type XmlNode } from './nodes.mjs';
 import { NamespaceMap, XmlXPath } from './xpath.mjs';
 import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.cjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
+import { XmlDtd } from './dtd.mjs';
 
 export enum ParseOption {
     XML_PARSE_DEFAULT = 0,
@@ -157,10 +159,21 @@ function parse<Input>(
     return xmlDocument;
 }
 
+function freeDocument(ptr: XmlDocPtr) {
+    // If there is a DTD, check if there is a wrapper
+    // If yes, dispose it to unregister the wrapper
+    const dtd = xmlGetIntSubset(ptr);
+    if (dtd) {
+        XmlDtd.peekInstance(dtd)?.dispose();
+    }
+
+    xmlFreeDoc(ptr);
+}
+
 /**
  * The XML document.
  */
-@disposeBy(xmlFreeDoc)
+@disposeBy(freeDocument)
 export class XmlDocument extends XmlDisposable<XmlDocument> {
     /** Create a new document from scratch.
      * To parse an existing xml, use {@link fromBuffer} or {@link fromString}.
@@ -274,6 +287,15 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
     }
 
     /**
+     * Get the DTD of the document.
+     * @returns The DTD of the document, or null if the document has no DTD.
+     */
+    get dtd(): XmlDtd | null {
+        const dtd = xmlGetIntSubset(this._ptr);
+        return dtd ? XmlDtd.getInstance(dtd) : null;
+    }
+
+    /**
      * The root element of the document.
      * If the document is newly created and hasn’t been set up with a root,
      * an {@link XmlError} will be thrown.
@@ -311,7 +333,7 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
         const elem = xmlNewDocNode(this._ptr, 0, name);
         const root = new XmlElement(elem);
         if (namespace) {
-            root.addLocalNamespace(namespace, prefix);
+            root.addNsDeclaration(namespace, prefix);
             root.namespacePrefix = prefix ?? '';
         }
         this.root = root;

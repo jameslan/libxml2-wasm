@@ -128,4 +128,30 @@ describe('XmlDocument', () => {
             expect(xinc.get('/docs/a')).to.not.be.null;
         });
     });
+
+    describe('dtd', () => {
+        it('should parse dtd', () => {
+            using xml = XmlDocument.fromString(`\
+<?xml version="1.0"?>
+<!DOCTYPE note [
+<!ELEMENT note (to,from,heading,body)>
+<!ELEMENT to (#PCDATA)>
+<!ELEMENT from (#PCDATA)>
+<!ELEMENT heading (#PCDATA)>
+<!ELEMENT body (#PCDATA)>
+]>
+<note>
+<to>Tove</to>
+<from>Jani</from>
+<heading>Reminder</heading>
+<body>Don't forget me this weekend</body>
+</note>`);
+            expect(xml.dtd?.doc).to.equal(xml);
+        });
+
+        it('should return null if no dtd', () => {
+            using xml = XmlDocument.fromString('<docs><doc/></docs>');
+            expect(xml.dtd).to.be.null;
+        });
+    });
 });

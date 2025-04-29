@@ -40,7 +40,9 @@ export {
     XmlOutputBufferHandler,
     xmlRegisterInputProvider,
 } from './libxml2.mjs';
+export { XmlDtd } from './dtd.mjs';
 export {
+    DtdValidator,
     RelaxNGValidator,
     XsdValidator,
     XmlValidateError,

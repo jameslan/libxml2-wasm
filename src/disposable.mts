@@ -59,7 +59,7 @@ export abstract class XmlDisposable<T extends XmlDisposable<T>> implements Dispo
      * Dispose the object.
      *
      * It releases the managed resource and unregisters it from FinalizationRegistry.
-     * This ensures that the release of the managed resource doesn’t have to wait until
+     * This ensures that the release of the managed resource doesn't have to wait until
      * the object is garbage collected.
      *
        To avoid resource leaks,
@@ -81,24 +81,54 @@ export abstract class XmlDisposable<T extends XmlDisposable<T>> implements Dispo
         this._ptr = 0;
     }
 
-    /** @internal */
+    /**
+     * Get the instance of the class from the pointer.
+     * If the instance is not found, create a new instance and register it.
+     * @internal
+     */
     static getInstance<U extends XmlDisposable<U>>(
         this: XmlDisposableConstructor<U>,
         ptr: Pointer,
         ...args: any[]
     ): U {
-        const metadata = (this as any)[Symbol.metadata];
-        const internal: XmlDisposableInternal<U> = metadata[symXmlDisposableInternal];
-        const instRef = internal.instances.get(ptr);
-        if (instRef) {
-            const inst = instRef.deref();
-            if (inst) {
-                return inst;
-            }
+        const inst = (this as any).peekInstance(ptr);
+        if (inst) {
+            return inst;
         }
+        const internal = (this as any).getDisposableInternal();
         const newInst = new this(ptr, ...args);
         internal.instances.set(ptr, new WeakRef(newInst));
         internal.finalization.register(newInst, ptr, newInst);
         return newInst;
+    }
+
+    /**
+     * Get the instance of the class from the pointer.
+     * If the instance is not found, return null.
+     * @internal
+     */
+    static peekInstance<U extends XmlDisposable<U>>(
+        this: XmlDisposableConstructor<U>,
+        ptr: Pointer,
+    ): U | null {
+        const internal = (this as any).getDisposableInternal();
+        const instRef = internal.instances.get(ptr);
+        if (instRef) {
+            return instRef.deref() || null;
+        }
+        return null;
+    }
+
+    /**
+     * The mapping of the pointer to the WeakRef instance is stored in the
+     * `XmlDisposableInternal` object of the metadata of the class.
+     * @internal
+     */
+    protected static getDisposableInternal<U extends XmlDisposable<U>>(
+        this: XmlDisposableConstructor<U>,
+    ): XmlDisposableInternal<U> {
+        const metadata = (this as any)[Symbol.metadata];
+        const internal: XmlDisposableInternal<U> = metadata[symXmlDisposableInternal];
+        return internal;
     }
 }
