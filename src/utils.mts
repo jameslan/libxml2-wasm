@@ -1,5 +1,5 @@
 import { XmlInputProvider } from './libxml2.mjs';
-import { Pointer } from './libxml2raw.cjs';
+import { Pointer } from './libxml2raw.mjs';
 
 /**
  * Manage JS context object for wasm.
