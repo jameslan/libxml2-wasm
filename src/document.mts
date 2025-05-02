@@ -24,7 +24,7 @@ import {
 } from './libxml2.mjs';
 import { XmlElement, type XmlNode } from './nodes.mjs';
 import { NamespaceMap, XmlXPath } from './xpath.mjs';
-import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.cjs';
+import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.mjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 import { XmlDtd } from './dtd.mjs';
 

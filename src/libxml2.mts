@@ -10,8 +10,8 @@ import type {
     XmlParserCtxtPtr,
     XmlXPathCompExprPtr,
     XmlXPathContextPtr,
-} from './libxml2raw.cjs';
-import moduleLoader from './libxml2raw.cjs';
+} from './libxml2raw.mjs';
+import moduleLoader from './libxml2raw.mjs';
 import { ContextStorage } from './utils.mjs';
 
 const libxml2 = await moduleLoader();

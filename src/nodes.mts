@@ -32,7 +32,7 @@ import {
     xmlXPathSetContextNode,
 } from './libxml2.mjs';
 import { XmlDocument } from './document.mjs';
-import type { XmlDocPtr, XmlNodePtr, XmlNsPtr } from './libxml2raw.cjs';
+import type { XmlDocPtr, XmlNodePtr, XmlNsPtr } from './libxml2raw.mjs';
 import { XmlXPath, NamespaceMap } from './xpath.mjs';
 
 function compiledXPathEval(nodePtr: XmlNodePtr, xpath: XmlXPath) {

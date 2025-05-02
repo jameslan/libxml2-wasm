@@ -1,7 +1,7 @@
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 import { XmlDocument } from './document.mjs';
 import { xmlFreeDtd, xmlNewDtd, XmlTreeCommonStruct } from './libxml2.mjs';
-import { XmlDtdPtr } from './libxml2raw.cjs';
+import { XmlDtdPtr } from './libxml2raw.mjs';
 
 function freeDtd(ptr: XmlDtdPtr): void {
     if (XmlTreeCommonStruct.parent(ptr) !== 0) {
