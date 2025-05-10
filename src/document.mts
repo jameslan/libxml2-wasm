@@ -154,7 +154,7 @@ function parse<Input>(
 
     const xmlDocument = XmlDocument.getInstance(xml);
     if (xmlOptions & ParseOption.XML_PARSE_XINCLUDE) {
-        xmlDocument.processXIncludeSync();
+        xmlDocument.processXInclude();
     }
     return xmlDocument;
 }
@@ -345,7 +345,7 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
      *
      * @returns the number of XInclude nodes processed.
      */
-    processXIncludeSync(): number {
+    processXInclude(): number {
         const errIndex = error.storage.allocate([]);
         const xinc = xmlXIncludeNewContext(this._ptr);
         xmlXIncludeSetErrorHandler(xinc, error.errorCollector, errIndex);

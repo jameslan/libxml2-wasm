@@ -167,7 +167,7 @@ describe('Virtual IO', () => {
             '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
             { url: 'path/doc.xml' },
         );
-        doc.processXIncludeSync();
+        doc.processXInclude();
 
         expect(close.calledWith(44)).to.be.true;
     });

@@ -109,7 +109,7 @@ describe('XmlDocument', () => {
         });
 
         it('does nothing w/o XInclude nodes', () => {
-            expect(doc.processXIncludeSync()).to.equal(0);
+            expect(doc.processXInclude()).to.equal(0);
             expect(doc.toString({ format: false })).to.equal('<?xml version="1.0"?>\n<docs><doc/></docs>\n');
         });
 
@@ -124,7 +124,7 @@ describe('XmlDocument', () => {
   <xi:include href="a.xml"/>
 </docs>
 `);
-            expect(xinc.processXIncludeSync()).to.equal(1);
+            expect(xinc.processXInclude()).to.equal(1);
             expect(xinc.get('/docs/a')).to.not.be.null;
         });
     });
