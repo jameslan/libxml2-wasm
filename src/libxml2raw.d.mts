@@ -48,6 +48,7 @@ export class LibXml2 {
         handler: XmlStructuredErrorFunc,
         data: Pointer,
     ): void;
+    _xmlCtxtValidateDtd(ctxt: XmlParserCtxtPtr, doc: XmlDocPtr, dtd: XmlDtdPtr): number;
     _xmlFreeNode(node: XmlNodePtr): void;
     _xmlFreeParserCtxt(ctxt: XmlParserCtxtPtr): void;
     _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
