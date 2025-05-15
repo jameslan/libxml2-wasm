@@ -9,6 +9,7 @@ import {
     XmlInputProvider,
     xmlRegisterInputProvider,
     XmlElement,
+    DtdValidator,
 } from '@libxml2-wasm/lib/index.mjs';
 
 describe('XsdValidator', () => {
@@ -313,7 +314,54 @@ describe('XsdValidator', () => {
 });
 
 describe('DtdValidator', () => {
+    it('should pass with valid xml, using internal subset', () => {
+        using xml = XmlDocument.fromString(`\
+<?xml version="1.0"?>
+<!DOCTYPE note [
+<!ELEMENT note (to,from,heading,body)>
+<!ELEMENT to (#PCDATA)>
+<!ELEMENT from (#PCDATA)>
+<!ELEMENT heading (#PCDATA)>
+<!ELEMENT body (#PCDATA)>
+]>
+<note>
+<to>Tove</to>
+<from>Jani</from>
+<heading>Reminder</heading>
+<body>Don't forget me this weekend</body>
+</note>`);
 
+        const validator = new DtdValidator(xml.dtd!);
+        validator.validate(xml);
+        // It's ok to not dispose the validator, because its DTD is owned by the document
+    });
+
+    it('should fail with invalid xml, using internal subset ', () => {
+        using xml = XmlDocument.fromString(`\
+<?xml version="1.0"?>
+<!DOCTYPE note [
+<!ELEMENT note (to,from)>
+<!ELEMENT to (#PCDATA)>
+<!ELEMENT from (#PCDATA)>
+]>
+<note>
+<to>Tove</to>
+</note>`);
+
+        const validator = new DtdValidator(xml.dtd!);
+        expect(() => validator.validate(xml)).to.throw(
+            XmlValidateError,
+            'Element note content does not follow the DTD, expecting (to , from), got (to )\n',
+        ).with.deep.property(
+            'details',
+            [{
+                message: 'Element note content does not follow the DTD, expecting (to , from), got (to )\n',
+                line: 7,
+                col: 0,
+            }],
+        );
+        validator.dispose();
+    });
 });
 
 describe('RelaxNGValidator', () => {

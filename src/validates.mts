@@ -3,8 +3,12 @@ import { XmlElement } from './nodes.mjs';
 import {
     error,
     ErrorDetail,
+    xmlCtxtSetErrorHandler,
+    xmlCtxtValidateDtd,
     XmlError,
+    xmlFreeParserCtxt,
     XmlLibError,
+    xmlNewParserCtxt,
     xmlRelaxNGFree,
     xmlRelaxNGFreeParserCtxt,
     xmlRelaxNGFreeValidCtxt,
@@ -26,6 +30,7 @@ import {
     xmlSchemaValidateOneElement,
 } from './libxml2.mjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
+import { XmlDtd } from './dtd.mjs';
 
 /**
  * The exception that is thrown when validating XML against a schema.
@@ -37,6 +42,38 @@ export class XmlValidateError extends XmlLibError {
 }
 
 export class DtdValidator {
+    private readonly _dtd: XmlDtd;
+
+    constructor(dtd: XmlDtd) {
+        this._dtd = dtd;
+    }
+
+    /**
+     * Validate the XmlDocument.
+     *
+     * @param doc The XmlDocument to be validated.
+     * @throws an {@link XmlValidateError} if the document is invalid;
+     */
+    validate(doc: XmlDocument): void {
+        const ctxt = xmlNewParserCtxt();
+        const errIndex = error.storage.allocate([]);
+        xmlCtxtSetErrorHandler(ctxt, error.errorCollector, errIndex);
+        const ret = xmlCtxtValidateDtd(ctxt, doc._ptr, this._dtd._ptr);
+        const errDetails = error.storage.get(errIndex);
+        error.storage.free(errIndex);
+        xmlFreeParserCtxt(ctxt);
+        if (ret !== 1) {
+            throw XmlValidateError.fromDetails(errDetails);
+        }
+    }
+
+    dispose(): void {
+        this[Symbol.dispose]();
+    }
+
+    [Symbol.dispose](): void {
+        this._dtd.dispose();
+    }
 }
 
 /**

@@ -531,6 +531,7 @@ export const xmlAddChild = libxml2._xmlAddChild;
 export const xmlAddNextSibling = libxml2._xmlAddNextSibling;
 export const xmlAddPrevSibling = libxml2._xmlAddPrevSibling;
 export const xmlCtxtSetErrorHandler = libxml2._xmlCtxtSetErrorHandler;
+export const xmlCtxtValidateDtd = libxml2._xmlCtxtValidateDtd;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
 export const xmlDocSetRootElement = libxml2._xmlDocSetRootElement;
 export const xmlFreeDoc = libxml2._xmlFreeDoc;
