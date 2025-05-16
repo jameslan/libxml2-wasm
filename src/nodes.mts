@@ -206,7 +206,7 @@ export abstract class XmlNode {
         }
         let ret: XmlNode | null;
         if (XmlXPathObjectStruct.type(xpathObj) !== XmlXPathObjectStruct.Type.XPATH_NODESET) {
-            ret = null;
+            throw new XmlError('XPath selector must return a node set');
         } else {
             const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
             if (nodeSet === 0 || XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
@@ -254,6 +254,8 @@ export abstract class XmlNode {
             for (let i = 0; i < nodeCount; i += 1) {
                 nodes.push(createNode(nodeTable[i]));
             }
+        } else {
+            throw new XmlError('XPath selector must return a node set');
         }
 
         xmlXPathFreeObject(xpathObj);

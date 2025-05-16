@@ -62,8 +62,8 @@ export abstract class XmlDisposable<T extends XmlDisposable<T>> implements Dispo
      * This ensures that the release of the managed resource doesn't have to wait until
      * the object is garbage collected.
      *
-       To avoid resource leaks,
-       explicitly call the `Dispose` method or use the `using` declaration to declare the object.
+     * To avoid resource leaks,
+     * explicitly call the `Dispose` method or use the `using` declaration to declare the object.
      *
      * @see {@link dispose}
      */
