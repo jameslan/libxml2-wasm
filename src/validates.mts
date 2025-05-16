@@ -41,6 +41,14 @@ export class XmlValidateError extends XmlLibError {
     }
 }
 
+/**
+ * The DTD validator.
+ *
+ * Note: This validator needs to be disposed explicitly if the DTD is not owned by a document.
+ *
+ * @see {@link XmlDtd}
+ * @see {@link [dispose]}
+ */
 export class DtdValidator {
     private readonly _dtd: XmlDtd;
 
@@ -52,7 +60,7 @@ export class DtdValidator {
      * Validate the XmlDocument.
      *
      * @param doc The XmlDocument to be validated.
-     * @throws an {@link XmlValidateError} if the document is invalid;
+     * @throws an {@link XmlValidateError} if the document is invalid.
      */
     validate(doc: XmlDocument): void {
         const ctxt = xmlNewParserCtxt();
@@ -67,10 +75,23 @@ export class DtdValidator {
         }
     }
 
+    /**
+     * Alias of {@link "[dispose]"}.
+     *
+     * @see {@link "[dispose]"}
+     */
     dispose(): void {
         this[Symbol.dispose]();
     }
 
+    /**
+     * Dispose the {@link XmlDtd} object.
+     *
+       To avoid resource leaks,
+       explicitly call the `Dispose` method or use the `using` declaration to declare the object.
+     *
+     * @see {@link dispose}
+     */
     [Symbol.dispose](): void {
         this._dtd.dispose();
     }

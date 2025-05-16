@@ -71,6 +71,13 @@ describe('XmlNode', () => {
             expect((currency as XmlAttribute).name).to.equal('currency');
             expect((currency as XmlAttribute).content).to.equal('USD');
         });
+
+        it('throws error when xpath returning non-node value', () => {
+            expect(() => doc.root.get('count(book)')).to.throw(
+                XmlError,
+                'XPath selector must return a node set',
+            );
+        });
     });
 
     describe('doc property', () => {
@@ -364,6 +371,13 @@ describe('XmlNode', () => {
                 { c: 'http://www.federalreserve.gov' },
             );
             expect(currencies.map((attr) => attr.content)).to.deep.equal(['USD', 'USD']);
+        });
+
+        it('throws error when xpath returning non-node value', () => {
+            expect(() => doc.root.find('count(book)')).to.throw(
+                XmlError,
+                'XPath selector must return a node set',
+            );
         });
     });
 
@@ -728,6 +742,12 @@ describe('XmlElement', () => {
             expect(localNamespaces).to.deep.equal({
                 '': 'http://example.com',
             });
+        });
+
+        it('could add namespace declaration on the element', () => {
+            using newDoc = XmlDocument.fromString('<docs/>');
+            newDoc.root.addLocalNamespace('http://example.com', 'ex');
+            expect(newDoc.toString()).to.equal('<?xml version="1.0"?>\n<docs xmlns:ex="http://example.com"/>\n');
         });
     });
 });
