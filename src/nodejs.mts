@@ -97,5 +97,5 @@ export function saveDocSync(doc: XmlDocument, fd: number, options?: SaveOptions)
             return true;
         },
     };
-    doc.toBuffer(handler, options);
+    doc.save(handler, options);
 }

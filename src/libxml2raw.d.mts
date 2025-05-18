@@ -14,6 +14,7 @@ type XmlOutputWriteCallback = Pointer;
 type XmlRelaxNGParserCtxtPtr = Pointer;
 type XmlRelaxNGPtr = Pointer;
 type XmlRelaxNGValidCtxtPtr = Pointer;
+type XmlSaveCtxtPtr = Pointer;
 type XmlSchemaParserCtxtPtr = Pointer;
 type XmlSchemaPtr = Pointer;
 type XmlSchemaValidCtxtPtr = Pointer;
@@ -102,12 +103,21 @@ export class LibXml2 {
     _xmlRelaxNGValidateDoc(ctxt: XmlRelaxNGValidCtxtPtr, doc: XmlDocPtr): number;
     _xmlRemoveProp(cur: XmlAttrPtr): number;
     _xmlResetLastError(): void;
+    _xmlSaveClose(ctxt: XmlSaveCtxtPtr): void;
     _xmlSaveFormatFileTo(
         buf: XmlOutputBufferPtr,
         doc: XmlDocPtr,
         encoding: CString,
         format: number,
     ): number;
+    _xmlSaveToIO(
+        iowrite: XmlOutputWriteCallback,
+        ioclose: XmlOutputCloseCallback,
+        context: Pointer,
+        encoding: CString,
+        options: number,
+    ): XmlSaveCtxtPtr;
+    _xmlSaveTree(ctxt: XmlSaveCtxtPtr, node: XmlNodePtr): number;
     _xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: CString): XmlNsPtr;
     _xmlSetNs(node: XmlNodePtr, ns: XmlNsPtr): void;
     _xmlSetNsProp(node: XmlNodePtr, ns: XmlNsPtr, name: CString, value: CString): XmlAttrPtr;

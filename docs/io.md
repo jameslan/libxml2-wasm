@@ -80,12 +80,12 @@ which implements {@link libxml2-wasm!XmlInputProvider | `XmlInputProvider`} and 
 
 # Serialize an XML
 
-{@link libxml2-wasm!XmlDocument.toBuffer | `XmlDocument.toBuffer`} gradually dumps the content of the XML DOM tree into a buffer 
+{@link libxml2-wasm!XmlDocument.save | `XmlDocument.save`} gradually dumps the content of the XML DOM tree into a buffer 
 and calls the {@link libxml2-wasm!XmlOutputBufferHandler | `XmlOutputBufferHandler`} to process the data.
 
 Please note that UTF-8 is the only supported encoding at this time.
 
-Based on `toBuffer`, 
+Based on `save`, 
 {@link libxml2-wasm!XmlDocument.toString | `XmlDocument.toString`} is a convenience functions to get an XML string.
 
 For instance, to save an XML as a compact string, use:
@@ -130,7 +130,7 @@ const fd = fs.openSync('doc.xml', 'w');
 saveDocSync(xml, fd);
 ```
 
-`saveDocSync` uses {@link libxml2-wasm!XmlDocument.toBuffer | `XmlDocument.toBuffer`},
+`saveDocSync` uses {@link libxml2-wasm!XmlDocument.save | `XmlDocument.save`},
 which is faster than {@link libxml2-wasm!XmlDocument.toString | `XmlDocument.toString`}
 because similar to [`XmlDocument.fromBuffer` and `XmlDocument.fromString`](performance.md),
 it doesn't need to convert UTF-8 to UTF-16 and then convert it back.

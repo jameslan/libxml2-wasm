@@ -43,7 +43,10 @@ _xmlRelaxNGSetValidStructuredErrors
 _xmlRelaxNGValidateDoc
 _xmlRemoveProp
 _xmlResetLastError
+_xmlSaveClose
 _xmlSaveFormatFileTo
+_xmlSaveToIO
+_xmlSaveTree
 _xmlSchemaNewDocParserCtxt
 _xmlSchemaFree
 _xmlSchemaFreeParserCtxt

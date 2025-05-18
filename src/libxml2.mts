@@ -8,6 +8,7 @@ import type {
     XmlNsPtr,
     XmlOutputBufferPtr,
     XmlParserCtxtPtr,
+    XmlSaveCtxtPtr,
     XmlXPathCompExprPtr,
     XmlXPathContextPtr,
 } from './libxml2raw.mjs';
@@ -514,7 +515,17 @@ const ioclose = libxml2.addFunction(
 
 export function xmlOutputBufferCreate(handler: XmlOutputBufferHandler): XmlOutputBufferPtr {
     const index = saveHandlerStorage.allocate(handler);
-    return libxml2._xmlOutputBufferCreateIO(iowrite, ioclose, index, 0);
+    return libxml2._xmlOutputBufferCreateIO(iowrite, ioclose, index, 0); // will be freed in ioclose
+}
+
+export function xmlSaveToIO(
+    handler: XmlOutputBufferHandler,
+    encoding: string | null,
+    format: number,
+): XmlSaveCtxtPtr {
+    const index = saveHandlerStorage.allocate(handler); // will be freed in ioclose
+    // Support only UTF-8 as of now
+    return libxml2._xmlSaveToIO(iowrite, ioclose, index, 0, format);
 }
 
 export function xmlSaveFormatFileTo(
@@ -554,6 +565,8 @@ export const xmlRelaxNGSetValidStructuredErrors = libxml2._xmlRelaxNGSetValidStr
 export const xmlRelaxNGValidateDoc = libxml2._xmlRelaxNGValidateDoc;
 export const xmlRemoveProp = libxml2._xmlRemoveProp;
 export const xmlResetLastError = libxml2._xmlResetLastError;
+export const xmlSaveClose = libxml2._xmlSaveClose;
+export const xmlSaveTree = libxml2._xmlSaveTree;
 export const xmlSchemaFree = libxml2._xmlSchemaFree;
 export const xmlSchemaFreeParserCtxt = libxml2._xmlSchemaFreeParserCtxt;
 export const xmlSchemaFreeValidCtxt = libxml2._xmlSchemaFreeValidCtxt;

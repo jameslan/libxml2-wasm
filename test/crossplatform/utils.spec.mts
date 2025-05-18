@@ -9,6 +9,7 @@ import {
     XmlDocument,
     xmlRegisterInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
+import { XmlStringOutputBufferHandler } from '@libxml2-wasm/lib/utils.mjs';
 
 describe('buffer reader', () => {
     afterEach(() => {
@@ -87,5 +88,48 @@ describe('buffer reader', () => {
   <xi:include href="a.xml"/>
 </docs>
 `, { option: ParseOption.XML_PARSE_XINCLUDE })).to.throw();
+    });
+});
+
+describe('XmlStringOutputBufferHandler', () => {
+    it('accumulates decoded string data', () => {
+        const handler = new XmlStringOutputBufferHandler();
+
+        const data1 = new TextEncoder().encode('<test>');
+        const data2 = new TextEncoder().encode('content</test>');
+
+        const bytesWritten1 = handler.write(data1);
+        const bytesWritten2 = handler.write(data2);
+
+        expect(bytesWritten1).to.equal(data1.byteLength);
+        expect(bytesWritten2).to.equal(data2.byteLength);
+        expect(handler.result).to.equal('<test>content</test>');
+    });
+
+    it('returns true on close', () => {
+        const handler = new XmlStringOutputBufferHandler();
+        expect(handler.close()).to.be.true;
+    });
+
+    it('handles empty input', () => {
+        const handler = new XmlStringOutputBufferHandler();
+        const emptyData = new Uint8Array(0);
+
+        const bytesWritten = handler.write(emptyData);
+
+        expect(bytesWritten).to.equal(0);
+        expect(handler.result).to.equal('');
+    });
+
+    it('handles multiple writes with non-ASCII characters', () => {
+        const handler = new XmlStringOutputBufferHandler();
+
+        const data1 = new TextEncoder().encode('<résumé>');
+        const data2 = new TextEncoder().encode('профиль</résumé>');
+
+        handler.write(data1);
+        handler.write(data2);
+
+        expect(handler.result).to.equal('<résumé>профиль</résumé>');
     });
 });

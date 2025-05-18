@@ -1,4 +1,4 @@
-import { XmlInputProvider } from './libxml2.mjs';
+import { XmlInputProvider, XmlOutputBufferHandler } from './libxml2.mjs';
 import { Pointer } from './libxml2raw.mjs';
 
 /**
@@ -122,4 +122,23 @@ export function readBuffer(fd: number, buffer: Uint8Array): number {
  */
 export function closeBuffer(fd: Pointer) {
     bufferContexts.delete(fd);
+}
+
+export class XmlStringOutputBufferHandler implements XmlOutputBufferHandler {
+    private _result = '';
+
+    private _decoder = new TextDecoder();
+
+    write(buf: Uint8Array): number {
+        this._result += this._decoder.decode(buf);
+        return buf.byteLength;
+    }
+
+    close(): boolean { // eslint-disable-line class-methods-use-this
+        return true;
+    }
+
+    get result(): string {
+        return this._result;
+    }
 }
