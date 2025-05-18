@@ -48,10 +48,10 @@ you can simply use <a href="../classes/libxml2-wasm.XmlBufferInputProvider.html"
 which implements <a href="../interfaces/libxml2-wasm.XmlInputProvider.html" class="tsd-kind-interface"><code>XmlInputProvider</code></a> and manages buffers by their names.</p>
 </li>
 </ul>
-<h1 id="serialize-an-xml" class="tsd-anchor-link">Serialize an XML<a href="#serialize-an-xml" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h1><p><a href="../classes/libxml2-wasm.XmlDocument.html#tobuffer" class="tsd-kind-method"><code>XmlDocument.toBuffer</code></a> gradually dumps the content of the XML DOM tree into a buffer
+<h1 id="serialize-an-xml" class="tsd-anchor-link">Serialize an XML<a href="#serialize-an-xml" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h1><p><a href="../classes/libxml2-wasm.XmlDocument.html#save" class="tsd-kind-method"><code>XmlDocument.save</code></a> gradually dumps the content of the XML DOM tree into a buffer
 and calls the <a href="../interfaces/libxml2-wasm.XmlOutputBufferHandler.html" class="tsd-kind-interface"><code>XmlOutputBufferHandler</code></a> to process the data.</p>
 <p>Please note that UTF-8 is the only supported encoding at this time.</p>
-<p>Based on <code>toBuffer</code>,
+<p>Based on <code>save</code>,
 <a href="../classes/libxml2-wasm.XmlDocument.html#tostring" class="tsd-kind-method"><code>XmlDocument.toString</code></a> is a convenience functions to get an XML string.</p>
 <p>For instance, to save an XML as a compact string, use:</p>
 <pre><code class="js"><span class="hl-4">xml</span><span class="hl-1">.</span><span class="hl-0">toString</span><span class="hl-1">({ </span><span class="hl-4">format:</span><span class="hl-1"> </span><span class="hl-5">false</span><span class="hl-1"> });</span>
@@ -69,7 +69,7 @@ To enable this feature, either register the provider or simply call <a href="../
 <pre><code class="js"><span class="hl-3">import</span><span class="hl-1"> </span><span class="hl-4">fs</span><span class="hl-1"> </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;node:fs&#39;</span><span class="hl-1">;</span><br/><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">saveDocSync</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;libxml2-wasm/lib/nodejs.mjs&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">fd</span><span class="hl-1"> = </span><span class="hl-4">fs</span><span class="hl-1">.</span><span class="hl-0">openSync</span><span class="hl-1">(</span><span class="hl-2">&#39;doc.xml&#39;</span><span class="hl-1">, </span><span class="hl-2">&#39;w&#39;</span><span class="hl-1">);</span><br/><span class="hl-0">saveDocSync</span><span class="hl-1">(</span><span class="hl-4">xml</span><span class="hl-1">, </span><span class="hl-4">fd</span><span class="hl-1">);</span>
 </code><button type="button">Copy</button></pre>
 
-<p><code>saveDocSync</code> uses <a href="../classes/libxml2-wasm.XmlDocument.html#tobuffer" class="tsd-kind-method"><code>XmlDocument.toBuffer</code></a>,
+<p><code>saveDocSync</code> uses <a href="../classes/libxml2-wasm.XmlDocument.html#save" class="tsd-kind-method"><code>XmlDocument.save</code></a>,
 which is faster than <a href="../classes/libxml2-wasm.XmlDocument.html#tostring" class="tsd-kind-method"><code>XmlDocument.toString</code></a>
 because similar to <a href="Performance.html"><code>XmlDocument.fromBuffer</code> and <code>XmlDocument.fromString</code></a>,
 it doesn't need to convert UTF-8 to UTF-16 and then convert it back.</p>
