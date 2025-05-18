@@ -7,6 +7,7 @@ import {
     XmlError,
     xmlRegisterInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
+import { XmlStringOutputBufferHandler } from '@libxml2-wasm/lib/utils.mjs';
 
 describe('XmlDocument', () => {
     const doc = XmlDocument.fromString('<docs><doc></doc></docs>');
@@ -82,6 +83,19 @@ describe('XmlDocument', () => {
             expect(doc.get('docs')).to.be.null;
             expect((doc.get('doc') as XmlElement).name).to.equal('doc');
             expect((doc.get('/docs/doc') as XmlElement).name).to.equal('doc');
+        });
+    });
+
+    describe('toBuffer (deprecated)', () => {
+        it('formats output by default', () => {
+            const handler = new XmlStringOutputBufferHandler();
+            doc.toBuffer(handler);
+            expect(handler.result).to.equal(`\
+<?xml version="1.0"?>
+<docs>
+  <doc/>
+</docs>
+`);
         });
     });
 

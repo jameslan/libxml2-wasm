@@ -18,7 +18,11 @@ import {
     XmlNodeSetStruct,
     XmlNodeStruct,
     XmlNsStruct,
+    XmlOutputBufferHandler,
     xmlRemoveProp,
+    xmlSaveClose,
+    xmlSaveToIO,
+    xmlSaveTree,
     xmlSearchNs,
     xmlSetNs,
     xmlSetNsProp,
@@ -31,9 +35,10 @@ import {
     xmlXPathRegisterNs,
     xmlXPathSetContextNode,
 } from './libxml2.mjs';
-import { XmlDocument } from './document.mjs';
+import { SaveOptions, XmlDocument } from './document.mjs';
 import type { XmlDocPtr, XmlNodePtr, XmlNsPtr } from './libxml2raw.mjs';
 import { XmlXPath, NamespaceMap } from './xpath.mjs';
+import { XmlStringOutputBufferHandler } from './utils.mjs';
 
 function compiledXPathEval(nodePtr: XmlNodePtr, xpath: XmlXPath) {
     const context = xmlXPathNewContext(XmlNodeStruct.doc(nodePtr));
@@ -591,7 +596,7 @@ export class XmlElement extends XmlTreeNode {
      * Namespace declarations on this element
      *
      * @returns Empty object if there's no local namespace definition on this element.
-     * Note that default namespace uses empty string as key in the returned object.
+     * Note that the default namespace uses empty string as the key in the returned object.
      */
     get nsDeclarations(): NamespaceMap {
         const namespaces: NamespaceMap = {};
@@ -612,7 +617,7 @@ export class XmlElement extends XmlTreeNode {
      * Add a namespace declaration to this element.
      * @param uri The namespace URI.
      * @param prefix The prefix that the namespace to be used as.
-     * If not provided, it will be treated as default namespace.
+     * If not provided, it will be treated as the default namespace.
      *
      * @throws XmlError if namespace declaration already exists.
      */
@@ -714,6 +719,19 @@ export class XmlElement extends XmlTreeNode {
         return new XmlEntityReference(
             addNode(this._nodePtr, name, xmlNewReference, xmlAddChild),
         );
+    }
+
+    save(handler: XmlOutputBufferHandler, options?: SaveOptions) {
+        const ctxt = xmlSaveToIO(handler, null, options?.format ?? true ? 1 : 0);
+        xmlSaveTree(ctxt, this._nodePtr);
+        xmlSaveClose(ctxt);
+    }
+
+    toString(options?: SaveOptions): string {
+        const handler = new XmlStringOutputBufferHandler();
+        this.save(handler, options);
+
+        return handler.result;
     }
 }
 

@@ -706,6 +706,14 @@ describe('XmlElement', () => {
         });
     });
 
+    describe('toString', () => {
+        it('should return the XML string representation of the node', () => {
+            using newDoc = XmlDocument.fromString('<docs><doc>text</doc></docs>');
+            const node = newDoc.get('/docs/doc');
+            expect(node?.toString()).to.equal('<doc>text</doc>');
+        });
+    });
+
     describe('localNamespaces (deprecated)', () => {
         it('should return the same value as nsDeclarations', () => {
             using newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.com"/>');

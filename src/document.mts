@@ -27,6 +27,7 @@ import { NamespaceMap, XmlXPath } from './xpath.mjs';
 import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.mjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 import { XmlDtd } from './dtd.mjs';
+import { XmlStringOutputBufferHandler } from './utils.mjs';
 
 export enum ParseOption {
     XML_PARSE_DEFAULT = 0,
@@ -106,7 +107,7 @@ export class XmlParseError extends XmlLibError {
 /**
  * Options to be passed in the call to saving functions
  *
- * @see {@link XmlDocument#toBuffer}
+ * @see {@link XmlDocument#save}
  * @see {@link XmlDocument#toString}
  */
 export interface SaveOptions {
@@ -185,7 +186,6 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
     /**
      * Parse and create an {@link XmlDocument} from an XML string.
      * @param source The XML string
-     * @param options Parsing options
      */
     static fromString(
         source: string,
@@ -209,21 +209,12 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
     /**
      * Save the XmlDocument to a string
      * @param options options to adjust the saving behavior
+     * @see {@link save}
+     * @see {@link XmlElement#toString}
      */
     toString(options?: SaveOptions): string {
-        const decoder = new TextDecoder();
-        const handler = {
-            result: '',
-            write(buf: Uint8Array) {
-                this.result += decoder.decode(buf);
-                return buf.length;
-            },
-
-            close() {
-                return true;
-            },
-        };
-        this.toBuffer(handler, options);
+        const handler = new XmlStringOutputBufferHandler();
+        this.save(handler, options);
 
         return handler.result;
     }
@@ -231,10 +222,21 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
     /**
      * Save the XmlDocument to a buffer and invoke the callbacks to process.
      *
-     * @param handler handlers to process the content in the buffer
-     * @param options options to adjust the saving behavior
+     * @deprecated Use `save` instead.
      */
     toBuffer(handler: XmlOutputBufferHandler, options?: SaveOptions) {
+        return this.save(handler, options);
+    }
+
+    /**
+     * Save the XmlDocument to a buffer and invoke the callbacks to process.
+     *
+     * @param handler handlers to process the content in the buffer
+     * @param options options to adjust the saving behavior
+     * @see {@link toString}
+     * @see {@link XmlElement#save}
+     */
+    save(handler: XmlOutputBufferHandler, options?: SaveOptions) {
         const buf = xmlOutputBufferCreate(handler);
         xmlSaveFormatFileTo(buf, this._ptr, null, options?.format ?? true ? 1 : 0);
     }
