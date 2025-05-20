@@ -67,6 +67,6 @@
         "WebAssembly"
     ],
     "engines": {
-        "node": ">=16"
+        "node": ">=18"
     }
 }

@@ -158,6 +158,6 @@ describe('saveDocSync', () => {
 describe('Initialization', () => {
     it('works when register io callbacks at the beginning', () => {
         // execute in external process to test the initialization
-        execSync(`"${process.execPath}" test/initialization.test.js`);
+        execSync(`"${process.execPath}" test/initialization🚀.test.js`);
     });
 });

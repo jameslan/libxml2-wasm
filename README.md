@@ -29,7 +29,7 @@ this library requires the minimum version of the following environments,
 
 | Environment |Version|
 |:-----------:|:---:|
-|   Node.js   |v16+|
+|   Node.js   |v18+|
 |   Chrome    |V89+|
 |    Edge     |V89+|
 |   Safari    |v15+|
@@ -40,7 +40,7 @@ this library requires the minimum version of the following environments,
 - Modifying
 - Serializing
 - XInclude and XSD include/import (experimental)
- 
+
 ## Getting started
 
 Install `libxml2-wasm` package:
