@@ -1,7 +1,7 @@
 # Why Choose Another XML Library?
 
-When comparing the previous two main approaches — 
-pure JavaScript implementation and traditional C implementation binding — 
+When comparing the previous two main approaches —
+pure JavaScript implementation and traditional C implementation binding —
 WebAssembly offers a unique combination of advantages.
 It provides excellent performance while maintaining the best compatibility with modern JavaScript runtimes.
 
@@ -20,7 +20,7 @@ this library requires the minimum version of the following environments,
 
 | Environment |Version|
 |:-----------:|:---:|
-|   Node.js   |v16+|
+|   Node.js   |v18+|
 |   Chrome    |V89+|
 |    Edge     |V89+|
 |   Safari    |v15+|
