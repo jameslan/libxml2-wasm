@@ -712,6 +712,39 @@ describe('XmlElement', () => {
             const node = newDoc.get('/docs/doc');
             expect(node?.toString()).to.equal('<doc>text</doc>');
         });
+
+        it('should return the XML string representation of the node with format', () => {
+            using newDoc = XmlDocument.fromString('<bookstore><book><title>title</title></book></bookstore>');
+            const node = newDoc.get('/bookstore/book') as XmlElement;
+            expect(node.toString({ format: true })).to.equal('<book>\n  <title>title</title>\n</book>');
+        });
+
+        it('should return the XML string representation of the node without format', () => {
+            using newDoc = XmlDocument.fromString('<bookstore><book><title>title</title></book></bookstore>');
+            const node = newDoc.get('/bookstore/book') as XmlElement;
+            expect(node.toString({ format: false })).to.equal('<book><title>title</title></book>');
+        });
+
+        it('should return the XML string representation of the node with format and indent', () => {
+            using newDoc = XmlDocument.fromString('<bookstore><book><title>title</title></book></bookstore>');
+            const node = newDoc.get('/bookstore/book') as XmlElement;
+            expect(node.toString({ format: true, indentString: '    ' })).to.equal('<book>\n    <title>title</title>\n</book>');
+        });
+
+        it('can avoid empty tags', () => {
+            using newDoc = XmlDocument.fromString('<bookstore><book><title></title></book></bookstore>');
+            const node = newDoc.get('/bookstore/book') as XmlElement;
+            expect(node.toString({ format: true, noEmptyTags: true })).to.equal('<book>\n  <title></title>\n</book>');
+        });
+
+        it('fails on invalid indentString', () => {
+            using newDoc = XmlDocument.fromString('<bookstore><book><title>title</title></book></bookstore>');
+            const node = newDoc.get('/bookstore/book') as XmlElement;
+            expect(() => node.toString({ format: true, indentString: ' '.repeat(61) })).to.throw(
+                XmlError,
+                'Failed to set indent string',
+            );
+        });
     });
 
     describe('localNamespaces (deprecated)', () => {

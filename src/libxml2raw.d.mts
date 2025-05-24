@@ -8,7 +8,6 @@ type XmlDtdPtr = Pointer;
 type XmlErrorPtr = Pointer;
 type XmlNodePtr = Pointer;
 type XmlNsPtr = Pointer;
-type XmlOutputBufferPtr = Pointer;
 type XmlOutputCloseCallback = Pointer;
 type XmlOutputWriteCallback = Pointer;
 type XmlRelaxNGParserCtxtPtr = Pointer;
@@ -72,12 +71,6 @@ export class LibXml2 {
     _xmlNewReference(doc: XmlDocPtr, name: CString): XmlNodePtr;
     _xmlNodeGetContent(node: XmlNodePtr): CString;
     _xmlNodeSetContentLen(node: XmlNodePtr, content: CString, len: number): number;
-    _xmlOutputBufferCreateIO(
-        iowrite: XmlOutputWriteCallback,
-        ioclose: XmlOutputCloseCallback,
-        context: Pointer,
-        encoder: XmlCharEncodingHandlerPtr,
-    ): XmlOutputBufferPtr;
     _xmlRegisterInputCallbacks(
         xmlInputMatchCallback: Pointer,
         xmlInputOpenCallback: Pointer,
@@ -104,12 +97,8 @@ export class LibXml2 {
     _xmlRemoveProp(cur: XmlAttrPtr): number;
     _xmlResetLastError(): void;
     _xmlSaveClose(ctxt: XmlSaveCtxtPtr): void;
-    _xmlSaveFormatFileTo(
-        buf: XmlOutputBufferPtr,
-        doc: XmlDocPtr,
-        encoding: CString,
-        format: number,
-    ): number;
+    _xmlSaveDoc(ctxt: XmlSaveCtxtPtr, doc: XmlDocPtr): number;
+    _xmlSaveSetIndentString(ctxt: XmlSaveCtxtPtr, indent: CString): number;
     _xmlSaveToIO(
         iowrite: XmlOutputWriteCallback,
         ioclose: XmlOutputCloseCallback,

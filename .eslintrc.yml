@@ -32,6 +32,7 @@ rules:
     - allow:
         - <<
         - "&"
+        - "|="
   eol-last:
     - error
     - always

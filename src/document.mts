@@ -1,5 +1,6 @@
 import {
     error,
+    SaveOptions,
     xmlCtxtSetErrorHandler,
     xmlDocGetRootElement,
     xmlDocSetRootElement,
@@ -12,11 +13,14 @@ import {
     xmlNewDoc,
     xmlNewDocNode,
     xmlNewParserCtxt,
-    xmlOutputBufferCreate,
     XmlOutputBufferHandler,
     xmlReadMemory,
     xmlReadString,
-    xmlSaveFormatFileTo,
+    xmlSaveClose,
+    xmlSaveDoc,
+    xmlSaveOption,
+    xmlSaveSetIndentString,
+    xmlSaveToIO,
     xmlXIncludeFreeContext,
     xmlXIncludeNewContext,
     xmlXIncludeProcessNode,
@@ -102,22 +106,6 @@ export interface ParseOptions {
 }
 
 export class XmlParseError extends XmlLibError {
-}
-
-/**
- * Options to be passed in the call to saving functions
- *
- * @see {@link XmlDocument#save}
- * @see {@link XmlDocument#toString}
- */
-export interface SaveOptions {
-    /**
-     * To enable formatting on the output,
-     * creating a separate line for each tag and indent the text accordingly.
-     *
-     * @default true
-     */
-    format?: boolean;
 }
 
 function parse<Input>(
@@ -237,8 +225,14 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
      * @see {@link XmlElement#save}
      */
     save(handler: XmlOutputBufferHandler, options?: SaveOptions) {
-        const buf = xmlOutputBufferCreate(handler);
-        xmlSaveFormatFileTo(buf, this._ptr, null, options?.format ?? true ? 1 : 0);
+        const ctxt = xmlSaveToIO(handler, null, xmlSaveOption(options));
+        if (options?.indentString) {
+            if (xmlSaveSetIndentString(ctxt, options.indentString) < 0) {
+                throw new XmlError('Failed to set indent string');
+            }
+        }
+        xmlSaveDoc(ctxt, this._ptr);
+        xmlSaveClose(ctxt);
     }
 
     /**

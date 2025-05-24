@@ -6,7 +6,6 @@ import type {
     XmlErrorPtr,
     XmlNodePtr,
     XmlNsPtr,
-    XmlOutputBufferPtr,
     XmlParserCtxtPtr,
     XmlSaveCtxtPtr,
     XmlXPathCompExprPtr,
@@ -477,6 +476,61 @@ export function xmlCleanupInputProvider(): void {
 }
 
 /**
+ * Options to be passed in the call to saving functions
+ *
+ * @default If not specified, `{ format: true }` will be used.
+ * @see {@link XmlDocument#save}
+ * @see {@link XmlDocument#toString}
+ */
+export interface SaveOptions {
+    /**
+     * To enable formatting on the output,
+     * creating a separate line for each tag and indent the text accordingly.
+     *
+     * @default false
+     */
+    format?: boolean;
+
+    /**
+     * To disable the XML declaration.
+     *
+     * @default false
+     */
+    noDeclaration?: boolean;
+
+    /**
+     * To disable the empty tags.
+     *
+     * @default false
+     */
+    noEmptyTags?: boolean;
+
+    /**
+     * The string used for indentation.
+     *
+     * @default Two spaces: "  "
+     */
+    indentString?: string;
+}
+
+export function xmlSaveOption(options?: SaveOptions): number {
+    if (!options) {
+        return 1; // default is to format with default setting
+    }
+    let flags = 0;
+    if (options.format) {
+        flags |= 1 << 0;
+    }
+    if (options.noDeclaration) {
+        flags |= 1 << 1;
+    }
+    if (options.noEmptyTags) {
+        flags |= 1 << 2;
+    }
+    return flags;
+}
+
+/**
  * Callbacks to process the content in the output buffer.
  */
 export interface XmlOutputBufferHandler {
@@ -513,11 +567,6 @@ const ioclose = libxml2.addFunction(
     'ii',
 );
 
-export function xmlOutputBufferCreate(handler: XmlOutputBufferHandler): XmlOutputBufferPtr {
-    const index = saveHandlerStorage.allocate(handler);
-    return libxml2._xmlOutputBufferCreateIO(iowrite, ioclose, index, 0); // will be freed in ioclose
-}
-
 export function xmlSaveToIO(
     handler: XmlOutputBufferHandler,
     encoding: string | null,
@@ -528,14 +577,11 @@ export function xmlSaveToIO(
     return libxml2._xmlSaveToIO(iowrite, ioclose, index, 0, format);
 }
 
-export function xmlSaveFormatFileTo(
-    buf: XmlOutputBufferPtr,
-    doc: XmlDocPtr,
-    encoding: string | null,
-    format: number,
+export function xmlSaveSetIndentString(
+    ctxt: XmlSaveCtxtPtr,
+    indent: string,
 ): number {
-    // Support only UTF-8 as of now
-    return libxml2._xmlSaveFormatFileTo(buf, doc, 0, format);
+    return withStringUTF8(indent, (buf) => libxml2._xmlSaveSetIndentString(ctxt, buf));
 }
 
 export const xmlAddChild = libxml2._xmlAddChild;
@@ -566,6 +612,7 @@ export const xmlRelaxNGValidateDoc = libxml2._xmlRelaxNGValidateDoc;
 export const xmlRemoveProp = libxml2._xmlRemoveProp;
 export const xmlResetLastError = libxml2._xmlResetLastError;
 export const xmlSaveClose = libxml2._xmlSaveClose;
+export const xmlSaveDoc = libxml2._xmlSaveDoc;
 export const xmlSaveTree = libxml2._xmlSaveTree;
 export const xmlSchemaFree = libxml2._xmlSchemaFree;
 export const xmlSchemaFreeParserCtxt = libxml2._xmlSchemaFreeParserCtxt;
