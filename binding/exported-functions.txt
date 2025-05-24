@@ -30,7 +30,6 @@ _xmlNewParserCtxt
 _xmlNewReference
 _xmlNodeGetContent
 _xmlNodeSetContentLen
-_xmlOutputBufferCreateIO
 _xmlRegisterInputCallbacks
 _xmlRelaxNGFree
 _xmlRelaxNGFreeParserCtxt
@@ -44,7 +43,8 @@ _xmlRelaxNGValidateDoc
 _xmlRemoveProp
 _xmlResetLastError
 _xmlSaveClose
-_xmlSaveFormatFileTo
+_xmlSaveDoc
+_xmlSaveSetIndentString
 _xmlSaveToIO
 _xmlSaveTree
 _xmlSchemaNewDocParserCtxt

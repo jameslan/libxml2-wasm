@@ -47,7 +47,7 @@ export class XmlValidateError extends XmlLibError {
  * Note: This validator needs to be disposed explicitly if the DTD is not owned by a document.
  *
  * @see {@link XmlDtd}
- * @see {@link [dispose]}
+ * @see {@link "[dispose]"}
  */
 export class DtdValidator {
     private readonly _dtd: XmlDtd;

@@ -8,8 +8,8 @@
  * @packageDocumentation
  */
 import fs from 'node:fs';
-import { XmlInputProvider, xmlRegisterInputProvider } from './libxml2.mjs';
-import { SaveOptions, XmlDocument } from './document.mjs';
+import { SaveOptions, XmlInputProvider, xmlRegisterInputProvider } from './libxml2.mjs';
+import { XmlDocument } from './document.mjs';
 
 function filePath(filename: string): string | null {
     try {

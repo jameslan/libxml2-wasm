@@ -27,12 +27,12 @@ export {
 export {
     ParseOption,
     ParseOptions,
-    SaveOptions,
     XmlDocument,
     XmlParseError,
 } from './document.mjs';
 export {
     ErrorDetail,
+    SaveOptions,
     XmlError,
     XmlLibError,
     xmlCleanupInputProvider,

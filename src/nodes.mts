@@ -1,12 +1,19 @@
+import { XmlDocument } from './document.mjs';
 import {
+    SaveOptions,
+    XmlError,
+    XmlNamedNodeStruct,
+    XmlNodeSetStruct,
+    XmlNodeStruct,
+    XmlNsStruct,
+    XmlOutputBufferHandler,
+    XmlXPathObjectStruct,
     xmlAddChild,
     xmlAddNextSibling,
     xmlAddPrevSibling,
-    XmlError,
     xmlFreeNode,
     xmlGetNsList,
     xmlHasNsProp,
-    XmlNamedNodeStruct,
     xmlNewCDataBlock,
     xmlNewDocComment,
     xmlNewDocNode,
@@ -15,12 +22,10 @@ import {
     xmlNewReference,
     xmlNodeGetContent,
     xmlNodeSetContent,
-    XmlNodeSetStruct,
-    XmlNodeStruct,
-    XmlNsStruct,
-    XmlOutputBufferHandler,
     xmlRemoveProp,
     xmlSaveClose,
+    xmlSaveOption,
+    xmlSaveSetIndentString,
     xmlSaveToIO,
     xmlSaveTree,
     xmlSearchNs,
@@ -31,14 +36,12 @@ import {
     xmlXPathFreeContext,
     xmlXPathFreeObject,
     xmlXPathNewContext,
-    XmlXPathObjectStruct,
     xmlXPathRegisterNs,
     xmlXPathSetContextNode,
 } from './libxml2.mjs';
-import { SaveOptions, XmlDocument } from './document.mjs';
 import type { XmlDocPtr, XmlNodePtr, XmlNsPtr } from './libxml2raw.mjs';
-import { XmlXPath, NamespaceMap } from './xpath.mjs';
 import { XmlStringOutputBufferHandler } from './utils.mjs';
+import { NamespaceMap, XmlXPath } from './xpath.mjs';
 
 function compiledXPathEval(nodePtr: XmlNodePtr, xpath: XmlXPath) {
     const context = xmlXPathNewContext(XmlNodeStruct.doc(nodePtr));
@@ -721,12 +724,31 @@ export class XmlElement extends XmlTreeNode {
         );
     }
 
+    /**
+     * Save the XmlElement to a buffer and invoke the callbacks to process.
+     *
+     * @param handler handlers to process the content in the buffer
+     * @param options options to adjust the saving behavior
+     * @see {@link toString}
+     * @see {@link XmlDocument#save}
+     */
     save(handler: XmlOutputBufferHandler, options?: SaveOptions) {
-        const ctxt = xmlSaveToIO(handler, null, options?.format ?? true ? 1 : 0);
+        const ctxt = xmlSaveToIO(handler, null, xmlSaveOption(options));
+        if (options?.indentString) {
+            if (xmlSaveSetIndentString(ctxt, options.indentString) < 0) {
+                throw new XmlError('Failed to set indent string');
+            }
+        }
         xmlSaveTree(ctxt, this._nodePtr);
         xmlSaveClose(ctxt);
     }
 
+    /**
+     * Save the XmlElement to a string
+     * @param options options to adjust the saving behavior
+     * @see {@link save}
+     * @see {@link XmlDocument#toString}
+     */
     toString(options?: SaveOptions): string {
         const handler = new XmlStringOutputBufferHandler();
         this.save(handler, options);

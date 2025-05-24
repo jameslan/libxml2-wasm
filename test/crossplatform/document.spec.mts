@@ -115,6 +115,39 @@ describe('XmlDocument', () => {
 <docs><doc/></docs>
 `);
         });
+
+        it('can set indent string', () => {
+            expect(doc.toString({ format: true, indentString: '    ' })).to.equal(`\
+<?xml version="1.0"?>
+<docs>
+    <doc/>
+</docs>
+`);
+        });
+
+        it('can omit xml declaration', () => {
+            expect(doc.toString({ format: true, noDeclaration: true })).to.equal(`\
+<docs>
+  <doc/>
+</docs>
+`);
+        });
+
+        it('can avoid empty tags', () => {
+            expect(doc.toString({ format: true, noEmptyTags: true })).to.equal(`\
+<?xml version="1.0"?>
+<docs>
+  <doc></doc>
+</docs>
+`);
+        });
+
+        it('fails to set indent string longer than MAX_INDENT', () => {
+            expect(() => doc.toString({ format: true, indentString: ' '.repeat(61) })).to.throw(
+                XmlError,
+                'Failed to set indent string',
+            );
+        });
     });
 
     describe('processXInclude', () => {
