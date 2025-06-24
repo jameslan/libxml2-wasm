@@ -39,6 +39,7 @@ export class LibXml2 {
     _xmlAddNextSibling(prev: XmlNodePtr, cur: XmlNodePtr): XmlNodePtr;
     _xmlAddPrevSibling(next: XmlNodePtr, cur: XmlNodePtr): XmlNodePtr;
     _xmlCleanupInputCallbacks(): void;
+    _xmlCopyNode(node: XmlNodePtr, extended: number): XmlNodePtr;
     _xmlCtxtParseDtd(
         ctxt: XmlParserCtxtPtr,
         input: XmlParserInputPtr,
@@ -63,6 +64,7 @@ export class LibXml2 {
     _xmlFreeParserCtxt(ctxt: XmlParserCtxtPtr): void;
     _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
     _xmlDocSetRootElement(doc: XmlDocPtr, root: XmlNodePtr): XmlNodePtr;
+    _xmlFree(ptr: Pointer): void;
     _xmlFreeDoc(Doc: XmlDocPtr): void;
     _xmlFreeDtd(dtd: XmlDtdPtr): void;
     _xmlGetIntSubset(doc: XmlDocPtr): XmlDtdPtr;
@@ -71,6 +73,7 @@ export class LibXml2 {
     _xmlHasNsProp(node: XmlNodePtr, name: CString, namespace: CString): XmlAttrPtr;
     _xmlInitParser(): void;
     _xmlNewDoc(): XmlDocPtr;
+    _xmlNewDtd(): XmlDtdPtr;
     _xmlNewCDataBlock(doc: XmlDocPtr, content: CString, len: number): XmlNodePtr;
     _xmlNewDocComment(doc: XmlDocPtr, content: CString): XmlNodePtr;
     _xmlNewDocNode(doc: XmlDocPtr, ns: XmlNsPtr, name: CString, content: CString): XmlNodePtr;
@@ -160,10 +163,38 @@ export class LibXml2 {
     _xmlSchemaValidateDoc(ctx: XmlSchemaValidCtxtPtr, doc: XmlDocPtr): number;
     _xmlSchemaValidateOneElement(ctx: XmlSchemaValidCtxtPtr, elem: XmlNodePtr): number;
     _xmlUnlinkNode(cur: XmlNodePtr): void;
+    _xmlC14NDocDumpMemory(
+        doc: XmlDocPtr,
+        nodeset: Pointer,
+        mode: number,
+        inclusiveNamespaces: Pointer,
+        withComments: number,
+        docTxtPtr: Pointer,
+    ): number;
+    _xmlC14NExecute(
+        doc: XmlDocPtr,
+        is_visible_callback: Pointer,
+        user_data: Pointer,
+        mode: number,
+        inclusive_ns_prefixes: Pointer,
+        with_comments: number,
+        buf: Pointer,
+    ): number;
+    // _xmlBufferCreate
+    // _xmlOutputBufferCreateBuffer
+    // _xmlBufferContent
+    // _xmlOutputBufferClose
+    // _xmlBufferFree
+    _xmlBufferCreate(): Pointer;
+    _xmlOutputBufferCreateBuffer(buffer: Pointer, encoder: Pointer): Pointer;
+    _xmlBufferContent(buffer: Pointer): Pointer;
+    _xmlOutputBufferClose(outputBuffer: Pointer): number;
+    _xmlBufferFree(buffer: Pointer): void;
     // runtime functions
     UTF8ToString(ptr: CString, maxBytesToRead?: number): string;
     addFunction(func: Function, sig: string): Pointer;
     getValue(ptr: Pointer, type: string): number;
+    setValue(ptr: Pointer, value: number, type: string): void;
     lengthBytesUTF8(str: string): number;
     stringToUTF8(str: string, outPtr: CString, maxBytesToWrite: number): CString;
 }

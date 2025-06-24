@@ -13,10 +13,45 @@ import type {
     XmlXPathContextPtr,
 } from './libxml2raw.mjs';
 import moduleLoader from './libxml2raw.mjs';
-import { ContextStorage } from './utils.mjs';
+import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 const libxml2 = await moduleLoader();
 libxml2._xmlInitParser();
+
+// Export specific functions needed by other modules
+export const {
+ getValue, setValue, UTF8ToString, lengthBytesUTF8, stringToUTF8, addFunction,
+} = libxml2;
+
+/**
+ * Manage JS context object for wasm.
+ *
+ * In libxml2, a registration of callback often has a context/userdata pointer.
+ * But when it is in wasm, this pointer is essentially an integer.
+ *
+ * To support JS object as context/userdata, we store it in the map and access with an integer key.
+ * This key could be passed to the registration.
+ * And the callback use this key to retrieve the real object.
+ */
+export class ContextStorage<T> {
+    private storage: Map<number, T> = new Map<number, T>();
+
+    private index = 0;
+
+    allocate(value: T): number {
+        this.index += 1;
+        this.storage.set(this.index, value);
+        return this.index;
+    }
+
+    free(index: number) {
+        this.storage.delete(index);
+    }
+
+    get(index: number): T {
+        return this.storage.get(index)!;
+    }
+}
 
 /**
  * The base class for exceptions in this library.
@@ -618,13 +653,68 @@ export function xmlSaveSetIndentString(
     return withStringUTF8(indent, (buf) => libxml2._xmlSaveSetIndentString(ctxt, buf));
 }
 
+/**
+ * We probably don't want to expose malloc/free directly?
+ */
+@disposeBy(libxml2._free)
+export class DisposableMalloc extends XmlDisposable<DisposableMalloc> {
+    constructor(size: number) {
+        super(libxml2._malloc(size));
+    }
+}
+
+/**
+ * Maybe also don't expose xmlBuffer* functions directly?
+ * Don't reuse this buffer.
+ */
+@disposeBy(libxml2._xmlBufferFree)
+export class DisposableXmlOutputBuffer extends XmlDisposable<DisposableXmlOutputBuffer> {
+    private _content: string | null = null;
+
+    private _outputBufferPtr: number;
+
+    constructor() {
+        super(libxml2._xmlBufferCreate());
+        this._outputBufferPtr = libxml2._xmlOutputBufferCreateBuffer(this._ptr, 0);
+    }
+
+    getOutputBufferPtr(): Pointer {
+        return this._outputBufferPtr;
+    }
+
+    // closes the buffer and gets is content as string.
+    getContent(): string {
+        if (this._content) {
+            return this._content;
+        }
+        if (this._outputBufferPtr === 0) {
+            throw new XmlError('Output buffer has been closed');
+        }
+        libxml2._xmlOutputBufferClose(this._outputBufferPtr);
+        this._outputBufferPtr = 0;
+        const contentPtr = libxml2._xmlBufferContent(this._ptr);
+        this._content = libxml2.UTF8ToString(contentPtr);
+        return this._content;
+    }
+
+    [Symbol.dispose]() {
+        if (this._outputBufferPtr !== 0) {
+            libxml2._xmlOutputBufferClose(this._outputBufferPtr);
+            this._outputBufferPtr = 0;
+        }
+        super[Symbol.dispose]();
+    }
+}
+
 export const xmlAddChild = libxml2._xmlAddChild;
 export const xmlAddNextSibling = libxml2._xmlAddNextSibling;
 export const xmlAddPrevSibling = libxml2._xmlAddPrevSibling;
+export const xmlCopyNode = libxml2._xmlCopyNode;
 export const xmlCtxtSetErrorHandler = libxml2._xmlCtxtSetErrorHandler;
 export const xmlCtxtValidateDtd = libxml2._xmlCtxtValidateDtd;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
 export const xmlDocSetRootElement = libxml2._xmlDocSetRootElement;
+export const xmlFree = libxml2._xmlFree;
 export const xmlFreeDoc = libxml2._xmlFreeDoc;
 export const xmlFreeNode = libxml2._xmlFreeNode;
 export const xmlFreeDtd = libxml2._xmlFreeDtd;
@@ -669,3 +759,5 @@ export const xmlXPathFreeContext = libxml2._xmlXPathFreeContext;
 export const xmlXPathFreeObject = libxml2._xmlXPathFreeObject;
 export const xmlXPathNewContext = libxml2._xmlXPathNewContext;
 export const xmlXPathSetContextNode = libxml2._xmlXPathSetContextNode;
+export const xmlC14NDocDumpMemory = libxml2._xmlC14NDocDumpMemory;
+export const xmlC14NExecute = libxml2._xmlC14NExecute;

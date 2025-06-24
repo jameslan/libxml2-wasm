@@ -88,7 +88,7 @@ export function forNodeType<T extends XmlNode>(nodeType: XmlNodeStruct.Type) {
     };
 }
 
-function createNode(nodePtr: XmlNodePtr): XmlNode {
+export function createNode(nodePtr: XmlNodePtr): XmlNode {
     const nodeType = XmlNodeStruct.type(nodePtr);
 
     const Constructor = nodeConstructors.get(nodeType);

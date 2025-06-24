@@ -32,6 +32,13 @@ import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.mjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 import { XmlDtd } from './dtd.mjs';
 import { XmlStringOutputBufferHandler } from './utils.mjs';
+import {
+    canonicalizeDocument,
+    canonicalizeWithCallback,
+    canonicalizeWithNode,
+    canonicalizeWithNodeSet,
+    type C14NOptions,
+} from './c14n.mjs';
 
 export enum ParseOption {
     XML_PARSE_DEFAULT = 0,
@@ -493,5 +500,37 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
             error.storage.free(errIndex);
             xmlXIncludeFreeContext(xinc);
         }
+    }
+
+    /**
+     * Canonicalize the XML document to a buffer and invoke the callbacks to process.
+     * @param handler handlers to process the content in the buffer
+     * @param options Canonicalization options
+     * @see {@link toCanonicalString}
+     */
+    canonicalize(handler: XmlOutputBufferHandler, options?: C14NOptions): void {
+        if (!options) {
+            canonicalizeDocument(this._ptr, handler);
+        } else if (options.node) {
+            canonicalizeWithNode(this._ptr, handler, options);
+        } else if (options.nodeSet) {
+            canonicalizeWithNodeSet(this._ptr, handler, options);
+        } else if (options.isVisibleCallback) {
+            canonicalizeWithCallback(this._ptr, handler, options);
+        } else {
+            canonicalizeDocument(this._ptr, handler, options);
+        }
+    }
+
+    /**
+     * Canonicalize the XML document and return the result as a string.
+     * @param options Canonicalization options
+     * @returns The canonicalized XML as a string
+     * @see {@link canonicalize}
+     */
+    toCanonicalString(options?: C14NOptions): string {
+        const handler = new XmlStringOutputBufferHandler();
+        this.canonicalize(handler, options);
+        return handler.result;
     }
 }
