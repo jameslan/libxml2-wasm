@@ -4,6 +4,7 @@ _xmlAddChild
 _xmlAddNextSibling
 _xmlAddPrevSibling
 _xmlCleanupInputCallbacks
+_xmlCtxtParseDtd
 _xmlCtxtReadMemory
 _xmlCtxtSetErrorHandler
 _xmlCtxtValidateDtd
@@ -23,7 +24,7 @@ _xmlNewDoc
 _xmlNewDocComment
 _xmlNewDocNode
 _xmlNewDocTextLen
-_xmlNewDtd
+_xmlNewInputFromMemory
 _xmlNewNode
 _xmlNewNs
 _xmlNewParserCtxt

@@ -3,13 +3,17 @@ type CString = Pointer;
 type XmlAttrPtr = Pointer;
 type XmlCharEncodingHandlerPtr = Pointer;
 type XmlParserCtxtPtr = Pointer;
+type XmlParserInputBufferPtr = Pointer;
 type XmlDocPtr = Pointer;
 type XmlDtdPtr = Pointer;
 type XmlErrorPtr = Pointer;
+type XmlInputCloseCallback = Pointer;
+type XmlInputReadCallback = Pointer;
 type XmlNodePtr = Pointer;
 type XmlNsPtr = Pointer;
 type XmlOutputCloseCallback = Pointer;
 type XmlOutputWriteCallback = Pointer;
+type XmlParserInputPtr = Pointer;
 type XmlRelaxNGParserCtxtPtr = Pointer;
 type XmlRelaxNGPtr = Pointer;
 type XmlRelaxNGValidCtxtPtr = Pointer;
@@ -35,6 +39,12 @@ export class LibXml2 {
     _xmlAddNextSibling(prev: XmlNodePtr, cur: XmlNodePtr): XmlNodePtr;
     _xmlAddPrevSibling(next: XmlNodePtr, cur: XmlNodePtr): XmlNodePtr;
     _xmlCleanupInputCallbacks(): void;
+    _xmlCtxtParseDtd(
+        ctxt: XmlParserCtxtPtr,
+        input: XmlParserInputPtr,
+        publicId: CString,
+        systemId: CString,
+    ): XmlDtdPtr;
     _xmlCtxtReadMemory(
         ctxt: XmlParserCtxtPtr,
         buffer: CString,
@@ -61,11 +71,16 @@ export class LibXml2 {
     _xmlHasNsProp(node: XmlNodePtr, name: CString, namespace: CString): XmlAttrPtr;
     _xmlInitParser(): void;
     _xmlNewDoc(): XmlDocPtr;
-    _xmlNewDtd(): XmlDtdPtr;
     _xmlNewCDataBlock(doc: XmlDocPtr, content: CString, len: number): XmlNodePtr;
     _xmlNewDocComment(doc: XmlDocPtr, content: CString): XmlNodePtr;
     _xmlNewDocNode(doc: XmlDocPtr, ns: XmlNsPtr, name: CString, content: CString): XmlNodePtr;
     _xmlNewDocTextLen(doc: XmlDocPtr, content: CString, len: number): XmlNodePtr;
+    _xmlNewInputFromMemory(
+        url: CString,
+        buf: CString,
+        size: number,
+        flags: number,
+    ): XmlParserInputPtr;
     _xmlNewNs(node: XmlNodePtr, href: CString, prefix: CString): XmlNsPtr;
     _xmlNewParserCtxt(): XmlParserCtxtPtr;
     _xmlNewReference(doc: XmlDocPtr, name: CString): XmlNodePtr;

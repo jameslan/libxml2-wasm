@@ -3,10 +3,12 @@ import type {
     Pointer,
     XmlAttrPtr,
     XmlDocPtr,
+    XmlDtdPtr,
     XmlErrorPtr,
     XmlNodePtr,
     XmlNsPtr,
     XmlParserCtxtPtr,
+    XmlParserInputPtr,
     XmlSaveCtxtPtr,
     XmlXPathCompExprPtr,
     XmlXPathContextPtr,
@@ -550,18 +552,18 @@ export interface XmlOutputBufferHandler {
     close(): boolean;
 }
 
-const saveHandlerStorage = new ContextStorage<XmlOutputBufferHandler>();
+const outputHandlerStorage = new ContextStorage<XmlOutputBufferHandler>();
 
-const iowrite = libxml2.addFunction(
-    (index: number, buf: Pointer, len: number) => saveHandlerStorage.get(index)
+const outputWrite = libxml2.addFunction(
+    (index: number, buf: Pointer, len: number) => outputHandlerStorage.get(index)
         .write(libxml2.HEAPU8.subarray(buf, buf + len)),
     'iiii',
 );
 
-const ioclose = libxml2.addFunction(
+const outputClose = libxml2.addFunction(
     (index: number) => {
-        const ret = saveHandlerStorage.get(index).close();
-        saveHandlerStorage.free(index);
+        const ret = outputHandlerStorage.get(index).close();
+        outputHandlerStorage.free(index);
         return ret;
     },
     'ii',
@@ -572,9 +574,35 @@ export function xmlSaveToIO(
     encoding: string | null,
     format: number,
 ): XmlSaveCtxtPtr {
-    const index = saveHandlerStorage.allocate(handler); // will be freed in ioclose
+    const index = outputHandlerStorage.allocate(handler); // will be freed in outputClose
     // Support only UTF-8 as of now
-    return libxml2._xmlSaveToIO(iowrite, ioclose, index, 0, format);
+    return libxml2._xmlSaveToIO(outputWrite, outputClose, index, 0, format);
+}
+
+export function xmlNewInputFromMemory(
+    url: string | null,
+    mem: Uint8Array,
+    flags: number,
+): XmlParserInputPtr {
+    return withCString(mem, (buf, len) => withStringUTF8(
+        url,
+        (urlBuf) => libxml2._xmlNewInputFromMemory(urlBuf, buf, len, flags),
+    ));
+}
+
+export function xmlCtxtParseDtd(
+    ctxt: XmlParserCtxtPtr,
+    input: XmlParserInputPtr,
+    publicId: string | null,
+    systemId: string | null,
+): XmlDtdPtr {
+    return withStringUTF8(
+        publicId,
+        (publicIdBuf) => withStringUTF8(
+            systemId,
+            (systemIdBuf) => libxml2._xmlCtxtParseDtd(ctxt, input, publicIdBuf, systemIdBuf),
+        ),
+    );
 }
 
 export function xmlSaveSetIndentString(
@@ -598,7 +626,6 @@ export const xmlFreeParserCtxt = libxml2._xmlFreeParserCtxt;
 export const xmlGetIntSubset = libxml2._xmlGetIntSubset;
 export const xmlGetLastError = libxml2._xmlGetLastError;
 export const xmlNewDoc = libxml2._xmlNewDoc;
-export const xmlNewDtd = libxml2._xmlNewDtd;
 export const xmlNewParserCtxt = libxml2._xmlNewParserCtxt;
 export const xmlRelaxNGFree = libxml2._xmlRelaxNGFree;
 export const xmlRelaxNGFreeParserCtxt = libxml2._xmlRelaxNGFreeParserCtxt;
