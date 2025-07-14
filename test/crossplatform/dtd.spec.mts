@@ -1,5 +1,10 @@
 import { expect } from 'chai';
-import { DtdValidator, XmlDocument, XmlDtd } from '@libxml2-wasm/lib/index.mjs';
+import {
+    DtdValidator,
+    XmlDocument,
+    XmlDtd,
+    XmlParseError,
+} from '@libxml2-wasm/lib/index.mjs';
 
 describe('XmlDtd', () => {
     it('should get dtd from document', () => {
@@ -91,5 +96,13 @@ describe('XmlDtd', () => {
 <body>Don't forget me this weekend</body>
 </note>`);
         expect(() => validator.validate(xml)).to.not.throw();
+    });
+
+    it('fails on invalid DTD', () => {
+        expect(() => XmlDtd.fromString(`
+<!ELEMENT note (to,from)>
+<!ELEMENT to (#PCDATA)>
+<ELEMENT from (#PCDATA)>
+`)).to.throw(XmlParseError, 'Content error in the external subset');
     });
 });

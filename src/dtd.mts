@@ -1,8 +1,10 @@
 import { disposeBy, XmlDisposable } from './disposable.mjs';
-import { XmlDocument } from './document.mjs';
+import { XmlParseError, XmlDocument } from './document.mjs';
 import {
   XmlTreeCommonStruct,
+  error,
   xmlCtxtParseDtd,
+  xmlCtxtSetErrorHandler,
   xmlFreeParserCtxt,
   xmlFreeDtd,
   xmlNewInputFromMemory,
@@ -40,6 +42,8 @@ export class XmlDtd extends XmlDisposable<XmlDtd> {
      */
     static fromBuffer(buffer: Uint8Array): XmlDtd {
         const parserCtxt = xmlNewParserCtxt();
+        const errIndex = error.storage.allocate([]);
+        xmlCtxtSetErrorHandler(parserCtxt, error.errorCollector, errIndex);
         const input = xmlNewInputFromMemory(null, buffer, 1);
         const ptr = xmlCtxtParseDtd(
             parserCtxt,
@@ -47,7 +51,12 @@ export class XmlDtd extends XmlDisposable<XmlDtd> {
             null,
             null,
         );
+        const errDetails = error.storage.get(errIndex);
+        error.storage.free(errIndex);
         xmlFreeParserCtxt(parserCtxt);
+        if (!ptr) {
+            throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
+        }
         return XmlDtd.getInstance(ptr);
     }
 
