@@ -1,6 +1,13 @@
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 import { XmlDocument } from './document.mjs';
-import { xmlFreeDtd, xmlNewDtd, XmlTreeCommonStruct } from './libxml2.mjs';
+import {
+  XmlTreeCommonStruct,
+  xmlCtxtParseDtd,
+  xmlFreeParserCtxt,
+  xmlFreeDtd,
+  xmlNewInputFromMemory,
+  xmlNewParserCtxt,
+} from './libxml2.mjs';
 import { XmlDtdPtr } from './libxml2raw.mjs';
 
 function freeDtd(ptr: XmlDtdPtr): void {
@@ -29,10 +36,25 @@ export class XmlDtd extends XmlDisposable<XmlDtd> {
     }
 
     /**
-     * Creates a new DTD.
+     * Parse a DTD from a buffer.
      */
-    static create(): XmlDtd {
-        const ptr = xmlNewDtd();
+    static fromBuffer(buffer: Uint8Array): XmlDtd {
+        const parserCtxt = xmlNewParserCtxt();
+        const input = xmlNewInputFromMemory(null, buffer, 1);
+        const ptr = xmlCtxtParseDtd(
+            parserCtxt,
+            input,
+            null,
+            null,
+        );
+        xmlFreeParserCtxt(parserCtxt);
         return XmlDtd.getInstance(ptr);
+    }
+
+    /**
+     * Parse a DTD from a string.
+     */
+    static fromString(str: string): XmlDtd {
+        return this.fromBuffer(new TextEncoder().encode(str));
     }
 }

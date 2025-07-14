@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { XmlDocument, XmlDtd } from '@libxml2-wasm/lib/index.mjs';
+import { DtdValidator, XmlDocument, XmlDtd } from '@libxml2-wasm/lib/index.mjs';
 
 describe('XmlDtd', () => {
     it('should get dtd from document', () => {
@@ -51,9 +51,45 @@ describe('XmlDtd', () => {
         dtd.dispose();
     });
 
-    it('creates DTD', () => {
-        const dtd = XmlDtd.create();
+    it('loads external DTD from buffer', () => {
+        using dtd = XmlDtd.fromBuffer(new TextEncoder().encode(`
+<!ELEMENT note (to,from,heading,body)>
+<!ELEMENT to (#PCDATA)>
+<!ELEMENT from (#PCDATA)>
+<!ELEMENT heading (#PCDATA)>
+<!ELEMENT body (#PCDATA)>
+`));
         expect(dtd.doc).to.be.null;
-        dtd.dispose();
+        using validator = new DtdValidator(dtd);
+        using xml = XmlDocument.fromString(`\
+<?xml version="1.0"?>
+<note>
+<to>Tove</to>
+<from>Jani</from>
+<heading>Reminder</heading>
+<body>Don't forget me this weekend</body>
+</note>`);
+        expect(() => validator.validate(xml)).to.not.throw();
+    });
+
+    it('loads external DTD from string', () => {
+        using dtd = XmlDtd.fromString(`
+<!ELEMENT note (to,from,heading,body)>
+<!ELEMENT to (#PCDATA)>
+<!ELEMENT from (#PCDATA)>
+<!ELEMENT heading (#PCDATA)>
+<!ELEMENT body (#PCDATA)>
+`);
+        expect(dtd.doc).to.be.null;
+        using validator = new DtdValidator(dtd);
+        using xml = XmlDocument.fromString(`\
+<?xml version="1.0"?>
+<note>
+<to>Tove</to>
+<from>Jani</from>
+<heading>Reminder</heading>
+<body>Don't forget me this weekend</body>
+</note>`);
+        expect(() => validator.validate(xml)).to.not.throw();
     });
 });
