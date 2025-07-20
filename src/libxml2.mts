@@ -8,7 +8,6 @@ import type {
     XmlNodePtr,
     XmlNsPtr,
     XmlParserCtxtPtr,
-    XmlParserInputPtr,
     XmlSaveCtxtPtr,
     XmlXPathCompExprPtr,
     XmlXPathContextPtr,
@@ -579,30 +578,38 @@ export function xmlSaveToIO(
     return libxml2._xmlSaveToIO(outputWrite, outputClose, index, 0, format);
 }
 
-export function xmlNewInputFromMemory(
-    url: string | null,
-    mem: Uint8Array,
-    flags: number,
-): XmlParserInputPtr {
-    return withCString(mem, (buf, len) => withStringUTF8(
-        url,
-        (urlBuf) => libxml2._xmlNewInputFromMemory(urlBuf, buf, len, flags),
-    ));
+enum XmlParserInputFlags {
+    XML_INPUT_BUF_STATIC = 1 << 1,
+    XML_INPUT_BUF_ZERO_TERMINATED = 1 << 2,
+    XML_INPUT_UNZIP = 1 << 3,
+    XML_INPUT_NETWORK = 1 << 4,
 }
 
 export function xmlCtxtParseDtd(
     ctxt: XmlParserCtxtPtr,
-    input: XmlParserInputPtr,
+    mem: Uint8Array,
     publicId: string | null,
     systemId: string | null,
 ): XmlDtdPtr {
-    return withStringUTF8(
-        publicId,
-        (publicIdBuf) => withStringUTF8(
+    return withCString(mem, (buf, len) => {
+        const input = libxml2._xmlNewInputFromMemory(
+            0,
+            buf,
+            len,
+            XmlParserInputFlags.XML_INPUT_BUF_STATIC
+                | XmlParserInputFlags.XML_INPUT_BUF_ZERO_TERMINATED,
+        );
+        return withStrings(
+            (publicIdBuf, systemIdBuf) => libxml2._xmlCtxtParseDtd(
+                ctxt,
+                input,
+                publicIdBuf,
+                systemIdBuf,
+            ),
+            publicId,
             systemId,
-            (systemIdBuf) => libxml2._xmlCtxtParseDtd(ctxt, input, publicIdBuf, systemIdBuf),
-        ),
-    );
+        );
+    });
 }
 
 export function xmlSaveSetIndentString(

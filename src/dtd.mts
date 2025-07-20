@@ -7,7 +7,6 @@ import {
   xmlCtxtSetErrorHandler,
   xmlFreeParserCtxt,
   xmlFreeDtd,
-  xmlNewInputFromMemory,
   xmlNewParserCtxt,
 } from './libxml2.mjs';
 import { XmlDtdPtr } from './libxml2raw.mjs';
@@ -44,10 +43,9 @@ export class XmlDtd extends XmlDisposable<XmlDtd> {
         const parserCtxt = xmlNewParserCtxt();
         const errIndex = error.storage.allocate([]);
         xmlCtxtSetErrorHandler(parserCtxt, error.errorCollector, errIndex);
-        const input = xmlNewInputFromMemory(null, buffer, 1);
         const ptr = xmlCtxtParseDtd(
             parserCtxt,
-            input,
+            buffer,
             null,
             null,
         );
