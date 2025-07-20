@@ -33,6 +33,7 @@ rules:
         - <<
         - "&"
         - "|="
+        - "|"
   eol-last:
     - error
     - always
