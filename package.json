@@ -16,11 +16,12 @@
         "integ": "cross-env TS_NODE_PROJECT=tsconfig.integ.json mocha --v8-expose-gc test/crossplatform",
         "test": "npm run cov && npm run lint",
         "cov": "c8 npm run unit",
-        "build": "npm run wasm && tsc -p tsconfig.prod.json --declaration",
+        "tsc": "tsc -p tsconfig.prod.json --declaration",
+        "build": "npm run wasm && npm run tsc",
         "lint": "eslint 'src/**' 'test/**/*.mts'",
         "docwatch": "typedoc --watch",
         "doc": "typedoc",
-        "watch": "tsc -p tsconfig.prod.json --declaration --watch"
+        "watch": "npm run tsc -- --watch"
     },
     "repository": {
         "type": "git",

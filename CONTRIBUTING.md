@@ -58,7 +58,9 @@ Please set up the developing environment on `WSL`.
 ### DevContainer
 Alternatively, you can use the provided devcontainer.
 When you have an environment running containers,
-IDE like VS Code with the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension. Then you can just run the command "Dev Containers: Reopen in Container" which will provide you a container with the needed development environment. See <https://containers.dev/> for further info.
+IDE like VS Code with the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension.
+Then you can just run the command "Dev Containers: Reopen in Container" which will provide you a container with the needed development environment.
+See <https://containers.dev/> for further info.
 
 ### Building commands
 
@@ -66,3 +68,12 @@ IDE like VS Code with the [Dev Containers](https://marketplace.visualstudio.com/
 - As long as the C source of libxml2 is not changed, there's no need to re-configure and re-compile it.
 To change the exported function in the web assembly, update files in `./binding` directory and run `npm run link`.
 - `npm run watch` watches typescript source files and compile them.
+
+## Debugging
+
+The TypeScript source files are transpiled with sourcemap enabled, so the JavaScript files can always be traced with the source.
+
+However, to trace into the libxml2 C code, you need to,
+
+- Enable WASM debugging, e.g. install the [WebAssembly DWARF Debugging extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.wasm-dwarf-debugging) for Visual Studio Code
+- Build the WASM with DWARF debugging information: `EMCC_CFLAGS="-g -O0" npm run wasm`
