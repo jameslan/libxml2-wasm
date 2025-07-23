@@ -132,8 +132,11 @@ function parse<Input>(
         xmlOptions,
     );
     try {
-        if (!xml) {
-            const errDetails = error.storage.get(errIndex);
+        const errDetails = error.storage.get(errIndex);
+        if (errDetails.length > 0) {
+            if (!xml) {
+                xmlFreeDoc(xml);
+            }
             throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
         }
     } finally {
@@ -141,6 +144,10 @@ function parse<Input>(
         xmlFreeParserCtxt(ctxt);
     }
 
+    if (!xml) {
+        // no error from libxml2, but failed to parse. Usually due to invalid input.
+        throw new XmlParseError('Failed to parse XML', []);
+    }
     const xmlDocument = XmlDocument.getInstance(xml);
     if (xmlOptions & ParseOption.XML_PARSE_XINCLUDE) {
         xmlDocument.processXInclude();

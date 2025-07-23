@@ -1,9 +1,14 @@
 import { expect } from 'chai';
 import {
     DtdValidator,
+    ParseOption,
+    XmlBufferInputProvider,
+    xmlCleanupInputProvider,
     XmlDocument,
     XmlDtd,
     XmlParseError,
+    xmlRegisterInputProvider,
+    XmlValidateError,
 } from '@libxml2-wasm/lib/index.mjs';
 
 describe('XmlDtd', () => {
@@ -104,5 +109,58 @@ describe('XmlDtd', () => {
 <!ELEMENT to (#PCDATA)>
 <ELEMENT from (#PCDATA)>
 `)).to.throw(XmlParseError, 'Content error in the external subset');
+    });
+
+    it('fails DTD validation when document does not conform', () => {
+        using dtd = XmlDtd.fromString(`
+<!ELEMENT note (to,from,heading,body)>
+<!ELEMENT to (#PCDATA)>
+<!ELEMENT from (#PCDATA)>
+<!ELEMENT heading (#PCDATA)>
+<!ELEMENT body (#PCDATA)>
+`);
+        using validator = new DtdValidator(dtd);
+
+        // XML document missing required 'heading' and 'body' elements
+        using xml = XmlDocument.fromString(`\
+<?xml version="1.0"?>
+<note>
+<to>Tove</to>
+<from>Jani</from>
+</note>`);
+
+        expect(() => validator.validate(xml)).to.throw(XmlValidateError);
+    });
+
+    describe('load external subset', () => {
+        afterEach(() => {
+            xmlCleanupInputProvider();
+        });
+
+        it('validate with external subset', () => {
+            const buffers = new XmlBufferInputProvider({
+                'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd': new TextEncoder().encode(`\
+<!ELEMENT note (to,from,heading,body)>
+<!ELEMENT to (#PCDATA)>
+<!ELEMENT from (#PCDATA)>
+<!ELEMENT heading (#PCDATA)>
+<!ELEMENT body (#PCDATA)>
+`),
+            });
+            xmlRegisterInputProvider(buffers);
+
+            // missing element heading and body
+            using xml = XmlDocument.fromString(`\
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC
+  "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<note>
+<to>Tove</to>
+<from>Jani</from>
+</note>`, { option: ParseOption.XML_PARSE_DTDLOAD }); // this option is required to load external subset
+            using validator = new DtdValidator(xml.dtd!);
+            expect(() => validator.validate(xml)).to.throw(XmlValidateError);
+        });
     });
 });

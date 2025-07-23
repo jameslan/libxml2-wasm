@@ -1,11 +1,13 @@
 import { expect } from 'chai';
 import {
+    ParseOption,
     XmlBufferInputProvider,
     xmlCleanupInputProvider,
     XmlDocument,
     XmlElement,
     XmlError,
     XmlNode,
+    XmlParseError,
     xmlRegisterInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
 import { XmlStringOutputBufferHandler } from '@libxml2-wasm/lib/utils.mjs';
@@ -200,6 +202,25 @@ describe('XmlDocument', () => {
         it('should return null if no dtd', () => {
             using xml = XmlDocument.fromString('<docs><doc/></docs>');
             expect(xml.dtd).to.be.null;
+        });
+
+        it('should validate dtd', () => {
+            // missing element heading and body
+            expect(() => XmlDocument.fromString(
+                `<?xml version="1.0"?>
+<!DOCTYPE note [
+<!ELEMENT note (to,from,heading,body)>
+<!ELEMENT to (#PCDATA)>
+<!ELEMENT from (#PCDATA)>
+<!ELEMENT heading (#PCDATA)>
+<!ELEMENT body (#PCDATA)>
+]>
+<note>
+<to>Tove</to>
+<from>Jani</from>
+</note>`,
+                { option: ParseOption.XML_PARSE_DTDVALID },
+            )).to.throw(XmlParseError);
         });
     });
 
