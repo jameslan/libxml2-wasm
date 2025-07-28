@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { XmlDocument, XmlXPath } from '@libxml2-wasm/lib/index.mjs';
+import { XmlDocument, XmlXPath, XmlXPathError } from '@libxml2-wasm/lib/index.mjs';
 
 describe('XPath', () => {
     const doc1 = XmlDocument.fromString('<book><title>Harry Potter</title></book>');
@@ -24,9 +24,8 @@ describe('XPath', () => {
         xpath.dispose();
     });
 
-    it('should handle null xpath string', () => {
-        const xpath = XmlXPath.compile(null!);
-        xpath.dispose();
+    it('should throw XmlXPathError for null xpath string', () => {
+        expect(() => XmlXPath.compile(null!)).to.throw(XmlXPathError, 'Failed to compile XPath expression: null');
     });
 
     it('handles namespace', () => {

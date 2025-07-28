@@ -7,7 +7,10 @@ import {
     XmlElement,
     XmlEntityReference,
     XmlError,
+    XmlNode,
     XmlText,
+    XmlXPath,
+    XmlXPathError,
 } from '@libxml2-wasm/lib/index.mjs';
 
 const doc = XmlDocument.fromString(`<?xml version="1.0" encoding="UTF-8"?>
@@ -29,12 +32,12 @@ describe('XmlNode', () => {
             expect(doc.get('/books/book/title[@author="Erik Ray"]')).to.be.null;
         });
 
-        it('should return null for invalid xpath', () => {
-            expect(doc.get('doc[@lang')).to.be.null;
+        it('should throw XmlXPathError for invalid xpath', () => {
+            expect(() => doc.get('doc[@lang')).to.throw(XmlXPathError, 'Failed to compile XPath expression: doc[@lang');
         });
 
-        it('should return null for null xpath(accidentally)', () => {
-            expect(doc.get(null!)).to.be.null;
+        it('should throw XmlXPathError for null xpath(accidentally)', () => {
+            expect(() => doc.get(null!)).to.throw(XmlXPathError, 'Failed to compile XPath expression: null');
         });
 
         it('should be able to return XmlAttribute', () => {
@@ -339,12 +342,12 @@ describe('XmlNode', () => {
             expect(doc.find('book[title/@lang="de"]')).to.be.empty;
         });
 
-        it('should return [] for null xpath(accidentally)', () => {
-            expect(doc.find(null!)).to.be.empty;
+        it('should throw XmlXPathError for null xpath(accidentally)', () => {
+            expect(() => doc.find(null!)).to.throw('Failed to compile XPath expression: null');
         });
 
-        it('should return [] for invalid xpath', () => {
-            expect(doc.find('doc[@lang')).to.be.empty;
+        it('should throw XmlXPathError for invalid xpath', () => {
+            expect(() => doc.find('doc[@lang')).to.throw('Failed to compile XPath expression: doc[@lang');
         });
 
         it('should return multiple elements', () => {
@@ -391,6 +394,139 @@ describe('XmlNode', () => {
 
         it('should return null if not found', () => {
             expect(doc.root.namespaceForPrefix('a')).is.null;
+        });
+    });
+
+    describe('eval', () => {
+        it('should return XmlNode[] for node set expressions', () => {
+            const result = doc.root.eval('book/title');
+            expect(result).to.be.an('array');
+            expect(result).to.have.length(2);
+            expect((result as XmlNode[])[0]).to.be.instanceOf(XmlElement);
+            expect((result as XmlNode[])[0].content).to.equal('Harry Potter');
+            expect((result as XmlNode[])[1].content).to.equal('Learning XML');
+        });
+
+        it('should return empty array for node set expressions with no matches', () => {
+            const result = doc.root.eval('book/nonexistent');
+            expect(result).to.be.an('array');
+            expect(result).to.have.length(0);
+        });
+
+        it('should return number for numeric XPath expressions', () => {
+            const result = doc.root.eval('count(book)');
+            expect(result).to.be.a('number');
+            expect(result).to.equal(2);
+        });
+
+        it('should return number for arithmetic XPath expressions', () => {
+            const result = doc.root.eval('1 + 2');
+            expect(result).to.be.a('number');
+            expect(result).to.equal(3);
+        });
+
+        it('should return boolean for boolean XPath expressions', () => {
+            const result = doc.root.eval('count(book) > 1');
+            expect(result).to.be.a('boolean');
+            expect(result).to.equal(true);
+        });
+
+        it('should return boolean false for false conditions', () => {
+            const result = doc.root.eval('count(book) > 5');
+            expect(result).to.be.a('boolean');
+            expect(result).to.equal(false);
+        });
+
+        it('should return string for string XPath expressions', () => {
+            const result = doc.root.eval('string(book[1]/title)');
+            expect(result).to.be.a('string');
+            expect(result).to.equal('Harry Potter');
+        });
+
+        it('should return string for concat expressions', () => {
+            const result = doc.root.eval('concat("Hello", " ", "World")');
+            expect(result).to.be.a('string');
+            expect(result).to.equal('Hello World');
+        });
+
+        it('should handle namespace in XPath expressions', () => {
+            const result = doc.root.eval('book/price/@m:currency', { m: 'http://www.federalreserve.gov' });
+            expect(result).to.be.an('array');
+            expect(result).to.have.length(2);
+            expect((result as XmlNode[])[0]).to.be.instanceOf(XmlAttribute);
+            expect((result as XmlNode[])[0].content).to.equal('USD');
+        });
+
+        it('should work with compiled XPath objects', () => {
+            const xpath = XmlXPath.compile('count(book)');
+            const result = doc.root.eval(xpath);
+            expect(result).to.be.a('number');
+            expect(result).to.equal(2);
+            xpath.dispose();
+        });
+
+        it('should handle namespace in xpath', () => {
+            const currency = doc.root.eval(
+                'string(book/price/@m:currency)',
+                { m: 'http://www.federalreserve.gov' },
+            );
+            expect(currency).to.not.be.null;
+            expect(currency).to.be.a('string');
+            expect(currency).to.equal('USD');
+        });
+
+        it('should throw XmlXPathError for invalid XPath expressions', () => {
+            expect(() => doc.root.eval('invalid[@xpath')).to.throw('Failed to compile XPath expression: invalid[@xpath');
+        });
+
+        it('should throw XmlXPathError for null XPath expressions', () => {
+            expect(() => doc.root.eval(null!)).to.throw('Failed to compile XPath expression: null');
+        });
+
+        it('should handle complex numeric expressions', () => {
+            const result = doc.root.eval('sum(//price[text()]) div count(//price)');
+            expect(result).to.be.a('number');
+            // Should calculate average price: (29.99 + 39.95) / 2 = 34.97
+            expect(result).to.be.closeTo(34.97, 0.01);
+        });
+
+        it('should handle string functions', () => {
+            const result = doc.root.eval('substring(book[1]/title, 1, 5)');
+            expect(result).to.be.a('string');
+            expect(result).to.equal('Harry');
+        });
+
+        it('should handle boolean functions', () => {
+            const result = doc.root.eval('contains(book[1]/title, "Potter")');
+            expect(result).to.be.a('boolean');
+            expect(result).to.equal(true);
+        });
+
+        it('should work on element nodes', () => {
+            const bookElement = doc.root.get('book[1]') as XmlElement;
+            const result = bookElement.eval('title');
+            expect(result).to.be.an('array');
+            expect(result).to.have.length(1);
+            expect((result as XmlNode[])[0].content).to.equal('Harry Potter');
+        });
+
+        it('should work on attribute nodes', () => {
+            const langAttr = doc.root.get('book[1]/title/@lang') as XmlAttribute;
+            const result = langAttr.eval('.');
+            expect(result).to.be.an('array');
+            expect(result).to.have.length(1);
+            expect((result as XmlNode[])[0]).to.be.instanceOf(XmlAttribute);
+            expect((result as XmlNode[])[0].content).to.equal('en');
+        });
+
+        it('should evaluate parent from attribute context', () => {
+            const authorAttr = doc.root.get('book[1]/title/@author') as XmlAttribute;
+            const result = authorAttr.eval('..');
+            expect(result).to.be.an('array');
+            expect(result).to.have.length(1);
+            expect((result as XmlNode[])[0]).to.be.instanceOf(XmlElement);
+            expect(((result as XmlNode[])[0] as XmlElement).name).to.equal('title');
+            expect((result as XmlNode[])[0].content).to.equal('Harry Potter');
         });
     });
 });

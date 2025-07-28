@@ -243,6 +243,7 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
      *  - {@link XmlNode#get | XmlNode.get}
      *  - {@link XmlXPath.compile | XmlXPath.compile}
      *  - {@link find}
+     *  - {@link eval}
      */
     get(xpath: XmlXPath): XmlNode | null;
     /**
@@ -253,6 +254,7 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
      * @see
      *  - {@link XmlNode#get | XmlNode.get}
      *  - {@link find}
+     *  - {@link eval}
      */
     get(xpath: string, namespaces?: NamespaceMap): XmlNode | null;
     get(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode | null {
@@ -262,24 +264,52 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
     /**
      * Find all the descendant nodes of root element matching the given compiled xpath selector.
      * @param xpath Compiled XPath selector
-     * @returns An empty array if the provided XPath is invalid or if no nodes are found.
+     * @returns An empty array if no nodes are found.
      * @see
      *  - {@link XmlNode#find | XmlNode.find}
      *  - {@link get}
+     *  - {@link eval}
      */
     find(xpath: XmlXPath): XmlNode[];
     /**
      * Find all the descendant nodes of root element matching the given xpath selector.
      * @param xpath XPath selector
      * @param namespaces mapping between prefix and the namespace URI, used in the XPath
-     * @returns An empty array if the provided XPath is invalid or if no nodes are found.
+     * @returns An empty array if no nodes are found.
      * @see
      *  - {@link XmlNode#find | XmlNode.find}
      *  - {@link get}
+     *  - {@link eval}
      */
     find(xpath: string, namespaces?: NamespaceMap): XmlNode[];
     find(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode[] {
         return this.root.find(xpath, namespaces);
+    }
+
+    /**
+     * Evaluate the given XPath selector on the root element.
+     * @param xpath XPath selector
+     * @see
+     *  - {@link XmlNode#get | XmlNode.get}
+     *  - {@link XmlXPath.compile | XmlXPath.compile}1
+     *  - {@link get}
+     *  - {@link find}
+     */
+    eval(xpath: XmlXPath): XmlNode[] | string | boolean | number;
+    /**
+     * Evaluate the given XPath selector on the root element.
+     * @param xpath XPath selector
+     * @see
+     *  - {@link XmlNode#get | XmlNode.get}
+     *  - {@link get}
+     *  - {@link find}
+     */
+    eval(xpath: string, namespaces?: NamespaceMap): XmlNode[] | string | boolean | number;
+    eval(
+        xpath: string | XmlXPath,
+        namespaces?: NamespaceMap,
+    ): XmlNode[] | string | boolean | number {
+        return this.root.eval(xpath, namespaces);
     }
 
     /**
