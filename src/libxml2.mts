@@ -267,9 +267,9 @@ export class XmlXPathObjectStruct {
 
     static boolval = getValueFunc(8, 'i32');
 
-    static floatval = getValueFunc(12, 'double');
+    static floatval = getValueFunc(16, 'double'); // 8 bytes padding
 
-    static stringval = getStringValueFunc(20);
+    static stringval = getStringValueFunc(24);
 }
 
 export namespace XmlXPathObjectStruct {

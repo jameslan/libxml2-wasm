@@ -1,9 +1,15 @@
 import {
     xmlXPathCtxtCompile,
     xmlXPathFreeCompExpr,
+    XmlError,
 } from './libxml2.mjs';
 import type { XmlXPathCompExprPtr } from './libxml2raw.mjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
+
+/**
+ * An exception class for XPath compilation errors.
+ */
+export class XmlXPathError extends XmlError {}
 
 /**
  * Map between the prefix and the URI of the namespace
@@ -53,7 +59,11 @@ export class XmlXPath extends XmlDisposable<XmlXPath> {
      * @param namespaces Namespace map for prefixes used in the `xpathStr`.
      */
     static compile(xpathStr: string, namespaces?: NamespaceMap): XmlXPath {
-        const xpath = XmlXPath.getInstance(xmlXPathCtxtCompile(0, xpathStr), xpathStr, namespaces);
+        const compileResult = xmlXPathCtxtCompile(0, xpathStr);
+        if (compileResult === 0) {
+            throw new XmlXPathError(`Failed to compile XPath expression: ${xpathStr}`);
+        }
+        const xpath = XmlXPath.getInstance(compileResult, xpathStr, namespaces);
         return xpath;
     }
 }

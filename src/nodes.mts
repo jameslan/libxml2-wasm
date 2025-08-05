@@ -193,6 +193,7 @@ export abstract class XmlNode {
      * @returns null if not found, otherwise an instance of the subclass of {@link XmlNode}.
      * @see
      * - {@link find}
+     * - {@link eval}
      * - {@link XmlXPath.compile | XmlXPath.compile}
      */
     get(xpath: XmlXPath): XmlNode | null;
@@ -202,26 +203,25 @@ export abstract class XmlNode {
      * @param xpath XPath selector
      * @param namespaces mapping between prefix and the namespace URI, used in the XPath
      * @returns null if not found, otherwise an instance of the subclass of {@link XmlNode}.
-     * @see {@link find}
+     * @see
+     * - {@link find}
+     * - {@link eval}
      */
     get(xpath: string, namespaces?: NamespaceMap): XmlNode | null;
     /** @internal */
     get(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode | null;
     get(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode | null {
         const xpathObj = xpathEval(this._nodePtr, xpath, namespaces);
-        if (!xpathObj) {
-            return null;
-        }
         let ret: XmlNode | null;
         if (XmlXPathObjectStruct.type(xpathObj) !== XmlXPathObjectStruct.Type.XPATH_NODESET) {
+            xmlXPathFreeObject(xpathObj);
             throw new XmlError('XPath selector must return a node set');
+        }
+        const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
+        if (nodeSet === 0 || XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
+            ret = null;
         } else {
-            const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
-            if (nodeSet === 0 || XmlNodeSetStruct.nodeCount(nodeSet) === 0) {
-                ret = null;
-            } else {
-                ret = createNode(XmlNodeSetStruct.nodeTable(nodeSet, 1)[0]);
-            }
+            ret = createNode(XmlNodeSetStruct.nodeTable(nodeSet, 1)[0]);
         }
         xmlXPathFreeObject(xpathObj);
         return ret;
@@ -230,9 +230,10 @@ export abstract class XmlNode {
     /**
      * Find all the descendant nodes matching the given compiled xpath selector.
      * @param xpath XPath selector
-     * @returns An empty array if the provided XPath is invalid or if no nodes are found.
+     * @returns An empty array if no nodes are found.
      * @see
      *  - {@link get}
+     *  - {@link eval}
      *  - {@link XmlXPath.compile | XmlXPath.compile}
      */
     find(xpath: XmlXPath): XmlNode[];
@@ -240,34 +241,79 @@ export abstract class XmlNode {
      * Find all the descendant nodes matching the given xpath selector.
      * @param xpath XPath selector
      * @param namespaces mapping between prefix and the namespace URI, used in the XPath
-     * @returns An empty array if the provided XPath is invalid or if no nodes are found.
+     * @returns An empty array if no nodes are found.
      * @see
      *  - {@link get}
+     *  - {@link eval}
      */
     find(xpath: string, namespaces?: NamespaceMap): XmlNode[];
     /** @internal */
     find(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode[];
     find(xpath: string | XmlXPath, namespaces?: NamespaceMap): XmlNode[] {
+        const nodes = this.eval(xpath, namespaces);
+        if (Array.isArray(nodes)) {
+            return nodes;
+        }
+        throw new XmlError('XPath selector must return a node set');
+    }
+
+    /**
+     * Evaluate the given XPath selector on this node.
+     * @param xpath XPath selector
+     * @see
+     *  - {@link get}
+     *  - {@link find}
+     *  - {@link XmlXPath.compile | XmlXPath.compile}1
+     */
+    eval(xpath: XmlXPath): XmlNode[] | string | boolean | number;
+    /**
+     * Evaluate the given XPath selector on this node.
+     * @param xpath XPath selector
+     * @see
+     *  - {@link get}
+     *  - {@link find}
+     */
+    eval(xpath: string, namespaces?: NamespaceMap): XmlNode[] | string | boolean | number;
+    /** @internal */
+    eval(
+        xpath: string | XmlXPath,
+        namespaces?: NamespaceMap,
+    ): XmlNode[] | string | boolean | number;
+    eval(
+        xpath: string | XmlXPath,
+        namespaces?: NamespaceMap,
+    ): XmlNode[] | string | boolean | number {
         const xpathObj = xpathEval(this._nodePtr, xpath, namespaces);
-        if (!xpathObj) {
-            return [];
-        }
 
-        const nodes: XmlNode[] = [];
-
-        if (XmlXPathObjectStruct.type(xpathObj) === XmlXPathObjectStruct.Type.XPATH_NODESET) {
-            const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
-            const nodeCount = XmlNodeSetStruct.nodeCount(nodeSet);
-            const nodeTable = XmlNodeSetStruct.nodeTable(nodeSet, nodeCount);
-            for (let i = 0; i < nodeCount; i += 1) {
-                nodes.push(createNode(nodeTable[i]));
+        try {
+            switch (XmlXPathObjectStruct.type(xpathObj)) {
+                case XmlXPathObjectStruct.Type.XPATH_NODESET: {
+                    const nodes: XmlNode[] = [];
+                    const nodeSet = XmlXPathObjectStruct.nodesetval(xpathObj);
+                    const nodeCount = XmlNodeSetStruct.nodeCount(nodeSet);
+                    const nodeTable = XmlNodeSetStruct.nodeTable(nodeSet, nodeCount);
+                    for (let i = 0; i < nodeCount; i += 1) {
+                        nodes.push(createNode(nodeTable[i]));
+                    }
+                    return nodes;
+                }
+                case XmlXPathObjectStruct.Type.XPATH_NUMBER: {
+                    return XmlXPathObjectStruct.floatval(xpathObj);
+                }
+                case XmlXPathObjectStruct.Type.XPATH_BOOLEAN: {
+                    return XmlXPathObjectStruct.boolval(xpathObj) !== 0;
+                }
+                case XmlXPathObjectStruct.Type.XPATH_STRING: {
+                    return XmlXPathObjectStruct.stringval(xpathObj);
+                }
+                default:
+                    throw new XmlError(
+                        `XPath selector returned an unsupported type: ${XmlXPathObjectStruct.type(xpathObj)}`,
+                    );
             }
-        } else {
-            throw new XmlError('XPath selector must return a node set');
+        } finally {
+            xmlXPathFreeObject(xpathObj);
         }
-
-        xmlXPathFreeObject(xpathObj);
-        return nodes;
     }
 }
 

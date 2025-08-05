@@ -5,6 +5,7 @@ import {
     XmlDocument,
     XmlElement,
     XmlError,
+    XmlNode,
     xmlRegisterInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
 import { XmlStringOutputBufferHandler } from '@libxml2-wasm/lib/utils.mjs';
@@ -199,6 +200,39 @@ describe('XmlDocument', () => {
         it('should return null if no dtd', () => {
             using xml = XmlDocument.fromString('<docs><doc/></docs>');
             expect(xml.dtd).to.be.null;
+        });
+    });
+
+    describe('eval', () => {
+        it('should return XmlNode[] for node set expressions', () => {
+            const result = doc.eval('/docs/doc');
+            expect(result).to.be.an('array');
+            expect(result).to.have.length(1);
+            expect((result as XmlNode[])[0]).to.be.instanceOf(XmlElement);
+        });
+
+        it('should return number for numeric XPath expressions', () => {
+            const result = doc.eval('count(/docs/doc)');
+            expect(result).to.be.a('number');
+            expect(result).to.equal(1);
+        });
+
+        it('should return boolean for boolean XPath expressions', () => {
+            const result = doc.eval('count(/docs/doc) = 1');
+            expect(result).to.be.a('boolean');
+            expect(result).to.equal(true);
+        });
+
+        it('should return boolean false for false conditions', () => {
+            const result = doc.eval('count(/docs/doc) > 5');
+            expect(result).to.be.a('boolean');
+            expect(result).to.equal(false);
+        });
+
+        it('should return string for string XPath expressions', () => {
+            const result = doc.eval('string(/docs/doc)');
+            expect(result).to.be.a('string');
+            expect(result).to.equal('');
         });
     });
 });
