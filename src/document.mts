@@ -298,7 +298,7 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
      * @param xpath XPath selector
      * @see
      *  - {@link XmlNode#get | XmlNode.get}
-     *  - {@link XmlXPath.compile | XmlXPath.compile}1
+     *  - {@link XmlXPath.compile | XmlXPath.compile}
      *  - {@link get}
      *  - {@link find}
      */

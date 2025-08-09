@@ -263,7 +263,7 @@ export abstract class XmlNode {
      * @see
      *  - {@link get}
      *  - {@link find}
-     *  - {@link XmlXPath.compile | XmlXPath.compile}1
+     *  - {@link XmlXPath.compile | XmlXPath.compile}
      */
     eval(xpath: XmlXPath): XmlNode[] | string | boolean | number;
     /**
