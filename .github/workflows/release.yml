@@ -34,6 +34,7 @@ jobs:
           tag: v${{ inputs.version }}
           artifacts: ./artifact/*
           commit: ${{ github.sha }}
+          token: ${{ secrets.RELEASE_TOKEN }}
       - uses: actions/setup-node@v3
         with:
           node-version: 20.x
