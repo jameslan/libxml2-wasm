@@ -1,0 +1,28 @@
+name: coverage comment
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+jobs:
+  coverage:
+    if: ${{ github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'}}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read        # to read from the repo
+      pull-requests: write  # to comment on the PR
+      actions: read         # to download artifact
+    steps:
+    - name: Download artifact
+      uses: dawidd6/action-download-artifact@v6
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        run_id: ${{ github.event.workflow_run.id }}
+        name: coverage-artifact
+    - name: Get PR number
+      id: get-pr
+      run: echo NUM=$(cat pr_num) >> "$GITHUB_OUTPUT"
+    - uses: Nef10/lcov-reporter-action@v0.4.0
+      with:
+        lcov-file: lcov.info
+        pr-number: ${{ steps.get-pr.outputs.NUM }}
+
