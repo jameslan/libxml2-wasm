@@ -39,13 +39,19 @@ jobs:
         run: npm run build
       - name: Test
         run: npm run test
-      # Suspend reporting coverage as comment in PR, it works for owner only
-      # https://github.com/romeovs/lcov-reporter-action/issues/6
-      # - name: Report coverage
-      #   if: ${{ github.event_name == 'pull_request' }}
-      #   uses: romeovs/lcov-reporter-action@v0.4.0
-      #   with:
-      #     delete-old-comments: true
+      - name: Save PR number
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          mkdir -p coverage/pr
+          echo ${{ github.event.number }} > coverage/pr/pr_num
+          cp coverage/lcov.info coverage/pr
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          name: coverage-artifact
+          path: coverage/pr
+          retention-days: 1 # for coverage commenting, doesn't need to be long
       - name: Pack
         run: npm pack
       - name: Upload package
@@ -71,8 +77,10 @@ jobs:
         run: npm ci
       - name: Download libxml2-wasm
         uses: actions/download-artifact@v4
+        with:
+          name: artifact
       - name: Install libxml2-wasm
-        run: npm install ./artifact/libxml2-wasm-*.tgz
+        run: npm install ./libxml2-wasm-*.tgz
         shell: bash
       - name: Run Integration Test
         run: npm run integ
