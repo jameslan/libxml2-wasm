@@ -48,10 +48,10 @@ _xmlSaveDoc
 _xmlSaveSetIndentString
 _xmlSaveToIO
 _xmlSaveTree
-_xmlSchemaNewDocParserCtxt
 _xmlSchemaFree
 _xmlSchemaFreeParserCtxt
 _xmlSchemaFreeValidCtxt
+_xmlSchemaNewDocParserCtxt
 _xmlSchemaNewValidCtxt
 _xmlSchemaParse
 _xmlSchemaSetParserStructuredErrors
