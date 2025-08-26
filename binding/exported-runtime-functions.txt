@@ -1,7 +1,7 @@
+HEAP32
+HEAPU8
 UTF8ToString
 addFunction
 getValue
 lengthBytesUTF8
 stringToUTF8
-HEAP32
-HEAPU8
