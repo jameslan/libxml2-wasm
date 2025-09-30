@@ -35,63 +35,163 @@ import { XmlStringOutputBufferHandler } from './utils.mjs';
 
 export enum ParseOption {
     XML_PARSE_DEFAULT = 0,
-    /** recover on errors */
+    /**
+     * Enable "recovery" mode which allows non-wellformed documents.
+     * How this mode behaves exactly is unspecified and may change without further notice.
+     * Use of this feature is DISCOURAGED.
+     *
+     * Not supported by the push parser.
+     */
     XML_PARSE_RECOVER = 1 << 0,
-    /** substitute entities */
+    /**
+     * Despite the confusing name, this option enables substitution of entities.
+     * The resulting tree won't contain any entity reference nodes.
+     *
+     * This option also enables loading of external entities (both general and parameter entities)
+     * which is dangerous. If you process untrusted data, it's recommended to set the
+     * XML_PARSE_NO_XXE option to disable loading of external entities.
+     */
     XML_PARSE_NOENT = 1 << 1,
-    /** load the external subset */
+    /**
+     * Enables loading of an external DTD and the loading and substitution of external
+     * parameter entities. Has no effect if XML_PARSE_NO_XXE is set.
+     */
     XML_PARSE_DTDLOAD = 1 << 2,
-    /** default DTD attributes */
+    /**
+     * Adds default attributes from the DTD to the result document.
+     *
+     * Implies XML_PARSE_DTDLOAD, but loading of external content
+     * can be disabled with XML_PARSE_NO_XXE.
+     */
     XML_PARSE_DTDATTR = 1 << 3,
-    /** validate with the DTD */
+    /**
+     * Enable DTD validation which requires loading external DTDs and external entities
+     * (both general and parameter entities) unless XML_PARSE_NO_XXE was set.
+     *
+     * DTD validation is vulnerable to algorithmic complexity attacks and should never be
+     * enabled with untrusted input.
+     */
     XML_PARSE_DTDVALID = 1 << 4,
-    /** suppress error reports */
+    /**
+     * Disable error and warning reports to the error handlers.
+     * Errors are still accessible with xmlCtxtGetLastError().
+     */
     XML_PARSE_NOERROR = 1 << 5,
-    /** suppress warning reports */
+    /** Disable warning reports. */
     XML_PARSE_NOWARNING = 1 << 6,
-    /** pedantic error reporting */
+    /** Enable some pedantic warnings. */
     XML_PARSE_PEDANTIC = 1 << 7,
-    /** remove blank nodes */
+    /**
+     * Remove some whitespace from the result document. Where to remove whitespace depends on
+     * DTD element declarations or a broken heuristic with unfixable bugs. Use of this option is
+     * DISCOURAGED.
+     *
+     * Not supported by the push parser.
+     */
     XML_PARSE_NOBLANKS = 1 << 8,
-    /** use the SAX1 interface internally */
+    /**
+     * Always invoke the deprecated SAX1 startElement and endElement handlers.
+     *
+     * @deprecated This option will be removed in a future version.
+     */
     XML_PARSE_SAX1 = 1 << 9,
-    /** Implement XInclude substitution  */
+    /**
+     * Enable XInclude processing. This option only affects the xmlTextReader
+     * and XInclude interfaces.
+     */
     XML_PARSE_XINCLUDE = 1 << 10,
-    /** Forbid network access */
+    /**
+     * Disable network access with the built-in HTTP or FTP clients.
+     * After the last built-in network client was removed in 2.15, this option has no effect
+     * except for being passed on to custom resource loaders.
+     */
     XML_PARSE_NONET = 1 << 11,
-    /** Do not reuse the context dictionary */
+    /**
+     * Create a document without interned strings, making all strings separate memory allocations.
+     */
     XML_PARSE_NODICT = 1 << 12,
-    /** remove redundant namespaces declarations */
+    /** Remove redundant namespace declarations from the result document. */
     XML_PARSE_NSCLEAN = 1 << 13,
-    /** merge CDATA as text nodes */
+    /** Output normal text nodes instead of CDATA nodes. */
     XML_PARSE_NOCDATA = 1 << 14,
-    /** do not generate XINCLUDE START/END nodes */
+    /**
+     * Don't generate XInclude start/end nodes when expanding inclusions.
+     * This option only affects the xmlTextReader and XInclude interfaces.
+     */
     XML_PARSE_NOXINCNODE = 1 << 15,
-    /** compact small text nodes;
-     * no modification of the tree allowed afterward
-     * (will possibly crash if you try to modify the tree)
+    /**
+     * Store small strings directly in the node struct to save memory.
      */
     XML_PARSE_COMPACT = 1 << 16,
-    /** parse using XML-1.0 before update 5 */
+    /**
+     * Use old Name productions from before XML 1.0 Fifth Edition.
+     *
+     * @deprecated This option will be removed in a future version.
+     */
     XML_PARSE_OLD10 = 1 << 17,
-    /** do not fixup XINCLUDE xml:base uris */
+    /**
+     * Don't fix up XInclude xml:base URIs. This option only affects the xmlTextReader
+     * and XInclude interfaces.
+     */
     XML_PARSE_NOBASEFIX = 1 << 18,
-    /** relax any hardcoded limit from the parser */
+    /**
+     * Relax some internal limits.
+     *
+     * Maximum size of text nodes, tags, comments, processing instructions,
+     * CDATA sections, entity values
+     *
+     *  - normal: 10M
+     *  - huge:    1B
+     *
+     * Maximum size of names, system literals, pubid literals
+     *
+     *  - normal: 50K
+     *  - huge:   10M
+     *
+     * Maximum nesting depth of elements
+     *
+     *  - normal:  256
+     *  - huge:   2048
+     *
+     * Maximum nesting depth of entities
+     *
+     *  - normal: 20
+     *  - huge:   40
+     */
     XML_PARSE_HUGE = 1 << 19,
-    /* parse using SAX2 interface before 2.7.0 */
+    /**
+     * Enable an unspecified legacy mode for SAX parsers.
+     *
+     * @deprecated This option will be removed in a future version.
+     */
     XML_PARSE_OLDSAX = 1 << 20,
-    /** ignore internal document encoding hint */
+    /**
+     * Ignore the encoding in the XML declaration. Mostly unneeded these days.
+     * The only effect is to enforce UTF-8 decoding of ASCII-like data.
+     */
     XML_PARSE_IGNORE_ENC = 1 << 21,
-    /** Store big lines numbers in text PSVI field */
+    /** Enable reporting of line numbers larger than 65535. */
     XML_PARSE_BIG_LINES = 1 << 22,
-    /** disable loading of external content */
+    /**
+     * Disable loading of external DTDs or entities.
+     */
     XML_PARSE_NO_XXE = 1 << 23,
-    /** allow compressed content */
+    /**
+     * Enable input decompression. Setting this option is discouraged to avoid zip bombs.
+     */
     XML_PARSE_UNZIP = 1 << 24,
-    /** disable global system catalog */
+    /**
+     * Disable the global system XML catalog.
+     */
     XML_PARSE_NO_SYS_CATALOG = 1 << 25,
-    /** allow catalog PIs */
+    /**
+     * Enable XML catalog processing instructions.
+     */
     XML_PARSE_CATALOG_PI = 1 << 26,
+    /**
+     * Force the parser to ignore IDs.
+     */
+    XML_PARSE_SKIP_IDS = 1 << 27,
 }
 
 export interface ParseOptions {

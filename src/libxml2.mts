@@ -485,22 +485,21 @@ export function xmlCleanupInputProvider(): void {
  */
 export interface SaveOptions {
     /**
-     * To enable formatting on the output,
-     * creating a separate line for each tag and indent the text accordingly.
-     *
+     * Format output. This adds newlines and enables indenting
+     * by default.
      * @default false
      */
     format?: boolean;
 
     /**
-     * To disable the XML declaration.
+     * Don't emit an XML declaration.
      *
      * @default false
      */
     noDeclaration?: boolean;
 
     /**
-     * To disable the empty tags.
+     * Don't emit empty tags.
      *
      * @default false
      */
