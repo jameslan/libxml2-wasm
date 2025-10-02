@@ -21,8 +21,8 @@ jobs:
     - name: Get PR number
       id: get-pr
       run: echo NUM=$(cat pr_num) >> "$GITHUB_OUTPUT"
-    - uses: Nef10/lcov-reporter-action@v0.4.0
+    - uses: jameslan/lcov-reporter-action@romeovs-master
       with:
         lcov-file: lcov.info
         pr-number: ${{ steps.get-pr.outputs.NUM }}
-
+        delete-old-comments: true
