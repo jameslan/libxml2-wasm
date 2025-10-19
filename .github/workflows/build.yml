@@ -58,7 +58,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: libxml2-wasm-*.tgz
-  compatibility:
+  compatibility_backend:
     needs: build
     name: NodeJS/OS Compatibility Test
     strategy:
@@ -83,9 +83,9 @@ jobs:
         run: npm install ./libxml2-wasm-*.tgz
         shell: bash
       - name: Run Integration Test
-        run: npm run integ
+        run: npm run integ:backend
   result:
-    needs: compatibility
+    needs: compatibility_backend
     if: ${{ always() }}
     runs-on: ubuntu-latest
     name: Compatibility Test Result

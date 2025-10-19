@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import * as chai from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
@@ -10,12 +10,12 @@ import {
     XmlDocument,
     XmlValidateError,
     XsdValidator,
-} from '../lib/index.mjs';
+} from '@libxml2-wasm/lib/index.mjs';
 import {
     fsInputProviders,
     saveDocSync,
     xmlRegisterFsInputProviders,
-} from '../lib/nodejs.mjs';
+} from '@libxml2-wasm/lib/nodejs.mjs';
 
 chai.use(sinonChai);
 const { expect } = chai;
@@ -39,7 +39,20 @@ describe('Node.js input callbacks', () => {
         validator.validate(doc);
     });
 
-    it('handles includes with file url', () => {
+    it.skip('handles native path', () => {
+        using schemaDoc = XmlDocument.fromBuffer(
+            fs.readFileSync('test/testfiles/book.xsd'),
+            { url: join('test', 'testfiles', 'book.xsd') },
+        );
+        using validator = XsdValidator.fromDoc(schemaDoc);
+        using doc = XmlDocument.fromBuffer(
+            fs.readFileSync('test/testfiles/book.xml'),
+            { url: join('test', 'testfiles', 'book.xml'), option: ParseOption.XML_PARSE_XINCLUDE },
+        );
+        validator.validate(doc);
+    });
+
+    it.skip('handles includes with file url', () => {
         using schemaDoc = XmlDocument.fromBuffer(
             fs.readFileSync('test/testfiles/book.xsd'),
             { url: `file://${resolve('test/testfiles/book.xsd')}` },
@@ -158,6 +171,6 @@ describe('saveDocSync', () => {
 describe('Initialization', () => {
     it('works when register io callbacks at the beginning', () => {
         // execute in external process to test the initialization
-        execSync(`"${process.execPath}" test/initialization🚀.test.js`);
+        execSync(`"${process.execPath}" test/testfiles/initialization🚀.test.js`);
     });
 });

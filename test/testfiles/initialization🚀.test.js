@@ -1,7 +1,11 @@
 const fs = require('node:fs');
 
-import('../lib/nodejs.mjs').then(({ xmlRegisterFsInputProviders }) => {
-    import('../lib/index.mjs').then(({
+const libPath = fs.existsSync('./lib/index.mjs')
+    ? '../..'
+    : '../../node_modules/libxml2-wasm';
+
+import(`${libPath}/lib/nodejs.mjs`).then(({ xmlRegisterFsInputProviders }) => {
+    import(`${libPath}/lib/index.mjs`).then(({
         ParseOption,
         xmlCleanupInputProvider,
         XmlDocument,
