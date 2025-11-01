@@ -13,7 +13,7 @@
         "link": "npm run bind && npm run dist",
         "wasm": "npm run clean && npm run libxml && npm run link",
         "unit": "mocha --v8-expose-gc",
-        "integ": "cross-env TS_NODE_PROJECT=tsconfig.integ.json mocha --v8-expose-gc test/crossplatform",
+        "integ:backend": "cross-env TS_NODE_PROJECT=tsconfig.integ.json mocha --v8-expose-gc test/crossplatform test/backend",
         "test": "npm run cov && npm run lint",
         "cov": "c8 npm run unit",
         "tsc": "tsc -p tsconfig.prod.json --declaration",

@@ -151,6 +151,19 @@ describe('XmlDocument', () => {
                 'Failed to set indent string',
             );
         });
+
+        it('handles diacritics', () => {
+            using d = XmlDocument.fromString(
+                `<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <name>Jan Sedloň</name>
+</root>
+`,
+                { url: 'test/testfiles/diacritics.xml' },
+            );
+            const text = d.toString();
+            expect(text).to.contain('Jan Sedloň');
+        });
     });
 
     describe('processXInclude', () => {
