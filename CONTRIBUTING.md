@@ -1,79 +1,149 @@
 # How to Contribute
 
-## Reporting issues
+## Reporting Issues
 
-- Before reporting bugs or filing feature requests,
-please search [GitHub Issues](https://github.com/jameslan/libxml2-wasm/issues) first
-to ensure it is not reported already.
-- Please provide sufficient information to address or reproduce the issue.
-Including the version number of libxml2-wasm as well as the environment may help sometimes.
-- Please clearly describe the details of the issue or request.
-An example would be helpful for other to understand
-and a failing testing will be more convenient and precise.
+- Search [GitHub Issues](https://github.com/jameslan/libxml2-wasm/issues) first to avoid duplicates
+- Provide sufficient information: version, environment, steps to reproduce
+- Include failing test cases when possible
 
-## Pull requests
+## Pull Requests
 
-The CI build will verify test cases, coverage and code style.
-All these could run locally by `npm test`.
+The CI build verifies tests, coverage, and code style. Run locally with `npm test`.
 
-Besides these checks, please also take care of,
+**Requirements:**
+- **Documentation:** Every exported API needs [TypeDoc](https://typedoc.org/guides/doccomments/) comments
+- **Code Coverage:** 98% lines, 90% branches - check `coverage/lcov-report/index.html`
+- **Linting:** Must pass ESLint (Airbnb TypeScript config)
 
-- **Documentation**: every exported API should have docs.
-For syntax, please refer to [TypeDoc](https://typedoc.org/guides/doccomments/).
-- **Code Coverage**: there's a bar on the code coverage which will cause the CI fail if not met,
-but we want it to be as high as possible.
-Please check the uncovered lines and branches in the report,
-and try to design more test cases to cover them.
+## Environment Setup
 
-## Building
+### Prerequisites
 
-### Environment set up
+- **Node.js 18+** (minimum 16, but dev dependencies require 18+)
+- **Emscripten SDK** (compiles libxml2 C to WebAssembly)
+- **C toolchain:** autoconf, automake, libtool, pkg-config
 
-#### Node.js
+### Option 1: DevContainer (Recommended for Windows)
 
-The minimum version of Node.js to run libxml2-wasm is 16, but some dev dependencies require Node.js 18+.
+Provides pre-configured environment with all dependencies.
 
-#### Emscripten
+**VS Code:**
+1. Install Docker Desktop and [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+2. Clone and open repository:
+   ```bash
+   git clone https://github.com/jameslan/libxml2-wasm.git
+   code libxml2-wasm
+   ```
+3. Press `F1` → "Dev Containers: Reopen in Container"
+4. Wait for setup to complete (auto-initializes submodules and installs dependencies)
 
-[Emscripten](https://emscripten.org/) is used to build libxml2 C library into web assembly.
-Install it from either git repo or prebuilt package.
+**WebStorm/IntelliJ:** See [DevContainer docs](https://www.jetbrains.com/help/webstorm/connect-to-devcontainer.html)
 
-#### C toolchain
+### Option 2: Native Setup
 
-Autotools etc are used to configure and build the libxml2 C code.
-It may need explicit installation for specific platform.
+**Install C toolchain:**
 
-For example on MacOS:
+- **macOS:** `brew install autoconf automake libtool pkg-config`
+- **Ubuntu/Debian:** `sudo apt-get install autoconf automake libtool pkg-config`
+- **Fedora/Enterprise Linux:** `sudo dnf install autoconf automake libtool pkg-config`
 
-```shell
-brew install autoconf automake libtool
-brew install pkg-config
+**Install Emscripten:**
+```bash
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+./emsdk install latest
+./emsdk activate latest
+source ./emsdk_env.sh
 ```
 
-### Windows
+**Build:**
+```bash
+git clone https://github.com/jameslan/libxml2-wasm.git
+cd libxml2-wasm
+git submodule update --init --recursive
+npm install
+npm run build
+```
 
-Development on Windows is not directly supported because of the shell command differences.
-Please set up the developing environment on `WSL`.
+**Windows:** Use DevContainer (Option 1) or WSL 2 with Linux instructions. Native Windows is not supported due to shell command differences.
 
-### DevContainer
-Alternatively, you can use the provided devcontainer.
-When you have an environment running containers,
-IDE like VS Code with the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension.
-Then you can just run the command "Dev Containers: Reopen in Container" which will provide you a container with the needed development environment.
-See <https://containers.dev/> for further info.
+## Development Workflows
 
-### Building commands
+### Build
 
-- `npm run build` builds the project form scratch.
-- As long as the C source of libxml2 is not changed, there's no need to re-configure and re-compile it.
-To change the exported function in the web assembly, update files in `./binding` directory and run `npm run link`.
-- `npm run watch` watches typescript source files and compile them.
+Run the full build after cloning or when changing libxml2 configuration:
+```bash
+npm run build     # Full build: WASM + TypeScript
+npm test          # Verify everything works
+```
 
-## Debugging
+This compiles libxml2 C code into WebAssembly and TypeScript into JavaScript.
 
-The TypeScript source files are transpiled with sourcemap enabled, so the JavaScript files can always be traced with the source.
+---
 
-However, to trace into the libxml2 C code, you need to,
+### TypeScript Development
 
-- Enable WASM debugging, e.g. install the [WebAssembly DWARF Debugging extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.wasm-dwarf-debugging) for Visual Studio Code
-- Build the WASM with DWARF debugging information: `EMCC_CFLAGS="-g -O0" npm run wasm`
+**Most common workflow** - editing `src/*.mts` or `test/**/*.mts`:
+
+```bash
+npm run watch     # Auto-recompile TypeScript on save
+# OR
+npm run tsc       # Compile TypeScript once
+# and always
+npm test          # Tests + coverage + linting
+```
+
+---
+
+### Adding Exported Functions
+
+When exposing new libxml2 C functions (editing `binding/exported-functions.txt` or `binding/exported-runtime-functions.txt`):
+
+
+
+## Exporting libxml2 Functions
+
+Two files control WASM exports:
+
+### `binding/exported-functions.txt`
+Lists libxml2 C functions (with underscore prefix per Emscripten convention):
+```
+_xmlNewDoc
+_xmlAddChild
+_xmlFreeDoc
+```
+
+### `binding/exported-runtime-functions.txt`
+Lists Emscripten runtime functions for memory management:
+```
+HEAP32
+UTF8ToString
+addFunction
+```
+
+**Adding new functions:**
+1. Find the function in [libxml2 docs](https://gnome.pages.gitlab.gnome.org/libxml2/html/index.html)
+2. Add to `binding/exported-functions.txt` with underscore: `_xmlFunctionName`
+3. `npm run link` to relink WASM
+4. Add TypeScript wrapper in `src/libxml2.mts`
+5. Write tests in `test/`
+6. Run `npm test` to verify everything works
+
+## Debugging & Best Practices
+
+**TypeScript debugging:** Source maps enabled. Use VS Code debugger or `node --inspect-brk`. [debugging](https://nodejs.org/en/learn/getting-started/debugging)
+
+**Prevent memory leaks:** Always use `using` keyword or call `.dispose()`:
+```typescript
+using doc = XmlDocument.fromString('<root/>');
+// Automatically disposed
+```
+
+## Troubleshooting
+
+**"emcc: command not found"**  
+→ Activate Emscripten: `source /path/to/emsdk/emsdk_env.sh`
+
+---
+
+Questions? [GitHub Discussions](https://github.com/jameslan/libxml2-wasm/discussions) | Bugs? [GitHub Issues](https://github.com/jameslan/libxml2-wasm/issues)
