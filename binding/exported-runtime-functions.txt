@@ -3,5 +3,6 @@ HEAPU8
 UTF8ToString
 addFunction
 getValue
+setValue
 lengthBytesUTF8
 stringToUTF8
