@@ -22,12 +22,28 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Setup cache
+      - name: Cache Emscripten system libraries
         id: cache-system-libraries
         uses: actions/cache@v4
         with:
           path: ${{ env.EM_CACHE_FOLDER }}
           key: ${{ env.EM_VERSION }}-${{ runner.os }}
+      - name: Cache libxml2 build artifacts
+        id: cache-libxml2-build
+        uses: actions/cache@v4
+        with:
+          path: out
+          key: libxml2-build-${{ runner.os }}-${{ hashFiles('libxml2/**') }}-${{ env.EM_VERSION }}
+          restore-keys: |
+            libxml2-build-${{ runner.os }}-${{ hashFiles('libxml2/**') }}-
+            libxml2-build-${{ runner.os }}-
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
       - name: Setup Emcripten
         uses: mymindstorm/setup-emsdk@v14
         with:

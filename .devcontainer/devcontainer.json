@@ -1,30 +1,67 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
 {
-	"name": "libxml2-wasm development environment",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
-
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "yarn install",
-
-	// Configure tool-specific properties.
-	// "customizations": {},
-
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
-
-	"runArgs": [
-		"--userns=keep-id"
-	],
-	"containerEnv": {
-		"HOME": "/home/node"
-	}
+  "name": "libxml2-wasm DevContainer",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "postCreateCommand": "bash /usr/local/bin/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "ms-vscode.wasm-dwarf-debugging",
+        "eamodio.gitlens",
+        "yzhang.markdown-all-in-one"
+      ],
+      "settings": {
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "editor.formatOnSave": false,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "editor.tabSize": 2,
+        "files.eol": "\n",
+        "files.insertFinalNewline": true,
+        "files.trimTrailingWhitespace": true,
+        "files.watcherExclude": {
+          "**/out/**": true,
+          "**/lib/**": true,
+          "**/node_modules/**": true
+        },
+        "search.exclude": {
+          "**/out/**": true,
+          "**/lib/**": true,
+          "**/node_modules": true
+        },
+        "git.autofetch": true,
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "containerEnv": {
+    "CCACHE_DIR": "/home/node/.ccache",
+    "CC": "ccache gcc",
+    "CXX": "ccache g++",
+    "NODE_OPTIONS": "--max-old-space-size=4096"
+  },
+  "mounts": [
+    "source=libxml2-wasm-ccache,target=/home/node/.ccache,type=volume",
+    "source=libxml2-wasm-npm-cache,target=/home/node/.npm,type=volume"
+  ],
+  "runArgs": [
+    "--shm-size=2g",
+    "--hostname=libxml2-wasm-dev"
+  ],
+  "remoteUser": "node",
+  "workspaceFolder": "/workspaces/libxml2-wasm",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/libxml2-wasm,type=bind,consistency=cached",
+  "capAdd": [
+    "SYS_PTRACE"
+  ],
+  "securityOpt": [
+    "seccomp=unconfined"
+  ]
 }

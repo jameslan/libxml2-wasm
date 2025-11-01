@@ -1,9 +1,9 @@
 {
-   "extends": "./tsconfig.json",
-    "include": ["./test/**/*"],
-    "compilerOptions": {
-        "paths": {
-            "@libxml2-wasm/*": ["./node_modules/libxml2-wasm/*"]
-        }
+  "extends": "./tsconfig.json",
+  "include": ["./test/**/*"],
+  "compilerOptions": {
+    "paths": {
+      "@libxml2-wasm/*": ["./node_modules/libxml2-wasm/*"]
     }
+  }
 }
