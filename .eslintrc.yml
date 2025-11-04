@@ -3,9 +3,7 @@ extends:
   - airbnb-base
   - airbnb-typescript/base
 parserOptions:
-  project:
-    - ./tsconfig.prod.json
-    - ./tsconfig.json
+  project: ./tsconfig.json
 plugins:
   - import
   - chai-friendly
@@ -40,9 +38,7 @@ rules:
 settings:
   import/resolver:
     typescript:
-      project:
-        - tsconfig.prod.json
-        - tsconfig.json
+      project: tsconfig.json
 overrides:
   - files:
     - test/**
