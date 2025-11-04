@@ -79,6 +79,12 @@ import('libxml2-wasm').then(({ XmlDocument }) => {
 
 For more detail, see the [Doc](https://jameslan.github.io/libxml2-wasm/index.html).
 
+# Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed information.
+
+---
+
 [^1]: The performance of different XML libraries can vary significantly.
 For more information, refer to the [benchmark](docs/performance.md) provided.
 [^2]: The requirement of a C/C++ toolchain at runtime can be waived if prebuilt binaries are available.
