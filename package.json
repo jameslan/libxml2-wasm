@@ -18,9 +18,10 @@
         "link": "npm run bind && npm run dist",
         "lint": "eslint 'src/**' 'test/**/*.mts'",
         "test": "npm run cov && npm run lint",
-        "tsc": "tsc -p tsconfig.prod.json --declaration --incremental",
+        "tsc": "tsc -p tsconfig.prod.json --declaration",
         "unit": "mocha --v8-expose-gc",
         "wasm": "npm run clean && npm run libxml && npm run link",
+        "wasm:debug": "EMCC_CFLAGS=\"-g -O0\" npm run wasm",
         "watch": "npm run tsc -- --watch"
     },
     "repository": {

@@ -28,15 +28,6 @@ jobs:
         with:
           path: ${{ env.EM_CACHE_FOLDER }}
           key: ${{ env.EM_VERSION }}-${{ runner.os }}
-      - name: Cache libxml2 build artifacts
-        id: cache-libxml2-build
-        uses: actions/cache@v4
-        with:
-          path: out
-          key: libxml2-build-${{ runner.os }}-${{ hashFiles('libxml2/**') }}-${{ env.EM_VERSION }}
-          restore-keys: |
-            libxml2-build-${{ runner.os }}-${{ hashFiles('libxml2/**') }}-
-            libxml2-build-${{ runner.os }}-
       - name: Cache node modules
         uses: actions/cache@v4
         with:
