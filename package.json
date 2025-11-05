@@ -5,6 +5,7 @@
     "scripts": {
         "bind": "cd out && emcc -L.libs -lxml2 -o libxml2raw.mjs --no-entry -s EXPORT_ES6=1 -s ALLOW_MEMORY_GROWTH=1 -s ALLOW_TABLE_GROWTH=1 -s EXPORTED_RUNTIME_METHODS=@../binding/exported-runtime-functions.txt -s EXPORTED_FUNCTIONS=@../binding/exported-functions.txt -O2 -flto --closure 1 -s MODULARIZE=1 -s SINGLE_FILE=1",
         "build": "npm run wasm && npm run tsc",
+        "build:debug": "EMCC_CFLAGS=\"-g -O0\" npm run build",
         "clean": "rm -rf lib out .tsbuildinfo",
         "compile": "cd out && emmake make -j4",
         "config": "cd out && emconfigure ../libxml2/autogen.sh --without-python --without-http --without-sax1 --without-modules --without-html --without-threads --without-zlib --without-lzma --without-catalog --without-debug --without-legacy --disable-shared --enable-static CFLAGS='-O2'",
@@ -21,7 +22,6 @@
         "tsc": "tsc -p tsconfig.prod.json --declaration",
         "unit": "mocha --v8-expose-gc",
         "wasm": "npm run clean && npm run libxml && npm run link",
-        "wasm:debug": "EMCC_CFLAGS=\"-g -O0\" npm run wasm",
         "watch": "npm run tsc -- --watch"
     },
     "repository": {

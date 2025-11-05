@@ -1,20 +1,52 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "mocha",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}/node_modules/.bin/mocha",
-            "args": ["--v8-expose-gc"],
-            "env": {
-            }
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Mocha: All Tests",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/node_modules/.bin/mocha",
+      "args": [
+        "--v8-expose-gc"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Mocha: Current File",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/node_modules/.bin/mocha",
+      "args": [
+        "--v8-expose-gc",
+        "${file}"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Mocha: Grep Tests",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/node_modules/.bin/mocha",
+      "args": [
+        "--v8-expose-gc",
+        "--grep",
+        "${input:mochaGrep}"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "mochaGrep",
+      "type": "promptString",
+      "description": "Enter the test name or pattern to run",
+      "default": ""
+    }
+  ]
 }
