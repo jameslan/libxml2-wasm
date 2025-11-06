@@ -141,19 +141,23 @@ addFunction
 
 ### Never Create Multiple WASM Module Instances
 
-Each call to `moduleLoader()` creates a new WASM module instance with its own separate memory space. If you create a
-second instance, pointers from one instance won't work in another, causing mysterious failures.
+Each call to `moduleLoader()` creates a new WASM module instance with its own separate memory space. Pointers from one
+instance won't work in another.
 
 **Incorrect approach:**
 
 ```typescript
-// In a new file myfeature.mts
-import moduleLoader from './libxml2raw.mjs';
-import {xmlSomeFunction} from './libxml2.mjs';
+// -- mynewfeature.mts --
+import {xmlSaveDoc} from './libxml2.mjs';
+import moduleLoader from "./libxml2raw.mjs";
+import {XmlDocument} from './document.mjs';
 
-const libxml2 = await moduleLoader();  // Creates NEW instance!
-const ptr = libxml2._malloc(4);
-xmlSomeFunction(documentPtr, ptr);  // FAILS: different memory spaces
+const libxml2 = await moduleLoader(); // Creates a NEW instance of libxml2 with its own memory space
+const ptr = libxml2._malloc(100);  // Memory in NEW instance
+
+const doc = XmlDocument.fromString('<root/>'); // This uses the "global" instance of libxml2
+
+xmlSaveDoc(ptr, doc._ptr); // FAIL: the ptr and the doc are from different instances
 ```
 
 ---
