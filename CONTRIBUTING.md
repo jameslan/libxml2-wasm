@@ -139,6 +139,25 @@ addFunction
 
 ## Debugging & Best Practices
 
+### Never Create Multiple WASM Module Instances
+
+Each call to `moduleLoader()` creates a new WASM module instance with its own separate memory space. If you create a
+second instance, pointers from one instance won't work in another, causing mysterious failures.
+
+**Incorrect approach:**
+
+```typescript
+// In a new file myfeature.mts
+import moduleLoader from './libxml2raw.mjs';
+import {xmlSomeFunction} from './libxml2.mjs';
+
+const libxml2 = await moduleLoader();  // Creates NEW instance!
+const ptr = libxml2._malloc(4);
+xmlSomeFunction(documentPtr, ptr);  // FAILS: different memory spaces
+```
+
+---
+
 ### TypeScript Debugging
 
 **VS Code:** Three launch configurations are available in `.vscode/launch.json`:
