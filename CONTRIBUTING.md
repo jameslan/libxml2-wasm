@@ -30,7 +30,8 @@ Provides pre-configured environment with all dependencies.
 
 **VS Code:**
 
-1. Install Docker Desktop and [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+1. Install Docker Desktop
+   and [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 2. Clone and open repository:
    ```bash
    git clone https://github.com/jameslan/libxml2-wasm.git
@@ -46,8 +47,8 @@ Provides pre-configured environment with all dependencies.
 **Install C toolchain:**
 
 - **macOS:** `brew install autoconf automake libtool pkg-config`
-- **Ubuntu/Debian:** `sudo apt-get install autoconf automake libtool pkg-config`
-- **Fedora/Enterprise Linux:** `sudo dnf install autoconf automake libtool pkg-config`
+- **Ubuntu/Debian:** `sudo apt-get install autoconf automake libtool pkg-config libatomic1`
+- **Fedora/Enterprise Linux:** `sudo dnf install autoconf automake libtool pkg-config libatomic`
 
 **Install Emscripten:**
 
@@ -69,7 +70,8 @@ npm install
 npm run build
 ```
 
-**Windows:** Use DevContainer (Option 1) or WSL 2 with Linux instructions. Native Windows is not supported due to shell command differences.
+**Windows:** Use DevContainer (Option 1) or WSL 2 with Linux instructions. Native Windows is not supported due to shell
+command differences.
 
 ## Development Workflows
 
@@ -100,10 +102,6 @@ npm test          # Tests + coverage + linting
 
 ---
 
-### Adding Exported Functions
-
-When exposing new libxml2 C functions (editing `binding/exported-functions.txt` or `binding/exported-runtime-functions.txt`):
-
 ## Exporting libxml2 Functions
 
 Two files control WASM exports:
@@ -116,6 +114,7 @@ Lists libxml2 C functions (with underscore prefix per Emscripten convention):
 _xmlNewDoc
 _xmlAddChild
 _xmlFreeDoc
+...
 ```
 
 ### `binding/exported-runtime-functions.txt`
@@ -126,6 +125,7 @@ Lists Emscripten runtime functions for memory management:
 HEAP32
 UTF8ToString
 addFunction
+...
 ```
 
 **Adding new functions:**
@@ -135,21 +135,66 @@ addFunction
 3. `npm run link` to relink WASM
 4. Add TypeScript wrapper in `src/libxml2.mts`
 5. Write tests in `test/`
-6. Run `npm test` to verify everything works
+6. Build and run tests to verify everything works
 
 ## Debugging & Best Practices
 
-**TypeScript debugging:** Source maps enabled. Use VS Code debugger or `node --inspect-brk`. [debugging](https://nodejs.org/en/learn/getting-started/debugging)
+### Never Create Multiple WASM Module Instances
 
-**WASM/C debugging:** To debug the libxml2 C code from JavaScript, build the debug version:
+Each call to `moduleLoader()` creates a new WASM module instance with its own separate memory space. Pointers from one
+instance won't work in another.
 
-```bash
-npm run wasm:debug    # Build WASM with debug symbols (-g) and no optimizations (-O0)
+**Incorrect approach:**
+
+```typescript
+// -- mynewfeature.mts --
+import {xmlSaveDoc} from './libxml2.mjs';
+import moduleLoader from "./libxml2raw.mjs";
+import {XmlDocument} from './document.mjs';
+
+const libxml2 = await moduleLoader(); // Creates a NEW instance of libxml2 with its own memory space
+const ptr = libxml2._malloc(100);  // Memory in NEW instance
+
+const doc = XmlDocument.fromString('<root/>'); // This uses the "global" instance of libxml2
+
+xmlSaveDoc(ptr, doc._ptr); // FAIL: the ptr and the doc are from different instances
 ```
 
-This enables stepping through C code in browser DevTools or debugging tools that support WASM source maps.
+---
 
-**Prevent memory leaks:** Always use `using` keyword or call `.dispose()`:
+### TypeScript Debugging
+
+**VS Code:** Three launch configurations are available in `.vscode/launch.json`:
+
+1. **Mocha: All Tests** - Debug all tests
+2. **Mocha: Current File** - Debug a single test file
+3. **Mocha: Grep Tests** - Debug specific tests by name pattern
+
+**WebStorm/IntelliJ:** Works out of the box with the built-in debugger.
+
+---
+
+### WASM/C Debugging
+
+To debug the libxml2 C code build the debug version:
+
+```bash
+npm run build:debug    # Build WASM with debug symbols (-g) and no optimizations (-O0)
+```
+
+**VS Code DevContainer:** Works by default. You can step through and set breakpoints in C code directly.
+
+**Local VS Code setup:** Install
+the [WebAssembly DWARF Debugging](https://marketplace.visualstudio.com/items?itemName=ms-vscode.wasm-dwarf-debugging)
+extension for C code debugging support.
+
+**WebStorm/IntelliJ:** Not supported at this time.
+
+---
+
+### Prevent Memory Leaks
+
+Always use `using` keyword or call `.dispose()`:
 
 ```typescript
 using doc = XmlDocument.fromString('<root/>');
@@ -163,4 +208,5 @@ using doc = XmlDocument.fromString('<root/>');
 
 ---
 
-Questions? [GitHub Discussions](https://github.com/jameslan/libxml2-wasm/discussions) | Bugs? [GitHub Issues](https://github.com/jameslan/libxml2-wasm/issues)
+Questions? [GitHub Discussions](https://github.com/jameslan/libxml2-wasm/discussions) |
+Bugs? [GitHub Issues](https://github.com/jameslan/libxml2-wasm/issues)

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/typescript-node:1-20-bookworm
+FROM mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm
 
 ARG EMSDK_DIR=/emsdk
 ARG EMSDK_VERSION=latest
