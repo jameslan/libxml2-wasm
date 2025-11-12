@@ -26,6 +26,7 @@ type XmlXIncludeCtxtPtr = Pointer;
 type XmlXPathCompExprPtr = Pointer;
 type XmlXPathContextPtr = Pointer;
 type XmlXPathObjectPtr = Pointer;
+type XmlOutputBufferPtr = Pointer;
 
 export class LibXml2 {
     HEAP32: Int32Array;
@@ -180,23 +181,39 @@ export class LibXml2 {
         with_comments: number,
         buf: Pointer,
     ): number;
-    // _xmlBufferCreate
-    // _xmlOutputBufferCreateBuffer
-    // _xmlBufferContent
-    // _xmlOutputBufferClose
-    // _xmlBufferFree
-    _xmlBufferCreate(): Pointer;
-    _xmlOutputBufferCreateBuffer(buffer: Pointer, encoder: Pointer): Pointer;
-    _xmlBufferContent(buffer: Pointer): Pointer;
-    _xmlOutputBufferClose(outputBuffer: Pointer): number;
-    _xmlBufferFree(buffer: Pointer): void;
+    _xmlOutputBufferCreateIO(
+        iowrite: Pointer,
+        ioclose: Pointer,
+        ioctx: Pointer,
+        encoder: Pointer,
+    ): XmlOutputBufferPtr;
+    _xmlOutputBufferClose(out: XmlOutputBufferPtr): number;
     // runtime functions
     UTF8ToString(ptr: CString, maxBytesToRead?: number): string;
     addFunction(func: Function, sig: string): Pointer;
     getValue(ptr: Pointer, type: string): number;
-    setValue(ptr: Pointer, value: number, type: string): void;
     lengthBytesUTF8(str: string): number;
+    removeFunction(ptr: Pointer): void;
+    setValue(ptr: Pointer, value: number, type: string): void;
     stringToUTF8(str: string, outPtr: CString, maxBytesToWrite: number): CString;
 }
+
+export type {
+    Pointer,
+    CString,
+    XmlAttrPtr,
+    XmlDocPtr,
+    XmlDtdPtr,
+    XmlErrorPtr,
+    XmlNodePtr,
+    XmlNsPtr,
+    XmlOutputBufferPtr,
+    XmlParserCtxtPtr,
+    XmlParserInputPtr,
+    XmlSaveCtxtPtr,
+    XmlXPathCompExprPtr,
+    XmlXPathContextPtr,
+    XmlXPathObjectPtr,
+};
 
 export default function moduleLoader(): Promise<LibXml2>;

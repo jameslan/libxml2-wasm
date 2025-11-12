@@ -3,15 +3,14 @@ _malloc
 _xmlAddChild
 _xmlAddNextSibling
 _xmlAddPrevSibling
+_xmlC14NExecute
 _xmlCleanupInputCallbacks
-_xmlCopyNode
 _xmlCtxtParseDtd
 _xmlCtxtReadMemory
 _xmlCtxtSetErrorHandler
 _xmlCtxtValidateDtd
 _xmlDocGetRootElement
 _xmlDocSetRootElement
-_xmlFree
 _xmlFreeDoc
 _xmlFreeDtd
 _xmlFreeNode
@@ -33,6 +32,8 @@ _xmlNewParserCtxt
 _xmlNewReference
 _xmlNodeGetContent
 _xmlNodeSetContentLen
+_xmlOutputBufferClose
+_xmlOutputBufferCreateIO
 _xmlRegisterInputCallbacks
 _xmlRelaxNGFree
 _xmlRelaxNGFreeParserCtxt
@@ -76,10 +77,3 @@ _xmlXPathFreeObject
 _xmlXPathNewContext
 _xmlXPathRegisterNs
 _xmlXPathSetContextNode
-_xmlC14NDocDumpMemory
-_xmlC14NExecute
-_xmlBufferCreate
-_xmlOutputBufferCreateBuffer
-_xmlBufferContent
-_xmlOutputBufferClose
-_xmlBufferFree
