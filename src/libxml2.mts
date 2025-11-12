@@ -279,7 +279,7 @@ export namespace XmlXPathObjectStruct {
         XPATH_NUMBER = 3,
         XPATH_STRING = 4,
     }
-}
+} /* c8 ignore next, a branch of typescript generated code is not covered */
 
 export class XmlNodeSetStruct {
     static nodeCount = getValueFunc(0, 'i32');
@@ -331,7 +331,7 @@ export namespace XmlNodeStruct {
         XML_COMMENT_NODE = 8,
         XML_DTD_NODE = 14,
     }
-}
+} /* c8 ignore next, a branch of typescript generated code is not covered */
 
 export class XmlNsStruct {
     static next = getValueFunc(0, '*');

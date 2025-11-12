@@ -92,6 +92,7 @@ function createNode(nodePtr: XmlNodePtr): XmlNode {
     const nodeType = XmlNodeStruct.type(nodePtr);
 
     const Constructor = nodeConstructors.get(nodeType);
+    /* c8 ignore next 3, defensive code, there's no test case can cover this */
     if (!Constructor) {
         throw new XmlError(`Unsupported node type ${nodeType}`);
     }
@@ -306,6 +307,7 @@ export abstract class XmlNode {
                 case XmlXPathObjectStruct.Type.XPATH_STRING: {
                     return XmlXPathObjectStruct.stringval(xpathObj);
                 }
+                /* c8 ignore next 4, defensive code, there's no test case can cover this */
                 default:
                     throw new XmlError(
                         `XPath selector returned an unsupported type: ${XmlXPathObjectStruct.type(xpathObj)}`,
@@ -818,6 +820,7 @@ export class XmlAttribute extends XmlNode {
         if (!this._nodePtr) {
             return;
         }
+        /* c8 ignore next 3, defensive code, this always succeeds */
         if (xmlRemoveProp(this._nodePtr)) {
             throw new XmlError('Failed to remove attribute');
         }

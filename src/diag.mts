@@ -24,6 +24,7 @@ interface MemTrackingInfo {
 
 function callstack(numSkip: number): string | undefined {
     const { stack } = new Error();
+    /* c8 ignore next, defensive code, all modern runtimes have this */
     if (!stack) return undefined;
     let pos = 0;
     // each line is one function call
