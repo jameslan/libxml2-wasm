@@ -52,4 +52,12 @@ export {
     readBuffer,
     closeBuffer,
     XmlBufferInputProvider,
+    XmlStringOutputBufferHandler,
 } from './utils.mjs';
+export {
+    XmlC14NMode,
+    canonicalizeSubtree,
+    canonicalizeSubtreeToString,
+    type C14NOptions,
+    type XmlC14NIsVisibleCallback,
+} from './c14n.mjs';

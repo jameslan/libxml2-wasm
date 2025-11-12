@@ -42,6 +42,9 @@ import {
 import type { XmlDocPtr, XmlNodePtr, XmlNsPtr } from './libxml2raw.mjs';
 import { XmlStringOutputBufferHandler } from './utils.mjs';
 import { NamespaceMap, XmlXPath } from './xpath.mjs';
+import {
+    canonicalizeSubtree, canonicalizeSubtreeToString, C14NOptionsBase,
+} from './c14n.mjs';
 
 function compiledXPathEval(nodePtr: XmlNodePtr, xpath: XmlXPath) {
     const context = xmlXPathNewContext(XmlNodeStruct.doc(nodePtr));
@@ -69,7 +72,7 @@ function xpathEval(nodePtr: XmlNodePtr, xpath: string | XmlXPath, namespaces?: N
 }
 
 interface XmlNodeConstructor<T extends XmlNode> {
-    new (ptr: XmlNodePtr): T;
+    new(ptr: XmlNodePtr): T;
 }
 
 const nodeConstructors: Map<
@@ -185,6 +188,30 @@ export abstract class XmlNode {
      */
     get line(): number {
         return XmlNodeStruct.line(this._nodePtr);
+    }
+
+    /**
+     * Canonicalize this node and its subtree to a buffer and invoke the handler to process.
+     *
+     * @param handler handlers to process the content in the buffer
+     * @param options options to adjust the canonicalization behavior
+     * @see {@link canonicalizeSubtree}
+     * @see {@link canonicalizeToString}
+     */
+    canonicalize(handler: XmlOutputBufferHandler, options?: C14NOptionsBase): void {
+        canonicalizeSubtree(handler, this.doc, this, options);
+    }
+
+    /**
+     * Canonicalize this node and its subtree and return the result as a string.
+     *
+     * @param options options to adjust the canonicalization behavior
+     * @returns The canonicalized XML string.
+     * @see {@link canonicalizeSubtreeToString}
+     * @see {@link canonicalize}
+     */
+    canonicalizeToString(options?: C14NOptionsBase): string {
+        return canonicalizeSubtreeToString(this.doc, this, options);
     }
 
     /**
@@ -585,7 +612,8 @@ function namedNode<T extends XmlNode>(
     });
 }
 
-export interface XmlElement extends XmlNamedNode {}
+export interface XmlElement extends XmlNamedNode {
+}
 
 /**
  * The class representing an XML element node.
@@ -805,7 +833,8 @@ export class XmlElement extends XmlTreeNode {
     }
 }
 
-export interface XmlAttribute extends XmlNamedNode {}
+export interface XmlAttribute extends XmlNamedNode {
+}
 
 /**
  * The class representing an XML attribute node.

@@ -144,31 +144,3 @@ export class CStringArrayWrapper extends DisposableMalloc {
         super[Symbol.dispose]();
     }
 }
-
-/**
- * Helper to create a libxml2 xmlNodeSet structure from an array of node pointers
- */
-export class XmlNodeSetWrapper extends DisposableMalloc {
-    private nodeArrayMem: DisposableMalloc;
-
-    constructor(nodes: number[]) {
-        super(12); // Allocate 12 bytes for the struct
-        const count = nodes.length;
-
-        // allocate array of node pointers
-        this.nodeArrayMem = new DisposableMalloc(count * 4);
-        nodes.forEach((ptr, i) => {
-            setValue(this.nodeArrayMem._ptr + i * 4, ptr, 'i32');
-        });
-
-        // allocate struct
-        setValue(this._ptr, count, 'i32'); // nodeNr
-        setValue(this._ptr + 4, count, 'i32'); // nodeMax
-        setValue(this._ptr + 8, this.nodeArrayMem._ptr, 'i32'); // nodeTab
-    }
-
-    [Symbol.dispose](): void {
-        this.nodeArrayMem.dispose();
-        super[Symbol.dispose]();
-    }
-}

@@ -1,368 +1,338 @@
 import {
     addFunction,
-    getValue, DisposableMalloc,
-    UTF8ToString, xmlC14NDocDumpMemory, xmlC14NExecute, xmlCopyNode,
-    xmlDocSetRootElement,
+    removeFunction,
+    xmlC14NExecute,
+    xmlOutputBufferCreateIO,
+    xmlOutputBufferClose,
     XmlError,
-    xmlFree,
-    xmlFreeDoc,
-    xmlNewDoc,
-    xmlNewNs,
-    XmlOutputBufferHandler, DisposableXmlOutputBuffer, ContextStorage,
+    XmlOutputBufferHandler,
+    XmlTreeCommonStruct,
 } from './libxml2.mjs';
-import { createNode, XmlElement, type XmlNode } from './nodes.mjs';
-import type { XmlDocPtr } from './libxml2raw.mjs';
-import {
-    CStringArrayWrapper, XmlNodeSetWrapper,
-} from './utils.mjs';
-import { Pointer } from './libxml2raw.mjs';
+import type { XmlNode } from './nodes.mjs';
+import type {
+    XmlDocPtr, XmlOutputBufferPtr, Pointer, XmlNodePtr,
+} from './libxml2raw.mjs';
+import { CStringArrayWrapper, XmlStringOutputBufferHandler } from './utils.mjs';
+import type { XmlDocument } from './document.mjs';
 
+/**
+ * C14N (Canonical XML) modes supported by libxml2
+ * @see http://www.w3.org/TR/xml-c14n
+ * @see http://www.w3.org/TR/xml-exc-c14n
+ */
 export const XmlC14NMode = {
+    /** Original C14N 1.0 specification */
     XML_C14N_1_0: 0,
+    /** Exclusive C14N 1.0 (omits unused namespace declarations) */
     XML_C14N_EXCLUSIVE_1_0: 1,
+    /** C14N 1.1 specification */
     XML_C14N_1_1: 2,
 } as const;
 
-export type C14NOptionsBase = {
+/**
+ * Callback to determine if a node should be included in canonicalization.
+ *
+ * @param node The node being evaluated
+ * @param parent The parent of the node being evaluated
+ * @returns true if the node should be included, false otherwise
+ */
+export type XmlC14NIsVisibleCallback = (node: XmlNodePtr, parent: XmlNodePtr) => boolean;
+
+/**
+ * Options for XML canonicalization
+ */
+export interface C14NOptionsBase {
     /** The canonicalization mode to use
-     * @see {@link XmlC14NMode}
+     * @default XmlC14NMode.XML_C14N_1_0
      */
-    mode: typeof XmlC14NMode[keyof typeof XmlC14NMode];
-    /** The list of inclusive namespace prefixes (only for exclusive canonicalization) */
-    inclusiveNamespacePrefixList?: string[];
+    mode?: typeof XmlC14NMode[keyof typeof XmlC14NMode];
+
     /** Whether to include comments in the canonicalized output
      * @default false
      */
     withComments?: boolean;
-};
 
-export type C14NOptionsDocument = C14NOptionsBase & {
-    node?: never;
+    /** List of inclusive namespace prefixes for exclusive canonicalization
+     * Only applies when mode is XML_C14N_EXCLUSIVE_1_0
+     */
+    inclusiveNamespacePrefixes?: string[];
+}
+
+export interface C14NOptionsWithCallback extends C14NOptionsBase {
+    /** Custom callback to determine node visibility
+     * Cannot be used together with nodeSet
+     */
+    isVisible: XmlC14NIsVisibleCallback;
     nodeSet?: never;
-    isVisibleCallback?: never;
-    userData?: never;
-};
+}
 
-export type C14NOptionsNode = C14NOptionsBase & {
-    node: XmlNode;
-    nodeSet?: never;
-    isVisibleCallback?: never;
-    userData?: never;
-};
+export interface C14NOptionsWithNodeSet extends C14NOptionsBase {
+    /** Set of nodes to include in canonicalization
+     * Cannot be used together with isVisible
+     */
+    nodeSet: Set<XmlNode>;
+    isVisible?: never;
+}
 
-export type C14NOptionsNodeSet = C14NOptionsBase & {
-    nodeSet: XmlNode[];
-    node?: never;
-    isVisibleCallback?: never;
-    userData?: never;
-};
-
-export type C14NOptionsCallback<T> = C14NOptionsBase & {
-    node?: never;
-    nodeSet?: never;
-    isVisibleCallback: XmlC14NIsVisibleCallback<T>;
-    userData?: T;
-};
-
-export type C14NOptions<T = unknown> =
-    C14NOptionsDocument | C14NOptionsNode | C14NOptionsNodeSet | C14NOptionsCallback<T>;
+export type C14NOptions = C14NOptionsWithCallback | C14NOptionsWithNodeSet | C14NOptionsBase;
 
 /**
- * Decide if a node should be included in the canonicalization.
+ * Check if a node is within a subtree rooted at a specific node by walking
+ * up the parent chain using the libxml-provided parent pointer.
+ *
+ * Important: Namespace declaration nodes (xmlNs) are not part of the tree and
+ * don't have a normal parent field. libxml2 calls the visibility callback with
+ * the owning element as `parentPtr`, so we must start walking from `parentPtr`
+ * rather than dereferencing the node.
+ * @internal
  */
-export type XmlC14NIsVisibleCallback<T> = (userData: T, node: XmlNode, parent: XmlNode) => boolean;
-
-/**
- * wrap the users is visible function
- */
-export function getC14NIsVisibleCallback<T>(
-    cb: XmlC14NIsVisibleCallback<T>,
-    contextStorage: ContextStorage<T> | null,
-): Pointer {
-    const wrapper = (userDataPtr: number, nodePtr: number, parentPtr: number): number => {
-        const node = createNode(nodePtr);
-        const parent = createNode(parentPtr);
-        const userDataObj = contextStorage ? contextStorage.get(userDataPtr) : undefined;
-        return cb(userDataObj as T, node, parent) ? 1 : 0;
-    };
-    const funcPtr = addFunction(wrapper, 'iiii');
-    return funcPtr as Pointer;
+function isNodeInSubtree(nodePtr: number, parentPtr: number, rootPtr: number): boolean {
+    if (nodePtr === rootPtr) {
+        return true;
+    }
+    let currentPtr = parentPtr;
+    while (currentPtr !== 0) {
+        if (currentPtr === rootPtr) {
+            return true;
+        }
+        currentPtr = XmlTreeCommonStruct.parent(currentPtr);
+    }
+    return false;
 }
 
 /**
- * Canonicalize an XML document with a specific node
+ * Wrap a JavaScript isVisible callback as a C function pointer.
+ * Signature: int(void* user_data, xmlNodePtr node, xmlNodePtr parent)
+ * @internal
  */
-export function canonicalizeWithNode(
-    docPtr: XmlDocPtr,
-    handler: XmlOutputBufferHandler,
-    options: C14NOptionsNode,
-): void {
-    using docTxtMem = new DisposableMalloc(4);
-    let tempDoc: number | null = null;
-    let prefixArray: CStringArrayWrapper | null = null;
-
-    try {
-        // If inclusiveNamespaces is provided
-        if (options.inclusiveNamespacePrefixList) {
-            prefixArray = new CStringArrayWrapper(options.inclusiveNamespacePrefixList);
-        }
-
-        // Create a temporary document for the subtree
-        tempDoc = xmlNewDoc();
-        if (!tempDoc) {
-            throw new XmlError('Failed to create new document for subtree');
-        }
-
-        // Make a deep copy of the node (1 = recursive copy)
-        const copiedNode = xmlCopyNode(options.node._nodePtr, 1);
-        if (!copiedNode) {
-            throw new XmlError('Failed to copy subtree node');
-        }
-
-        // Set the copied node as the root element of the new document
-        xmlDocSetRootElement(tempDoc, copiedNode);
-
-        // If inclusiveNamespaces is provided,
-        // we need to add the namespace declarations to the root element
-        const inclusivePrefixes = options.inclusiveNamespacePrefixList;
-        if (inclusivePrefixes) {
-            let currentNode: XmlElement | null = options.node.parent;
-            while (currentNode) {
-                Object.entries(currentNode.nsDeclarations).forEach(
-                    ([prefix, namespaceURI]) => {
-                        if (inclusivePrefixes.includes(prefix)) {
-                            const namespace = xmlNewNs(copiedNode, namespaceURI, prefix);
-                            if (!namespace) {
-                                throw new XmlError(`Failed to add namespace declaration "${prefix}"`);
-                            }
-                        }
-                    },
-                );
-                currentNode = currentNode.parent;
+function wrapIsVisibleCallback(
+    jsCallback: XmlC14NIsVisibleCallback,
+    cascade: boolean = true,
+): Pointer {
+    // Track nodes made invisible to cascade invisibility to descendants when requested
+    const invisible = cascade ? new Set<number>() : null;
+    const wrapper = (
+        _userDataPtr: number,
+        nodePtr: number,
+        parentPtr: number,
+    ): number => {
+        if (cascade && invisible) {
+            if (parentPtr !== 0 && invisible.has(parentPtr)) {
+                invisible.add(nodePtr);
+                return 0;
             }
         }
-
-        const mode = options.mode ?? XmlC14NMode.XML_C14N_1_0;
-        const withComments = options.withComments ? 1 : 0;
-
-        const result = xmlC14NDocDumpMemory(
-            tempDoc,
-            0, // no nodeSet for single node
-            mode,
-            prefixArray ? prefixArray._ptr : 0,
-            withComments,
-            docTxtMem._ptr,
-        );
-
-        if (result < 0) {
-            throw new XmlError('Failed to canonicalize XML subtree');
-        }
-
-        const txtPtr = getValue(docTxtMem._ptr, 'i32');
-        if (!txtPtr) throw new XmlError('Failed to get canonicalized XML');
-
-        const canonicalXml = UTF8ToString(txtPtr, result);
-        const buffer = new TextEncoder().encode(canonicalXml);
-        handler.write(buffer);
-
-        xmlFree(txtPtr);
-    } finally {
-        if (tempDoc) {
-            xmlFreeDoc(tempDoc);
-        }
-        if (prefixArray) {
-            prefixArray.dispose();
-        }
-    }
+        const res = jsCallback(nodePtr, parentPtr) ? 1 : 0;
+        if (cascade && invisible && res === 0) invisible.add(nodePtr);
+        return res;
+    };
+    return addFunction(wrapper, 'iiii') as Pointer;
 }
 
 /**
- * Canonicalize an XML document with a node set
- *
- * TODO: I can't figure out how to add namespace nodes to the node set.
- *       (Error: Unsupported node type 18)
+ * Convert a Set<XmlNode> to an isVisible callback
+ * @internal
  */
-export function canonicalizeWithNodeSet(
-    docPtr: XmlDocPtr,
-    handler: XmlOutputBufferHandler,
-    options: C14NOptionsNodeSet,
-): void {
-    using docTxtPtr = new DisposableMalloc(4);
-    let prefixArray: CStringArrayWrapper | null = null;
-    let nodeSet: XmlNodeSetWrapper | null = null;
-
-    try {
-        // If inclusiveNamespaces is provided
-        if (options.inclusiveNamespacePrefixList) {
-            prefixArray = new CStringArrayWrapper(options.inclusiveNamespacePrefixList);
+function createNodeSetCallback(nodeSet: Set<XmlNode>): Pointer {
+    const rootPtrs = new Set(Array.from(nodeSet).map((n) => n._nodePtr));
+    const wrapper = (_userDataPtr_: number, nodePtr: number, parentPtr: number): number => {
+        // Visible if node itself is a selected root, or it lies within any selected root subtree
+        if (rootPtrs.has(nodePtr)) return 1;
+        let cur = parentPtr;
+        while (cur !== 0) {
+            if (rootPtrs.has(cur)) return 1;
+            cur = XmlTreeCommonStruct.parent(cur);
         }
-
-        // Create nodeSet wrapper
-        nodeSet = new XmlNodeSetWrapper(options.nodeSet.map((item) => item._nodePtr));
-
-        const mode = options.mode ?? XmlC14NMode.XML_C14N_1_0;
-        const withComments = options.withComments ? 1 : 0;
-
-        const result = xmlC14NDocDumpMemory(
-            docPtr,
-            nodeSet._ptr,
-            mode,
-            prefixArray ? prefixArray._ptr : 0,
-            withComments,
-            docTxtPtr._ptr,
-        );
-
-        if (result < 0) {
-            throw new XmlError('Failed to canonicalize XML with node set');
-        }
-
-        const txtPtr = getValue(docTxtPtr._ptr, 'i32');
-        if (!txtPtr) throw new XmlError('Failed to get canonicalized XML');
-
-        const canonicalXml = UTF8ToString(txtPtr, result);
-        const buffer = new TextEncoder().encode(canonicalXml);
-        handler.write(buffer);
-
-        xmlFree(txtPtr);
-    } finally {
-        if (prefixArray) {
-            prefixArray.dispose();
-        }
-        if (nodeSet) {
-            nodeSet.dispose();
-        }
-    }
+        return 0;
+    };
+    return addFunction(wrapper, 'iiii') as Pointer;
 }
 
 /**
- * Canonicalize an XML document with a callback
+ * Internal implementation using xmlC14NExecute
+ * @internal
  */
-export function canonicalizeWithCallback<T>(
-    docPtr: XmlDocPtr,
+function canonicalizeInternal(
     handler: XmlOutputBufferHandler,
-    options: C14NOptionsCallback<T>,
+    docPtr: XmlDocPtr,
+    options: C14NOptions = {},
+    wrapCascade: boolean = true,
 ): void {
-    using outputBuffer = new DisposableXmlOutputBuffer();
+    const hasIsVisible = (opts: C14NOptions):
+        opts is C14NOptions & { isVisible: XmlC14NIsVisibleCallback } => typeof (opts as any).isVisible === 'function';
+
+    const hasNodeSet = (opts: C14NOptions):
+        opts is C14NOptions & { nodeSet: Set<XmlNode> } => (opts as any).nodeSet instanceof Set;
+
+    // Validate mutually exclusive options
+    if (hasIsVisible(options) && hasNodeSet(options)) {
+        throw new XmlError('Cannot specify both isVisible and nodeSet');
+    }
+
+    let outputBufferPtr: XmlOutputBufferPtr | null = null;
     let prefixArray: CStringArrayWrapper | null = null;
-    let contextStorage: ContextStorage<T> | null = null;
-    let callbackPtr: Pointer | null = null;
-    let userDataPtr = 0;
+    let callbackPtr: Pointer = 0 as Pointer;
 
     try {
-        // If inclusiveNamespaces is provided
-        if (options.inclusiveNamespacePrefixList) {
-            prefixArray = new CStringArrayWrapper(options.inclusiveNamespacePrefixList);
+        // Create output buffer using IO callbacks
+        outputBufferPtr = xmlOutputBufferCreateIO(handler);
+
+        // Convert options to callback
+        if (hasIsVisible(options)) {
+            callbackPtr = wrapIsVisibleCallback(options.isVisible, wrapCascade);
+        } else if (hasNodeSet(options)) {
+            callbackPtr = createNodeSetCallback(options.nodeSet);
         }
 
-        // Set up callback and user data
-        if (options.userData !== undefined) {
-            contextStorage = new ContextStorage<T>();
-            userDataPtr = contextStorage.allocate(options.userData);
+        // Handle inclusive namespace prefixes
+        if (options.inclusiveNamespacePrefixes) {
+            prefixArray = new CStringArrayWrapper(options.inclusiveNamespacePrefixes);
         }
 
-        callbackPtr = getC14NIsVisibleCallback(options.isVisibleCallback, contextStorage);
-
+        const mode = options.mode ?? XmlC14NMode.XML_C14N_1_0;
         const withComments = options.withComments ? 1 : 0;
 
         const result = xmlC14NExecute(
             docPtr,
             callbackPtr,
-            userDataPtr,
-            options.mode,
+            0, // user_data (not used in our callbacks)
+            mode,
             prefixArray ? prefixArray._ptr : 0,
             withComments,
-            outputBuffer.getOutputBufferPtr(),
+            outputBufferPtr,
         );
 
         if (result < 0) {
-            throw new XmlError('Failed to canonicalize XML with callback');
+            throw new XmlError('Failed to canonicalize XML document');
         }
-
-        const caninicalizedXml = outputBuffer.getContent();
-
-        // TODO: handle this better
-        handler.write(Buffer.from(caninicalizedXml));
     } finally {
         if (prefixArray) {
             prefixArray.dispose();
         }
-        if (contextStorage) {
-            contextStorage.free(userDataPtr);
+        if (outputBufferPtr) {
+            xmlOutputBufferClose(outputBufferPtr);
+        }
+        if (callbackPtr !== 0) {
+            removeFunction(callbackPtr);
         }
     }
 }
 
 /**
- * Canonicalize an XML document (default mode - entire document)
+ * Canonicalize an entire XML document to a buffer and invoke callbacks to process.
+ *
+
+ * @param handler Callback to receive the canonicalized output
+ * @param doc The XML document to canonicalize
+ * @param options Canonicalization options
+ *
+ * @example
+ * ```typescript
+ * const handler = new XmlStringOutputBufferHandler();
+ * canonicalizeDocument(handler, doc, {
+ *   mode: XmlC14NMode.XML_C14N_1_0,
+ *   withComments: false
+ * });
+ * ```
  */
 export function canonicalizeDocument(
-    docPtr: XmlDocPtr,
     handler: XmlOutputBufferHandler,
-    options?: C14NOptionsBase,
+    doc: XmlDocument,
+    options: C14NOptions = {},
 ): void {
-    using docTxtPtr = new DisposableMalloc(4);
-    let prefixArray: CStringArrayWrapper | null = null;
-
-    try {
-        // If inclusiveNamespaces is provided
-        if (options && options.inclusiveNamespacePrefixList) {
-            prefixArray = new CStringArrayWrapper(options.inclusiveNamespacePrefixList);
-        }
-
-        const mode = options && options.mode ? options.mode : XmlC14NMode.XML_C14N_1_0;
-        const withComments = options && options.withComments ? 1 : 0;
-
-        const result = xmlC14NDocDumpMemory(
-            docPtr,
-            0, // no nodeSet
-            mode,
-            prefixArray ? prefixArray._ptr : 0,
-            withComments,
-            docTxtPtr._ptr,
-        );
-
-        if (result < 0) {
-            throw new XmlError('Failed to canonicalize XML');
-        }
-
-        const txtPtr = getValue(docTxtPtr._ptr, 'i32');
-        if (!txtPtr) throw new XmlError('Failed to get canonicalized XML');
-
-        const canonicalXml = UTF8ToString(txtPtr, result);
-        const buffer = new TextEncoder().encode(canonicalXml);
-        handler.write(buffer);
-
-        xmlFree(txtPtr);
-    } finally {
-        if (prefixArray) {
-            prefixArray.dispose();
-        }
-    }
+    canonicalizeInternal(handler, doc._ptr, options);
 }
 
-// export function onlyATest(): string {
-//     const xmlString = '<root><child attr="value">text</child></root>';
-//     const doc = XmlDocument.fromString(xmlString);
-//
-//     const buf = xmlBufferCreate();
-//     const bufbuf = xmlOutputBufferCreateBuffer(buf, 0);
-//
-//     const canonical = xmlC14NExecute(
-//         doc._ptr,
-//         0,
-//         0,
-//         0,
-//         0,
-//         0,
-//         bufbuf,
-//     );
-//     const errPtr = xmlGetLastError();
-//     if (errPtr) {
-//         const code = getValue(errPtr + 16, 'i32'); // offset depends on struct layout
-//         const msgPtr = getValue(errPtr + 8, '*'); // check xmlError struct in libxml2
-//         const msg = UTF8ToString(msgPtr);
-//         console.error('C14N error:', code, msg);
-//     }
-//
-//     return canonical.toString();
-// }
+/**
+ * Canonicalize an entire XML document and return as a string.
+ *
+ * @param doc The XML document to canonicalize
+ * @param options Canonicalization options
+ * @returns The canonical XML string
+ *
+ * @example
+ * ```typescript
+ * const canonical = canonicalizeDocumentToString(doc, {
+ *   mode: XmlC14NMode.XML_C14N_1_0,
+ *   withComments: false
+ * });
+ * ```
+ */
+export function canonicalizeDocumentToString(
+    doc: XmlDocument,
+    options: C14NOptions = {},
+): string {
+    const handler = new XmlStringOutputBufferHandler();
+    canonicalizeDocument(handler, doc, options);
+    return handler.result;
+}
+
+/**
+ * Canonicalize a subtree of an XML document to a buffer and invoke callbacks to process.
+ *
+ * This is a convenience helper that creates an isVisible callback to filter
+ * only nodes within the specified subtree.
+ *
+ * @param handler Callback to receive the canonicalized output
+ * @param doc The document containing the subtree
+ * @param subtreeRoot The root node of the subtree to canonicalize
+ * @param options Canonicalization options (cannot include isVisible or nodeSet)
+ *
+ * @example
+ * ```typescript
+ * const element = doc.get('//my-element');
+ * const handler = new XmlStringOutputBufferHandler();
+ * canonicalizeSubtree(handler, doc, element!, {
+ *   mode: XmlC14NMode.XML_C14N_EXCLUSIVE_1_0,
+ *   inclusiveNamespacePrefixes: ['ns1', 'ns2'],
+ *   withComments: false
+ * });
+ * ```
+ */
+export function canonicalizeSubtree(
+    handler: XmlOutputBufferHandler,
+    doc: XmlDocument,
+    subtreeRoot: XmlNode,
+    options: C14NOptionsBase = {},
+): void {
+    const subtreeRootPtr = subtreeRoot._nodePtr;
+    const isVisible = (nodePtr: number, parentPtr: number) => (
+        isNodeInSubtree(nodePtr, parentPtr, subtreeRootPtr)
+    );
+    // Use non-cascading behavior for subtree helper
+    canonicalizeInternal(handler, doc._ptr, {
+        ...options,
+        isVisible: isVisible as unknown as XmlC14NIsVisibleCallback,
+    }, /* wrapCascade */ false);
+}
+
+/**
+ * Canonicalize a subtree of an XML document and return as a string.
+ *
+ * This is a convenience helper that creates an isVisible callback to filter
+ * only nodes within the specified subtree.
+ *
+ * @param doc The document containing the subtree
+ * @param subtreeRoot The root node of the subtree to canonicalize
+ * @param options Canonicalization options (cannot include isVisible or nodeSet)
+ * @returns The canonical XML string for the subtree
+ *
+ * @example
+ * ```typescript
+ * const element = doc.get('//my-element');
+ * const canonical = canonicalizeSubtreeToString(doc, element!, {
+ *   mode: XmlC14NMode.XML_C14N_EXCLUSIVE_1_0,
+ *   inclusiveNamespacePrefixes: ['ns1', 'ns2'],
+ *   withComments: false
+ * });
+ * ```
+ */
+export function canonicalizeSubtreeToString(
+    doc: XmlDocument,
+    subtreeRoot: XmlNode,
+    options: C14NOptionsBase = {},
+): string {
+    const handler = new XmlStringOutputBufferHandler();
+    canonicalizeSubtree(handler, doc, subtreeRoot, options);
+    return handler.result;
+}
