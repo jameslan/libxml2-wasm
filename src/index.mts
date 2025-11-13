@@ -56,8 +56,13 @@ export {
 } from './utils.mjs';
 export {
     XmlC14NMode,
+    canonicalizeDocument,
+    canonicalizeDocumentToString,
     canonicalizeSubtree,
     canonicalizeSubtreeToString,
     type C14NOptions,
+    type C14NOptionsBase,
+    type C14NOptionsWithCallback,
+    type C14NOptionsWithNodeSet,
     type XmlC14NIsVisibleCallback,
 } from './c14n.mjs';
