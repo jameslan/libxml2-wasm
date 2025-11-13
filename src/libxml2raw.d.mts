@@ -198,22 +198,4 @@ export class LibXml2 {
     stringToUTF8(str: string, outPtr: CString, maxBytesToWrite: number): CString;
 }
 
-export type {
-    Pointer,
-    CString,
-    XmlAttrPtr,
-    XmlDocPtr,
-    XmlDtdPtr,
-    XmlErrorPtr,
-    XmlNodePtr,
-    XmlNsPtr,
-    XmlOutputBufferPtr,
-    XmlParserCtxtPtr,
-    XmlParserInputPtr,
-    XmlSaveCtxtPtr,
-    XmlXPathCompExprPtr,
-    XmlXPathContextPtr,
-    XmlXPathObjectPtr,
-};
-
 export default function moduleLoader(): Promise<LibXml2>;

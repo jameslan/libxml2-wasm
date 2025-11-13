@@ -72,7 +72,7 @@ function xpathEval(nodePtr: XmlNodePtr, xpath: string | XmlXPath, namespaces?: N
 }
 
 interface XmlNodeConstructor<T extends XmlNode> {
-    new(ptr: XmlNodePtr): T;
+    new (ptr: XmlNodePtr): T;
 }
 
 const nodeConstructors: Map<
@@ -91,7 +91,7 @@ export function forNodeType<T extends XmlNode>(nodeType: XmlNodeStruct.Type) {
     };
 }
 
-export function createNode(nodePtr: XmlNodePtr): XmlNode {
+function createNode(nodePtr: XmlNodePtr): XmlNode {
     const nodeType = XmlNodeStruct.type(nodePtr);
 
     const Constructor = nodeConstructors.get(nodeType);
@@ -612,8 +612,7 @@ function namedNode<T extends XmlNode>(
     });
 }
 
-export interface XmlElement extends XmlNamedNode {
-}
+export interface XmlElement extends XmlNamedNode {}
 
 /**
  * The class representing an XML element node.
@@ -833,8 +832,7 @@ export class XmlElement extends XmlTreeNode {
     }
 }
 
-export interface XmlAttribute extends XmlNamedNode {
-}
+export interface XmlAttribute extends XmlNamedNode {}
 
 /**
  * The class representing an XML attribute node.
