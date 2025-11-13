@@ -16,14 +16,6 @@ import type {
 import moduleLoader from './libxml2raw.mjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 
-// Re-export types for use in other modules
-export type {
-    Pointer,
-    XmlDocPtr,
-    XmlNodePtr,
-    XmlOutputBufferPtr,
-} from './libxml2raw.mjs';
-
 const libxml2 = await moduleLoader();
 libxml2._xmlInitParser();
 
