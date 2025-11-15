@@ -14,7 +14,14 @@ import { XmlDocument } from './document.mjs';
 function filePath(filename: string): string | null {
     try {
         const url = new URL(filename);
-        return url.protocol === 'file:' ? url.pathname : null;
+        if (url.protocol !== 'file:') {
+            return null;
+        }
+        /* c8 ignore next 3, Windows only, won't be covered on other platforms */
+        if (url.pathname.startsWith('/') && process.platform === 'win32') {
+            return url.pathname.slice(1);
+        }
+        return url.pathname;
     } catch {
         return filename;
     }

@@ -8,7 +8,7 @@
         "build:debug": "EMCC_CFLAGS=\"-g -O0\" npm run build",
         "clean": "rm -rf lib out .tsbuildinfo",
         "compile": "cd out && emmake make -j4",
-        "config": "cd out && emconfigure ../libxml2/autogen.sh --without-python --without-http --without-sax1 --without-modules --without-html --without-threads --without-zlib --without-lzma --without-catalog --without-debug --without-legacy --disable-shared --enable-static CFLAGS='-O2'",
+        "config": "cd out && emconfigure ../libxml2/autogen.sh --with-winpath --without-python --without-http --without-sax1 --without-modules --without-html --without-threads --without-zlib --without-lzma --without-catalog --without-debug --without-legacy --disable-shared --enable-static CFLAGS='-O2'",
         "cov": "c8 npm run unit",
         "dist": "cp out/libxml2raw.* src/libxml2raw.* lib",
         "doc": "typedoc",

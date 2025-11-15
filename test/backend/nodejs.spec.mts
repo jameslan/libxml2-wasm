@@ -39,7 +39,7 @@ describe('Node.js input callbacks', () => {
         validator.validate(doc);
     });
 
-    it.skip('handles native path', () => {
+    it('handles native path', () => {
         using schemaDoc = XmlDocument.fromBuffer(
             fs.readFileSync('test/testfiles/book.xsd'),
             { url: join('test', 'testfiles', 'book.xsd') },
@@ -52,15 +52,18 @@ describe('Node.js input callbacks', () => {
         validator.validate(doc);
     });
 
-    it.skip('handles includes with file url', () => {
+    it('handles includes with file url', () => {
         using schemaDoc = XmlDocument.fromBuffer(
             fs.readFileSync('test/testfiles/book.xsd'),
-            { url: `file://${resolve('test/testfiles/book.xsd')}` },
+            { url: `file:///${resolve('test/testfiles/book.xsd').replaceAll('\\', '/')}` },
         );
         using validator = XsdValidator.fromDoc(schemaDoc);
         using doc = XmlDocument.fromBuffer(
             fs.readFileSync('test/testfiles/book.xml'),
-            { url: `file://${resolve('test/testfiles/book.xml')}`, option: ParseOption.XML_PARSE_XINCLUDE },
+            {
+                url: `file:///${resolve('test/testfiles/book.xml').replaceAll('\\', '/')}`,
+                option: ParseOption.XML_PARSE_XINCLUDE,
+            },
         );
         validator.validate(doc);
     });
