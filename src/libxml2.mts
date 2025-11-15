@@ -7,16 +7,52 @@ import type {
     XmlErrorPtr,
     XmlNodePtr,
     XmlNsPtr,
+    XmlOutputBufferPtr,
     XmlParserCtxtPtr,
     XmlSaveCtxtPtr,
     XmlXPathCompExprPtr,
     XmlXPathContextPtr,
 } from './libxml2raw.mjs';
 import moduleLoader from './libxml2raw.mjs';
-import { ContextStorage } from './utils.mjs';
+import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 const libxml2 = await moduleLoader();
 libxml2._xmlInitParser();
+
+// Export specific functions needed by other modules
+export const {
+ getValue, setValue, UTF8ToString, lengthBytesUTF8, stringToUTF8, addFunction, removeFunction,
+} = libxml2;
+
+/**
+ * Manage JS context object for wasm.
+ *
+ * In libxml2, a registration of callback often has a context/userdata pointer.
+ * But when it is in wasm, this pointer is essentially an integer.
+ *
+ * To support JS object as context/userdata, we store it in the map and access with an integer key.
+ * This key could be passed to the registration.
+ * And the callback use this key to retrieve the real object.
+ */
+export class ContextStorage<T> {
+    private storage: Map<number, T> = new Map<number, T>();
+
+    private index = 0;
+
+    allocate(value: T): number {
+        this.index += 1;
+        this.storage.set(this.index, value);
+        return this.index;
+    }
+
+    free(index: number) {
+        this.storage.delete(index);
+    }
+
+    get(index: number): T {
+        return this.storage.get(index)!;
+    }
+}
 
 /**
  * The base class for exceptions in this library.
@@ -618,6 +654,16 @@ export function xmlSaveSetIndentString(
     return withStringUTF8(indent, (buf) => libxml2._xmlSaveSetIndentString(ctxt, buf));
 }
 
+/**
+ * We probably don't want to expose malloc/free directly?
+ */
+@disposeBy(libxml2._free)
+export class DisposableMalloc extends XmlDisposable<DisposableMalloc> {
+    constructor(size: number) {
+        super(libxml2._malloc(size));
+    }
+}
+
 export const xmlAddChild = libxml2._xmlAddChild;
 export const xmlAddNextSibling = libxml2._xmlAddNextSibling;
 export const xmlAddPrevSibling = libxml2._xmlAddPrevSibling;
@@ -669,3 +715,17 @@ export const xmlXPathFreeContext = libxml2._xmlXPathFreeContext;
 export const xmlXPathFreeObject = libxml2._xmlXPathFreeObject;
 export const xmlXPathNewContext = libxml2._xmlXPathNewContext;
 export const xmlXPathSetContextNode = libxml2._xmlXPathSetContextNode;
+
+/**
+ * Create an output buffer using I/O callbacks (same pattern as xmlSaveToIO)
+ * @internal
+ */
+export function xmlOutputBufferCreateIO(
+    handler: XmlOutputBufferHandler,
+): XmlOutputBufferPtr {
+    const index = outputHandlerStorage.allocate(handler); // will be freed in outputClose
+    return libxml2._xmlOutputBufferCreateIO(outputWrite, outputClose, index, 0);
+}
+
+export const xmlOutputBufferClose = libxml2._xmlOutputBufferClose;
+export const xmlC14NExecute = libxml2._xmlC14NExecute;
