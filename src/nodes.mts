@@ -43,7 +43,7 @@ import type { XmlDocPtr, XmlNodePtr, XmlNsPtr } from './libxml2raw.mjs';
 import { XmlStringOutputBufferHandler } from './utils.mjs';
 import { NamespaceMap, XmlXPath } from './xpath.mjs';
 import {
-    canonicalizeSubtree, canonicalizeSubtreeToString, C14NOptionsBase,
+    canonicalizeSubtree, C14NOptionsBase,
 } from './c14n.mjs';
 
 function compiledXPathEval(nodePtr: XmlNodePtr, xpath: XmlXPath) {
@@ -207,11 +207,12 @@ export abstract class XmlNode {
      *
      * @param options options to adjust the canonicalization behavior
      * @returns The canonicalized XML string.
-     * @see {@link canonicalizeSubtreeToString}
      * @see {@link canonicalize}
      */
     canonicalizeToString(options?: C14NOptionsBase): string {
-        return canonicalizeSubtreeToString(this.doc, this, options);
+        const handler = new XmlStringOutputBufferHandler();
+        canonicalizeSubtree(handler, this.doc, this, options);
+        return handler.result;
     }
 
     /**

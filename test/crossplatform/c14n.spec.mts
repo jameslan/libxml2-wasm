@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai';
 import {
-    XmlDocument, diag, XmlC14NMode, canonicalizeSubtreeToString, XmlStringOutputBufferHandler,
+    XmlDocument, diag, XmlC14NMode, XmlStringOutputBufferHandler,
 } from '@libxml2-wasm/lib/index.mjs';
 import { XmlTreeCommonStruct } from '@libxml2-wasm/lib/libxml2.mjs';
 
@@ -85,6 +85,17 @@ describe('C14N (XML Canonicalization)', () => {
         });
     });
 
+    describe('doc.canonicalize(handler, options)', () => {
+        it('should canonicalize document using handler API', () => {
+            const xmlString = '<root><child attr="value">text</child></root>';
+            usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
+                const handler = new XmlStringOutputBufferHandler();
+                doc.canonicalize(handler);
+                expect(handler.result).to.equal(xmlString);
+            });
+        });
+    });
+
     describe('canonicalizeSubtree', () => {
         it('should canonicalize only a specific subtree', () => {
             const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child><sibling>other</sibling></root>';
@@ -94,7 +105,7 @@ describe('C14N (XML Canonicalization)', () => {
                 expect(node).to.not.be.null;
                 assert(node != null);
 
-                const canonical = canonicalizeSubtreeToString(doc, node, {
+                const canonical = node.canonicalizeToString({
                     mode: XmlC14NMode.XML_C14N_EXCLUSIVE_1_0,
                 });
 
@@ -111,7 +122,7 @@ describe('C14N (XML Canonicalization)', () => {
                 expect(node).to.not.be.null;
                 assert(node != null);
 
-                const canonical = canonicalizeSubtreeToString(doc, node, {
+                const canonical = node.canonicalizeToString({
                     mode: XmlC14NMode.XML_C14N_EXCLUSIVE_1_0,
                     inclusiveNamespacePrefixes: inclusiveNamespaces,
                 });

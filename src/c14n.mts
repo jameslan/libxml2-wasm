@@ -1,6 +1,6 @@
 import {
     addFunction,
-    removeFunction,
+    CStringArrayWrapper,
     xmlC14NExecute,
     xmlOutputBufferCreateIO,
     xmlOutputBufferClose,
@@ -12,8 +12,68 @@ import type { XmlNode } from './nodes.mjs';
 import type {
     XmlDocPtr, XmlOutputBufferPtr, Pointer, XmlNodePtr,
 } from './libxml2raw.mjs';
-import { CStringArrayWrapper, XmlStringOutputBufferHandler } from './utils.mjs';
 import type { XmlDocument } from './document.mjs';
+import { ContextStorage } from './utils.mjs';
+
+/**
+ * Context for the C14N isVisible callback.
+ * @internal
+ */
+interface C14NCallbackContext {
+    /** The JS callback to invoke, or null if using nodeSet mode */
+    jsCallback: XmlC14NIsVisibleCallback | null;
+    /** For nodeSet mode: set of root pointers to check against */
+    rootPtrs: Set<number> | null;
+    /** Whether to cascade invisibility to descendants */
+    cascade: boolean;
+    /** Tracks nodes made invisible (for cascade mode) */
+    invisible: Set<number> | null;
+}
+
+const c14nCallbackStorage = new ContextStorage<C14NCallbackContext>();
+
+/**
+ * Global C14N visibility callback - created once at module initialization.
+ * Signature: int(void* user_data, xmlNodePtr node, xmlNodePtr parent)
+ * @internal
+ */
+const c14nIsVisibleCallback = addFunction(
+    (userDataIndex: number, nodePtr: number, parentPtr: number): number => {
+        const ctx = c14nCallbackStorage.get(userDataIndex);
+
+        // Handle nodeSet mode
+        if (ctx.rootPtrs !== null) {
+            // Visible if node is a selected root, or lies within any selected root subtree
+            if (ctx.rootPtrs.has(nodePtr)) return 1;
+            let cur = parentPtr;
+            while (cur !== 0) {
+                if (ctx.rootPtrs.has(cur)) return 1;
+                cur = XmlTreeCommonStruct.parent(cur);
+            }
+            return 0;
+        }
+
+        // Handle isVisible callback mode
+        if (ctx.jsCallback !== null) {
+            // Cascade invisibility check
+            if (ctx.cascade && ctx.invisible) {
+                if (parentPtr !== 0 && ctx.invisible.has(parentPtr)) {
+                    ctx.invisible.add(nodePtr);
+                    return 0;
+                }
+            }
+            const res = ctx.jsCallback(nodePtr, parentPtr) ? 1 : 0;
+            if (ctx.cascade && ctx.invisible && res === 0) {
+                ctx.invisible.add(nodePtr);
+            }
+            return res;
+        }
+
+        // No callback or nodeSet - include all nodes
+        return 1;
+    },
+    'iiii',
+) as Pointer;
 
 /**
  * C14N (Canonical XML) modes supported by libxml2
@@ -101,54 +161,6 @@ function isNodeInSubtree(nodePtr: number, parentPtr: number, rootPtr: number): b
 }
 
 /**
- * Wrap a JavaScript isVisible callback as a C function pointer.
- * Signature: int(void* user_data, xmlNodePtr node, xmlNodePtr parent)
- * @internal
- */
-function wrapIsVisibleCallback(
-    jsCallback: XmlC14NIsVisibleCallback,
-    cascade: boolean = true,
-): Pointer {
-    // Track nodes made invisible to cascade invisibility to descendants when requested
-    const invisible = cascade ? new Set<number>() : null;
-    const wrapper = (
-        _userDataPtr: number,
-        nodePtr: number,
-        parentPtr: number,
-    ): number => {
-        if (cascade && invisible) {
-            if (parentPtr !== 0 && invisible.has(parentPtr)) {
-                invisible.add(nodePtr);
-                return 0;
-            }
-        }
-        const res = jsCallback(nodePtr, parentPtr) ? 1 : 0;
-        if (cascade && invisible && res === 0) invisible.add(nodePtr);
-        return res;
-    };
-    return addFunction(wrapper, 'iiii') as Pointer;
-}
-
-/**
- * Convert a Set<XmlNode> to an isVisible callback
- * @internal
- */
-function createNodeSetCallback(nodeSet: Set<XmlNode>): Pointer {
-    const rootPtrs = new Set(Array.from(nodeSet).map((n) => n._nodePtr));
-    const wrapper = (_userDataPtr_: number, nodePtr: number, parentPtr: number): number => {
-        // Visible if node itself is a selected root, or it lies within any selected root subtree
-        if (rootPtrs.has(nodePtr)) return 1;
-        let cur = parentPtr;
-        while (cur !== 0) {
-            if (rootPtrs.has(cur)) return 1;
-            cur = XmlTreeCommonStruct.parent(cur);
-        }
-        return 0;
-    };
-    return addFunction(wrapper, 'iiii') as Pointer;
-}
-
-/**
  * Internal implementation using xmlC14NExecute
  * @internal
  */
@@ -156,7 +168,7 @@ function canonicalizeInternal(
     handler: XmlOutputBufferHandler,
     docPtr: XmlDocPtr,
     options: C14NOptions = {},
-    wrapCascade: boolean = true,
+    cascade: boolean = true,
 ): void {
     const hasIsVisible = (opts: C14NOptions):
         opts is C14NOptions & { isVisible: XmlC14NIsVisibleCallback } => typeof (opts as any).isVisible === 'function';
@@ -171,17 +183,23 @@ function canonicalizeInternal(
 
     let outputBufferPtr: XmlOutputBufferPtr | null = null;
     let prefixArray: CStringArrayWrapper | null = null;
-    let callbackPtr: Pointer = 0 as Pointer;
+    let contextIndex: number = 0;
 
     try {
         // Create output buffer using IO callbacks
         outputBufferPtr = xmlOutputBufferCreateIO(handler);
 
-        // Convert options to callback
-        if (hasIsVisible(options)) {
-            callbackPtr = wrapIsVisibleCallback(options.isVisible, wrapCascade);
-        } else if (hasNodeSet(options)) {
-            callbackPtr = createNodeSetCallback(options.nodeSet);
+        // Build callback context based on options
+        if (hasIsVisible(options) || hasNodeSet(options)) {
+            const context: C14NCallbackContext = {
+                jsCallback: hasIsVisible(options) ? options.isVisible : null,
+                rootPtrs: hasNodeSet(options)
+                    ? new Set(Array.from(options.nodeSet).map((n) => n._nodePtr))
+                    : null,
+                cascade,
+                invisible: cascade ? new Set<number>() : null,
+            };
+            contextIndex = c14nCallbackStorage.allocate(context);
         }
 
         // Handle inclusive namespace prefixes
@@ -194,8 +212,8 @@ function canonicalizeInternal(
 
         const result = xmlC14NExecute(
             docPtr,
-            callbackPtr,
-            0, // user_data (not used in our callbacks)
+            contextIndex !== 0 ? c14nIsVisibleCallback : 0 as Pointer,
+            contextIndex, // user_data is the storage index
             mode,
             prefixArray ? prefixArray._ptr : 0,
             withComments,
@@ -212,8 +230,8 @@ function canonicalizeInternal(
         if (outputBufferPtr) {
             xmlOutputBufferClose(outputBufferPtr);
         }
-        if (callbackPtr !== 0) {
-            removeFunction(callbackPtr);
+        if (contextIndex !== 0) {
+            c14nCallbackStorage.free(contextIndex);
         }
     }
 }
@@ -241,30 +259,6 @@ export function canonicalizeDocument(
     options: C14NOptions = {},
 ): void {
     canonicalizeInternal(handler, doc._ptr, options);
-}
-
-/**
- * Canonicalize an entire XML document and return as a string.
- *
- * @param doc The XML document to canonicalize
- * @param options Canonicalization options
- * @returns The canonical XML string
- *
- * @example
- * ```typescript
- * const canonical = canonicalizeDocumentToString(doc, {
- *   mode: XmlC14NMode.XML_C14N_1_0,
- *   withComments: false
- * });
- * ```
- */
-export function canonicalizeDocumentToString(
-    doc: XmlDocument,
-    options: C14NOptions = {},
-): string {
-    const handler = new XmlStringOutputBufferHandler();
-    canonicalizeDocument(handler, doc, options);
-    return handler.result;
 }
 
 /**
@@ -304,35 +298,4 @@ export function canonicalizeSubtree(
         ...options,
         isVisible: isVisible as unknown as XmlC14NIsVisibleCallback,
     }, /* wrapCascade */ false);
-}
-
-/**
- * Canonicalize a subtree of an XML document and return as a string.
- *
- * This is a convenience helper that creates an isVisible callback to filter
- * only nodes within the specified subtree.
- *
- * @param doc The document containing the subtree
- * @param subtreeRoot The root node of the subtree to canonicalize
- * @param options Canonicalization options (cannot include isVisible or nodeSet)
- * @returns The canonical XML string for the subtree
- *
- * @example
- * ```typescript
- * const element = doc.get('//my-element');
- * const canonical = canonicalizeSubtreeToString(doc, element!, {
- *   mode: XmlC14NMode.XML_C14N_EXCLUSIVE_1_0,
- *   inclusiveNamespacePrefixes: ['ns1', 'ns2'],
- *   withComments: false
- * });
- * ```
- */
-export function canonicalizeSubtreeToString(
-    doc: XmlDocument,
-    subtreeRoot: XmlNode,
-    options: C14NOptionsBase = {},
-): string {
-    const handler = new XmlStringOutputBufferHandler();
-    canonicalizeSubtree(handler, doc, subtreeRoot, options);
-    return handler.result;
 }

@@ -1,8 +1,37 @@
 import {
-    DisposableMalloc,
-    lengthBytesUTF8, setValue, stringToUTF8, XmlInputProvider, XmlOutputBufferHandler,
+    XmlInputProvider, XmlOutputBufferHandler,
 } from './libxml2.mjs';
 import { Pointer } from './libxml2raw.mjs';
+
+/**
+ * Manage JS context object for wasm.
+ *
+ * In libxml2, a registration of callback often has a context/userdata pointer.
+ * But when it is in wasm, this pointer is essentially an integer.
+ *
+ * To support JS object as context/userdata, we store it in the map and access with an integer key.
+ * This key could be passed to the registration.
+ * And the callback use this key to retrieve the real object.
+ */
+export class ContextStorage<T> {
+    private storage: Map<number, T> = new Map<number, T>();
+
+    private index = 0;
+
+    allocate(value: T): number {
+        this.index += 1;
+        this.storage.set(this.index, value);
+        return this.index;
+    }
+
+    free(index: number) {
+        this.storage.delete(index);
+    }
+
+    get(index: number): T {
+        return this.storage.get(index)!;
+    }
+}
 
 const bufferContexts: Map<number, [Uint8Array, number]> = new Map();
 let contextIndex = 1;
@@ -113,34 +142,5 @@ export class XmlStringOutputBufferHandler implements XmlOutputBufferHandler {
 
     get result(): string {
         return this._result;
-    }
-}
-
-/**
- * Helper to create a C-style array of C strings
- */
-export class CStringArrayWrapper extends DisposableMalloc {
-    private cStrings: DisposableMalloc[] = [];
-
-    constructor(strings: string[]) {
-        // allocate pointer array (+1 for NULL terminator)
-        super((strings.length + 1) * 4);
-
-        this.cStrings = strings.map((s) => {
-            const len = lengthBytesUTF8(s) + 1;
-            const mem = new DisposableMalloc(len);
-            stringToUTF8(s, mem._ptr, len);
-            return mem;
-        });
-
-        this.cStrings.forEach(({ _ptr }, i) => {
-            setValue(this._ptr + i * 4, _ptr, 'i32');
-        });
-        setValue(this._ptr + this.cStrings.length * 4, 0, 'i32');
-    }
-
-    [Symbol.dispose](): void {
-        this.cStrings.forEach((dm) => dm.dispose());
-        super[Symbol.dispose]();
     }
 }

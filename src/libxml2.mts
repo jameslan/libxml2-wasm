@@ -14,6 +14,7 @@ import type {
     XmlXPathContextPtr,
 } from './libxml2raw.mjs';
 import moduleLoader from './libxml2raw.mjs';
+import { ContextStorage } from './utils.mjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 const libxml2 = await moduleLoader();
@@ -21,38 +22,8 @@ libxml2._xmlInitParser();
 
 // Export specific functions needed by other modules
 export const {
- getValue, setValue, UTF8ToString, lengthBytesUTF8, stringToUTF8, addFunction, removeFunction,
+ getValue, UTF8ToString, lengthBytesUTF8, stringToUTF8, addFunction,
 } = libxml2;
-
-/**
- * Manage JS context object for wasm.
- *
- * In libxml2, a registration of callback often has a context/userdata pointer.
- * But when it is in wasm, this pointer is essentially an integer.
- *
- * To support JS object as context/userdata, we store it in the map and access with an integer key.
- * This key could be passed to the registration.
- * And the callback use this key to retrieve the real object.
- */
-export class ContextStorage<T> {
-    private storage: Map<number, T> = new Map<number, T>();
-
-    private index = 0;
-
-    allocate(value: T): number {
-        this.index += 1;
-        this.storage.set(this.index, value);
-        return this.index;
-    }
-
-    free(index: number) {
-        this.storage.delete(index);
-    }
-
-    get(index: number): T {
-        return this.storage.get(index)!;
-    }
-}
 
 /**
  * The base class for exceptions in this library.
@@ -661,6 +632,41 @@ export function xmlSaveSetIndentString(
 export class DisposableMalloc extends XmlDisposable<DisposableMalloc> {
     constructor(size: number) {
         super(libxml2._malloc(size));
+    }
+}
+
+/**
+ * Helper to create a C-style NULL-terminated array of C strings.
+ *
+ * Allocates a single contiguous memory block containing:
+ * - First: the pointer array (n+1 pointers, last is NULL)
+ * - Then: the string data (all strings with null terminators)
+ *
+ * Memory layout: [ptr0][ptr1]...[ptrN][NULL][str0\0][str1\0]...[strN\0]
+ */
+export class CStringArrayWrapper extends DisposableMalloc {
+    constructor(strings: string[]) {
+        // Calculate total size needed
+        const pointerArraySize = (strings.length + 1) * 4; // +1 for NULL terminator
+        const stringSizes = strings.map((s) => libxml2.lengthBytesUTF8(s) + 1);
+        const totalStringSize = stringSizes.reduce((sum, size) => sum + size, 0);
+        const totalSize = pointerArraySize + totalStringSize;
+
+        // Allocate single block
+        super(totalSize);
+
+        // Write strings and set pointers
+        let stringOffset = this._ptr + pointerArraySize;
+        const ptrArrayBase = this._ptr / libxml2.HEAP32.BYTES_PER_ELEMENT;
+        strings.forEach((s, i) => {
+            // Set pointer to this string
+            libxml2.HEAP32[ptrArrayBase + i] = stringOffset;
+            // Write the string
+            libxml2.stringToUTF8(s, stringOffset, stringSizes[i]);
+            stringOffset += stringSizes[i];
+        });
+        // NULL terminate the pointer array
+        libxml2.HEAP32[ptrArrayBase + strings.length] = 0;
     }
 }
 

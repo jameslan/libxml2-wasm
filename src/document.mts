@@ -32,7 +32,7 @@ import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.mjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 import { XmlDtd } from './dtd.mjs';
 import { XmlStringOutputBufferHandler } from './utils.mjs';
-import { type C14NOptions, canonicalizeDocument, canonicalizeDocumentToString } from './c14n.mjs';
+import { type C14NOptions, canonicalizeDocument } from './c14n.mjs';
 
 export enum ParseOption {
     XML_PARSE_DEFAULT = 0,
@@ -513,10 +513,11 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
      *
      * @param options options to adjust the canonicalization behavior
      * @returns The canonicalized XML string
-     * @see {@link canonicalizeDocumentToString}
      * @see {@link canonicalize}
      */
     canonicalizeToString(options?: C14NOptions): string {
-        return canonicalizeDocumentToString(this, options);
+        const handler = new XmlStringOutputBufferHandler();
+        canonicalizeDocument(handler, this, options);
+        return handler.result;
     }
 }
