@@ -1,6 +1,7 @@
 import {
     addFunction,
-    CStringArrayWrapper,
+    allocCStringArray,
+    free,
     xmlC14NExecute,
     xmlOutputBufferCreateIO,
     xmlOutputBufferClose,
@@ -182,7 +183,7 @@ function canonicalizeInternal(
     }
 
     let outputBufferPtr: XmlOutputBufferPtr | null = null;
-    let prefixArray: CStringArrayWrapper | null = null;
+    let prefixArrayPtr: Pointer = 0;
     let contextIndex: number = 0;
 
     try {
@@ -204,7 +205,7 @@ function canonicalizeInternal(
 
         // Handle inclusive namespace prefixes
         if (options.inclusiveNamespacePrefixes) {
-            prefixArray = new CStringArrayWrapper(options.inclusiveNamespacePrefixes);
+            prefixArrayPtr = allocCStringArray(options.inclusiveNamespacePrefixes);
         }
 
         const mode = options.mode ?? XmlC14NMode.XML_C14N_1_0;
@@ -215,7 +216,7 @@ function canonicalizeInternal(
             contextIndex !== 0 ? c14nIsVisibleCallback : 0 as Pointer,
             contextIndex, // user_data is the storage index
             mode,
-            prefixArray ? prefixArray._ptr : 0,
+            prefixArrayPtr,
             withComments,
             outputBufferPtr,
         );
@@ -224,9 +225,7 @@ function canonicalizeInternal(
             throw new XmlError('Failed to canonicalize XML document');
         }
     } finally {
-        if (prefixArray) {
-            prefixArray.dispose();
-        }
+        if (prefixArrayPtr) free(prefixArrayPtr);
         if (outputBufferPtr) {
             xmlOutputBufferClose(outputBufferPtr);
         }

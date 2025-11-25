@@ -15,7 +15,6 @@ import type {
 } from './libxml2raw.mjs';
 import moduleLoader from './libxml2raw.mjs';
 import { ContextStorage } from './utils.mjs';
-import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 const libxml2 = await moduleLoader();
 libxml2._xmlInitParser();
@@ -626,16 +625,6 @@ export function xmlSaveSetIndentString(
 }
 
 /**
- * We probably don't want to expose malloc/free directly?
- */
-@disposeBy(libxml2._free)
-export class DisposableMalloc extends XmlDisposable<DisposableMalloc> {
-    constructor(size: number) {
-        super(libxml2._malloc(size));
-    }
-}
-
-/**
  * Helper to create a C-style NULL-terminated array of C strings.
  *
  * Allocates a single contiguous memory block containing:
@@ -643,32 +632,36 @@ export class DisposableMalloc extends XmlDisposable<DisposableMalloc> {
  * - Then: the string data (all strings with null terminators)
  *
  * Memory layout: [ptr0][ptr1]...[ptrN][NULL][str0\0][str1\0]...[strN\0]
+ *
+ * @returns The pointer to the allocated memory. Caller must free with {@link free}.
  */
-export class CStringArrayWrapper extends DisposableMalloc {
-    constructor(strings: string[]) {
-        // Calculate total size needed
-        const pointerArraySize = (strings.length + 1) * 4; // +1 for NULL terminator
-        const stringSizes = strings.map((s) => libxml2.lengthBytesUTF8(s) + 1);
-        const totalStringSize = stringSizes.reduce((sum, size) => sum + size, 0);
-        const totalSize = pointerArraySize + totalStringSize;
+export function allocCStringArray(strings: string[]): Pointer {
+    // Calculate total size needed
+    const pointerArraySize = (strings.length + 1) * 4; // +1 for NULL terminator
+    const stringSizes = strings.map((s) => libxml2.lengthBytesUTF8(s) + 1);
+    const totalStringSize = stringSizes.reduce((sum, size) => sum + size, 0);
+    const totalSize = pointerArraySize + totalStringSize;
 
-        // Allocate single block
-        super(totalSize);
+    // Allocate single block
+    const ptr = libxml2._malloc(totalSize);
 
-        // Write strings and set pointers
-        let stringOffset = this._ptr + pointerArraySize;
-        const ptrArrayBase = this._ptr / libxml2.HEAP32.BYTES_PER_ELEMENT;
-        strings.forEach((s, i) => {
-            // Set pointer to this string
-            libxml2.HEAP32[ptrArrayBase + i] = stringOffset;
-            // Write the string
-            libxml2.stringToUTF8(s, stringOffset, stringSizes[i]);
-            stringOffset += stringSizes[i];
-        });
-        // NULL terminate the pointer array
-        libxml2.HEAP32[ptrArrayBase + strings.length] = 0;
-    }
+    // Write strings and set pointers
+    let stringOffset = ptr + pointerArraySize;
+    const ptrArrayBase = ptr / libxml2.HEAP32.BYTES_PER_ELEMENT;
+    strings.forEach((s, i) => {
+        // Set pointer to this string
+        libxml2.HEAP32[ptrArrayBase + i] = stringOffset;
+        // Write the string
+        libxml2.stringToUTF8(s, stringOffset, stringSizes[i]);
+        stringOffset += stringSizes[i];
+    });
+    // NULL terminate the pointer array
+    libxml2.HEAP32[ptrArrayBase + strings.length] = 0;
+
+    return ptr;
 }
+
+export const free = libxml2._free;
 
 export const xmlAddChild = libxml2._xmlAddChild;
 export const xmlAddNextSibling = libxml2._xmlAddNextSibling;
