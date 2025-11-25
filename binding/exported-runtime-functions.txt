@@ -4,6 +4,4 @@ UTF8ToString
 addFunction
 getValue
 lengthBytesUTF8
-removeFunction
-setValue
 stringToUTF8

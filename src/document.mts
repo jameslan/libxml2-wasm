@@ -517,7 +517,7 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
      */
     canonicalizeToString(options?: C14NOptions): string {
         const handler = new XmlStringOutputBufferHandler();
-        canonicalizeDocument(handler, this, options);
+        this.canonicalize(handler, options);
         return handler.result;
     }
 }

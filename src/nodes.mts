@@ -211,7 +211,7 @@ export abstract class XmlNode {
      */
     canonicalizeToString(options?: C14NOptionsBase): string {
         const handler = new XmlStringOutputBufferHandler();
-        canonicalizeSubtree(handler, this.doc, this, options);
+        this.canonicalize(handler, options);
         return handler.result;
     }
 
