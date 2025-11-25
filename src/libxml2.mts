@@ -19,10 +19,11 @@ import { ContextStorage } from './utils.mjs';
 const libxml2 = await moduleLoader();
 libxml2._xmlInitParser();
 
-// Export specific functions needed by other modules
-export const {
- getValue, UTF8ToString, lengthBytesUTF8, stringToUTF8, addFunction,
-} = libxml2;
+/**
+ * Export runtime functions needed by other modules.
+ * @internal
+ */
+export const { addFunction } = libxml2;
 
 /**
  * The base class for exceptions in this library.

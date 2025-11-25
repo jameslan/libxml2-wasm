@@ -69,8 +69,7 @@ const c14nIsVisibleCallback = addFunction(
             }
             return res;
         }
-
-        // No callback or nodeSet - include all nodes
+        /* c8 ignore next 2, callback is not registered if neither is present */
         return 1;
     },
     'iiii',
@@ -221,6 +220,7 @@ function canonicalizeInternal(
             outputBufferPtr,
         );
 
+        /* c8 ignore next 3, defensive code */
         if (result < 0) {
             throw new XmlError('Failed to canonicalize XML document');
         }

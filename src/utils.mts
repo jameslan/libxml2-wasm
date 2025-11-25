@@ -1,6 +1,4 @@
-import {
-    XmlInputProvider, XmlOutputBufferHandler,
-} from './libxml2.mjs';
+import { XmlInputProvider, XmlOutputBufferHandler } from './libxml2.mjs';
 import { Pointer } from './libxml2raw.mjs';
 
 /**

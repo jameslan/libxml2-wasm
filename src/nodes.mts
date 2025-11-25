@@ -42,9 +42,7 @@ import {
 import type { XmlDocPtr, XmlNodePtr, XmlNsPtr } from './libxml2raw.mjs';
 import { XmlStringOutputBufferHandler } from './utils.mjs';
 import { NamespaceMap, XmlXPath } from './xpath.mjs';
-import {
-    canonicalizeSubtree, SubtreeC14NOptions,
-} from './c14n.mjs';
+import { canonicalizeSubtree, SubtreeC14NOptions } from './c14n.mjs';
 
 function compiledXPathEval(nodePtr: XmlNodePtr, xpath: XmlXPath) {
     const context = xmlXPathNewContext(XmlNodeStruct.doc(nodePtr));
