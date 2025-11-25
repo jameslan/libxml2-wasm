@@ -57,8 +57,6 @@ export {
 export {
     XmlC14NMode,
     type C14NOptions,
-    type C14NOptionsBase,
-    type C14NOptionsWithCallback,
-    type C14NOptionsWithNodeSet,
+    type SubtreeC14NOptions,
     type XmlC14NIsVisibleCallback,
 } from './c14n.mjs';

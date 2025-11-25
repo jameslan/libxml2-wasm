@@ -102,7 +102,7 @@ export type XmlC14NIsVisibleCallback = (node: XmlNodePtr, parent: XmlNodePtr) =>
 /**
  * Options for XML canonicalization
  */
-export interface C14NOptionsBase {
+export interface C14NOptions {
     /** The canonicalization mode to use
      * @default XmlC14NMode.XML_C14N_1_0
      */
@@ -117,25 +117,22 @@ export interface C14NOptionsBase {
      * Only applies when mode is XML_C14N_EXCLUSIVE_1_0
      */
     inclusiveNamespacePrefixes?: string[];
-}
 
-export interface C14NOptionsWithCallback extends C14NOptionsBase {
     /** Custom callback to determine node visibility
-     * Cannot be used together with nodeSet
+     * Must not be used together with {@link nodeSet}
      */
-    isVisible: XmlC14NIsVisibleCallback;
-    nodeSet?: never;
-}
+    isVisible?: XmlC14NIsVisibleCallback;
 
-export interface C14NOptionsWithNodeSet extends C14NOptionsBase {
     /** Set of nodes to include in canonicalization
-     * Cannot be used together with isVisible
+     * Must not be used together with {@link isVisible}
      */
-    nodeSet: Set<XmlNode>;
-    isVisible?: never;
+    nodeSet?: Set<XmlNode>;
 }
 
-export type C14NOptions = C14NOptionsWithCallback | C14NOptionsWithNodeSet | C14NOptionsBase;
+/**
+ * C14N options without filtering callbacks (for subtree canonicalization)
+ */
+export type SubtreeC14NOptions = Omit<C14NOptions, 'isVisible' | 'nodeSet'>;
 
 /**
  * Check if a node is within a subtree rooted at a specific node by walking
@@ -172,7 +169,9 @@ function canonicalizeInternal(
     cascade: boolean = true,
 ): void {
     const hasIsVisible = (opts: C14NOptions):
-        opts is C14NOptions & { isVisible: XmlC14NIsVisibleCallback } => typeof (opts as any).isVisible === 'function';
+        opts is C14NOptions & {
+            isVisible: XmlC14NIsVisibleCallback
+        } => typeof (opts as any).isVisible === 'function';
 
     const hasNodeSet = (opts: C14NOptions):
         opts is C14NOptions & { nodeSet: Set<XmlNode> } => (opts as any).nodeSet instanceof Set;
@@ -195,7 +194,8 @@ function canonicalizeInternal(
             const context: C14NCallbackContext = {
                 jsCallback: hasIsVisible(options) ? options.isVisible : null,
                 rootPtrs: hasNodeSet(options)
-                    ? new Set(Array.from(options.nodeSet).map((n) => n._nodePtr))
+                    ? new Set(Array.from(options.nodeSet)
+                        .map((n) => n._nodePtr))
                     : null,
                 cascade,
                 invisible: cascade ? new Set<number>() : null,
@@ -286,7 +286,7 @@ export function canonicalizeSubtree(
     handler: XmlOutputBufferHandler,
     doc: XmlDocument,
     subtreeRoot: XmlNode,
-    options: C14NOptionsBase = {},
+    options: SubtreeC14NOptions = {},
 ): void {
     const subtreeRootPtr = subtreeRoot._nodePtr;
     const isVisible = (nodePtr: number, parentPtr: number) => (
