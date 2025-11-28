@@ -7,6 +7,7 @@ import type {
     XmlErrorPtr,
     XmlNodePtr,
     XmlNsPtr,
+    XmlOutputBufferPtr,
     XmlParserCtxtPtr,
     XmlSaveCtxtPtr,
     XmlXPathCompExprPtr,
@@ -17,6 +18,12 @@ import { ContextStorage } from './utils.mjs';
 
 const libxml2 = await moduleLoader();
 libxml2._xmlInitParser();
+
+/**
+ * Export runtime functions needed by other modules.
+ * @internal
+ */
+export const { addFunction } = libxml2;
 
 /**
  * The base class for exceptions in this library.
@@ -618,6 +625,45 @@ export function xmlSaveSetIndentString(
     return withStringUTF8(indent, (buf) => libxml2._xmlSaveSetIndentString(ctxt, buf));
 }
 
+/**
+ * Helper to create a C-style NULL-terminated array of C strings.
+ *
+ * Allocates a single contiguous memory block containing:
+ * - First: the pointer array (n+1 pointers, last is NULL)
+ * - Then: the string data (all strings with null terminators)
+ *
+ * Memory layout: [ptr0][ptr1]...[ptrN][NULL][str0\0][str1\0]...[strN\0]
+ *
+ * @returns The pointer to the allocated memory. Caller must free with {@link free}.
+ */
+export function allocCStringArray(strings: string[]): Pointer {
+    // Calculate total size needed
+    const pointerArraySize = (strings.length + 1) * 4; // +1 for NULL terminator
+    const stringSizes = strings.map((s) => libxml2.lengthBytesUTF8(s) + 1);
+    const totalStringSize = stringSizes.reduce((sum, size) => sum + size, 0);
+    const totalSize = pointerArraySize + totalStringSize;
+
+    // Allocate single block
+    const ptr = libxml2._malloc(totalSize);
+
+    // Write strings and set pointers
+    let stringOffset = ptr + pointerArraySize;
+    const ptrArrayBase = ptr / libxml2.HEAP32.BYTES_PER_ELEMENT;
+    strings.forEach((s, i) => {
+        // Set pointer to this string
+        libxml2.HEAP32[ptrArrayBase + i] = stringOffset;
+        // Write the string
+        libxml2.stringToUTF8(s, stringOffset, stringSizes[i]);
+        stringOffset += stringSizes[i];
+    });
+    // NULL terminate the pointer array
+    libxml2.HEAP32[ptrArrayBase + strings.length] = 0;
+
+    return ptr;
+}
+
+export const free = libxml2._free;
+
 export const xmlAddChild = libxml2._xmlAddChild;
 export const xmlAddNextSibling = libxml2._xmlAddNextSibling;
 export const xmlAddPrevSibling = libxml2._xmlAddPrevSibling;
@@ -669,3 +715,17 @@ export const xmlXPathFreeContext = libxml2._xmlXPathFreeContext;
 export const xmlXPathFreeObject = libxml2._xmlXPathFreeObject;
 export const xmlXPathNewContext = libxml2._xmlXPathNewContext;
 export const xmlXPathSetContextNode = libxml2._xmlXPathSetContextNode;
+
+/**
+ * Create an output buffer using I/O callbacks (same pattern as xmlSaveToIO)
+ * @internal
+ */
+export function xmlOutputBufferCreateIO(
+    handler: XmlOutputBufferHandler,
+): XmlOutputBufferPtr {
+    const index = outputHandlerStorage.allocate(handler); // will be freed in outputClose
+    return libxml2._xmlOutputBufferCreateIO(outputWrite, outputClose, index, 0);
+}
+
+export const xmlOutputBufferClose = libxml2._xmlOutputBufferClose;
+export const xmlC14NExecute = libxml2._xmlC14NExecute;

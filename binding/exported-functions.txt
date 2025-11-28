@@ -3,6 +3,7 @@ _malloc
 _xmlAddChild
 _xmlAddNextSibling
 _xmlAddPrevSibling
+_xmlC14NExecute
 _xmlCleanupInputCallbacks
 _xmlCtxtParseDtd
 _xmlCtxtReadMemory
@@ -31,6 +32,8 @@ _xmlNewParserCtxt
 _xmlNewReference
 _xmlNodeGetContent
 _xmlNodeSetContentLen
+_xmlOutputBufferClose
+_xmlOutputBufferCreateIO
 _xmlRegisterInputCallbacks
 _xmlRelaxNGFree
 _xmlRelaxNGFreeParserCtxt

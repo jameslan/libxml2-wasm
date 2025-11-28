@@ -26,6 +26,7 @@ type XmlXIncludeCtxtPtr = Pointer;
 type XmlXPathCompExprPtr = Pointer;
 type XmlXPathContextPtr = Pointer;
 type XmlXPathObjectPtr = Pointer;
+type XmlOutputBufferPtr = Pointer;
 
 export class LibXml2 {
     HEAP32: Int32Array;
@@ -160,6 +161,22 @@ export class LibXml2 {
     _xmlSchemaValidateDoc(ctx: XmlSchemaValidCtxtPtr, doc: XmlDocPtr): number;
     _xmlSchemaValidateOneElement(ctx: XmlSchemaValidCtxtPtr, elem: XmlNodePtr): number;
     _xmlUnlinkNode(cur: XmlNodePtr): void;
+    _xmlC14NExecute(
+        doc: XmlDocPtr,
+        is_visible_callback: Pointer,
+        user_data: Pointer,
+        mode: number,
+        inclusive_ns_prefixes: Pointer,
+        with_comments: number,
+        buf: Pointer,
+    ): number;
+    _xmlOutputBufferCreateIO(
+        iowrite: Pointer,
+        ioclose: Pointer,
+        ioctx: Pointer,
+        encoder: Pointer,
+    ): XmlOutputBufferPtr;
+    _xmlOutputBufferClose(out: XmlOutputBufferPtr): number;
     // runtime functions
     UTF8ToString(ptr: CString, maxBytesToRead?: number): string;
     addFunction(func: Function, sig: string): Pointer;
