@@ -1,6 +1,15 @@
 import { assert, expect } from 'chai';
 import {
-    XmlDocument, diag, XmlC14NMode, XmlStringOutputBufferHandler,
+    diag,
+    XmlDocument,
+    XmlC14NMode,
+    XmlStringOutputBufferHandler,
+    XmlElement,
+    XmlText,
+    XmlComment,
+    XmlCData,
+    XmlAttribute,
+    XmlEntityReference,
 } from '@libxml2-wasm/lib/index.mjs';
 import { XmlTreeCommonStruct } from '@libxml2-wasm/lib/libxml2.mjs';
 
@@ -101,9 +110,7 @@ describe('C14N (XML Canonicalization)', () => {
             const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child><sibling>other</sibling></root>';
             usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
                 const node = doc.get('//ns1:child', { ns1: 'uri:ns1' });
-
-                expect(node).to.not.be.null;
-                assert(node != null);
+                assert(node instanceof XmlElement);
 
                 const canonical = node.canonicalizeToString({
                     mode: XmlC14NMode.XML_C14N_EXCLUSIVE_1_0,
@@ -119,8 +126,7 @@ describe('C14N (XML Canonicalization)', () => {
             usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
                 const inclusiveNamespaces = ['ns3'];
                 const node = doc.get('//ns1:child', { ns1: 'uri:ns1' });
-                expect(node).to.not.be.null;
-                assert(node != null);
+                assert(node instanceof XmlElement);
 
                 const canonical = node.canonicalizeToString({
                     mode: XmlC14NMode.XML_C14N_EXCLUSIVE_1_0,
@@ -252,8 +258,7 @@ describe('C14N (XML Canonicalization)', () => {
             const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child><sibling>other</sibling></root>';
             usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
                 const node = doc.get('//ns1:child', { ns1: 'uri:ns1' });
-                expect(node).to.not.be.null;
-                assert(node != null);
+                assert(node instanceof XmlElement);
 
                 const canonical = node.canonicalizeToString({
                     mode: XmlC14NMode.XML_C14N_EXCLUSIVE_1_0,
@@ -268,8 +273,7 @@ describe('C14N (XML Canonicalization)', () => {
             const xmlString = '<root><child attr="value">text</child></root>';
             usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
                 const node = doc.get('//child');
-                expect(node).to.not.be.null;
-                assert(node != null);
+                assert(node instanceof XmlElement);
 
                 const canonical = node.canonicalizeToString();
 
@@ -282,8 +286,7 @@ describe('C14N (XML Canonicalization)', () => {
             const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused" xmlns:ns3="uri:alsonotused"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child></root>';
             usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
                 const node = doc.get('//ns1:child', { ns1: 'uri:ns1' });
-                expect(node).to.not.be.null;
-                assert(node != null);
+                assert(node instanceof XmlElement);
 
                 const canonical = node.canonicalizeToString({
                     mode: XmlC14NMode.XML_C14N_EXCLUSIVE_1_0,
@@ -299,8 +302,7 @@ describe('C14N (XML Canonicalization)', () => {
             const xmlString = '<root><child><!-- comment -->text</child></root>';
             usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
                 const node = doc.get('//child');
-                expect(node).to.not.be.null;
-                assert(node != null);
+                assert(node instanceof XmlElement);
 
                 const canonical = node.canonicalizeToString({ withComments: true });
 
@@ -313,8 +315,7 @@ describe('C14N (XML Canonicalization)', () => {
             const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child><sibling>other</sibling></root>';
             usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
                 const node = doc.get('//ns1:child', { ns1: 'uri:ns1' });
-                expect(node).to.not.be.null;
-                assert(node != null);
+                assert(node instanceof XmlElement);
 
                 const handler = new XmlStringOutputBufferHandler();
                 node.canonicalize(handler, {
@@ -323,6 +324,82 @@ describe('C14N (XML Canonicalization)', () => {
 
                 expect(handler.result).to.be.a('string');
                 expect(handler.result).to.equal('<ns1:child xmlns:ns1="uri:ns1" attr="value"><childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child>');
+            });
+        });
+    });
+
+    describe('canonicalize on different node types', () => {
+        it('should canonicalize XmlText node', () => {
+            const xmlString = '<root><child>Left &amp; Right</child></root>';
+            usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
+                const textNode = doc.get('//child/text()');
+                assert(textNode instanceof XmlText);
+
+                const canonical = textNode.canonicalizeToString();
+                expect(canonical).to.be.a('string');
+                // Text node canonicalization includes the text content
+                expect(canonical).to.equal('Left &amp; Right');
+            });
+        });
+
+        it('should canonicalize XmlComment', () => {
+            const xmlString = '<root><child><!--comment-->text</child></root>';
+
+            usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
+                const commentNode = doc.get('//child/comment()');
+                assert(commentNode instanceof XmlComment);
+
+                // 1. Default Canonicalization (Comments are excluded)
+                const canonical = commentNode.canonicalizeToString();
+                expect(canonical).to.equal('');
+
+                // 2. Canonicalization with Comments
+                const canonicalWithComments = commentNode.canonicalizeToString({
+                    withComments: true,
+                });
+                // libxml2 canonicalizes comments with a trailing newline
+                expect(canonicalWithComments).to.equal('<!--comment-->\n');
+            });
+        });
+
+        it('should canonicalize XmlCData', () => {
+            const xmlString = '<root><child><![CDATA[cdata content]]>text</child></root>';
+
+            usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
+                const cdataNode = doc.get('//child/text()');
+                assert(cdataNode instanceof XmlCData);
+
+                const canonical = cdataNode.canonicalizeToString();
+                expect(canonical).to.be.a('string');
+
+                // C14N strips the <![CDATA[ ]]> wrapper and treats it as raw text
+                expect(canonical).to.equal('cdata content');
+            });
+        });
+
+        it('should canonicalize XmlAttribute', () => {
+            const xmlString = '<root><child attr1="value1" attr2="value2">text</child></root>';
+
+            usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
+                const attr = doc.get('//child/@attr1');
+                assert(attr instanceof XmlAttribute);
+
+                const canonical = attr.canonicalizeToString();
+                expect(canonical).to.be.a('string');
+
+                // libxml2 canonicalizes attributes with leading space
+                expect(canonical).to.equal(' attr1="value1"');
+            });
+        });
+
+        it('should throw error when canonicalizing XmlEntityReference', () => {
+            const xmlString = '<!DOCTYPE root [ <!ENTITY myent "content"> ]><root>&myent;</root>';
+
+            usingXmlDocument(XmlDocument.fromString(xmlString), (doc) => {
+                const entityRef = doc.root.firstChild;
+                assert(entityRef instanceof XmlEntityReference);
+
+                expect(() => entityRef.canonicalizeToString()).to.throw('Failed to canonicalize XML document');
             });
         });
     });
