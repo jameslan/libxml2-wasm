@@ -399,6 +399,10 @@ describe('C14N (XML Canonicalization)', () => {
                 const entityRef = doc.root.firstChild;
                 assert(entityRef instanceof XmlEntityReference);
 
+                /**
+                 * C14N states that all entity references must be expanded. Therefore, the concept
+                 * of canonicalizing an Entity Reference node as a distinct object is paradoxical
+                 */
                 expect(() => entityRef.canonicalizeToString()).to.throw('Failed to canonicalize XML document');
             });
         });
