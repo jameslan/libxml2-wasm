@@ -229,7 +229,7 @@ function parse<Input>(
         ctxt,
         source,
         url,
-        null,
+        options.encoding ?? null,
         xmlOptions,
     );
     try {
@@ -281,12 +281,21 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
 
     /**
      * Parse and create an {@link XmlDocument} from an XML string.
+     *
+     * Note: Only UTF-8 encoding is supported for string input.
+     * For other encodings, use {@link fromBuffer} instead.
+     *
      * @param source The XML string
+     * @param options Parsing options
+     * @throws Error when encoding is not 'utf-8'
      */
     static fromString(
         source: string,
         options: ParseOptions = {},
     ): XmlDocument {
+        if (options.encoding && options.encoding !== 'utf-8') {
+            throw new XmlError('Non-UTF-8 encoding is not supported for string input, use fromBuffer instead');
+        }
         return parse(xmlReadString, source, options.url ?? null, options);
     }
 
@@ -304,13 +313,22 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
 
     /**
      * Save the XmlDocument to a string
+     *
+     * By default, it outputs utf-8 encoded bytes,
+     * while `ascii` is another allowed option for `options.encoding`,
+     * which converts non-ascii characters into numeric character references.
+     *
      * @param options options to adjust the saving behavior
      * @see {@link save}
      * @see {@link XmlElement#toString}
      */
     toString(options?: SaveOptions): string {
+        const saveOptions = options ?? { format: true };
+        if (saveOptions.encoding && saveOptions.encoding !== 'utf-8' && saveOptions.encoding !== 'ascii') {
+            throw new XmlError('Only utf-8 or ascii is supported in toString(). For other encodings, use save().');
+        }
         const handler = new XmlStringOutputBufferHandler();
-        this.save(handler, options);
+        this.save(handler, { encoding: 'utf-8', ...saveOptions });
 
         return handler.result;
     }
@@ -327,13 +345,15 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
     /**
      * Save the XmlDocument to a buffer and invoke the callbacks to process.
      *
+     * By default, it outputs with original encoding.
+     *
      * @param handler handlers to process the content in the buffer
      * @param options options to adjust the saving behavior
      * @see {@link toString}
      * @see {@link XmlElement#save}
      */
     save(handler: XmlOutputBufferHandler, options?: SaveOptions) {
-        const ctxt = xmlSaveToIO(handler, null, xmlSaveOption(options));
+        const ctxt = xmlSaveToIO(handler, options?.encoding ?? null, xmlSaveOption(options));
         if (options?.indentString) {
             if (xmlSaveSetIndentString(ctxt, options.indentString) < 0) {
                 throw new XmlError('Failed to set indent string');

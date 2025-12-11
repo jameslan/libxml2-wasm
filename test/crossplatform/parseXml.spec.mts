@@ -5,6 +5,7 @@ import {
     xmlCleanupInputProvider,
     XmlDocument,
     XmlElement,
+    XmlError,
     XmlParseError,
     xmlRegisterInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
@@ -59,6 +60,13 @@ describe('parseXmlString', () => {
         expect(doc.root.content).to.equal('3>2');
         doc.dispose();
     });
+
+    it('allows utf8 only', () => {
+        expect(() => XmlDocument.fromString('<doc/>', { encoding: 'iso8859-1' })).to.throw(
+            XmlError,
+            'Non-UTF-8 encoding is not supported for string input, use fromBuffer instead',
+        );
+    });
 });
 
 describe('parseXmlBuffer', () => {
@@ -112,13 +120,12 @@ describe('parseXmlBuffer', () => {
     });
 
     it('should support parse option', () => {
-        const doc = XmlDocument.fromBuffer(
+        using doc = XmlDocument.fromBuffer(
             new TextEncoder().encode('<doc><![CDATA[3>2]]></doc>'),
             { option: ParseOption.XML_PARSE_NOCDATA },
         );
         expect(doc.root.firstChild).to.not.be.instanceOf(XmlCData);
         expect(doc.root.content).to.equal('3>2');
-        doc.dispose();
     });
 });
 

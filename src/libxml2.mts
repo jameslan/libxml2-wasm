@@ -131,8 +131,9 @@ export function xmlReadString(
     return withStringUTF8(
         xmlString,
         (xmlBuf, len) => withStrings(
-            (urlBuf) => libxml2._xmlCtxtReadMemory(ctxt, xmlBuf, len, urlBuf, 0, options),
+            (urlBuf, enc) => libxml2._xmlCtxtReadMemory(ctxt, xmlBuf, len, urlBuf, enc, options),
             url,
+            encoding,
         ),
     );
 }
@@ -147,8 +148,9 @@ export function xmlReadMemory(
     return withCString(
         xmlBuffer,
         (xmlBuf, len) => withStrings(
-            (urlBuf) => libxml2._xmlCtxtReadMemory(ctxt, xmlBuf, len, urlBuf, 0, options),
+            (urlBuf, enc) => libxml2._xmlCtxtReadMemory(ctxt, xmlBuf, len, urlBuf, enc, options),
             url,
+            encoding,
         ),
     );
 }
@@ -518,6 +520,12 @@ export interface SaveOptions {
      * @default Two spaces: "  "
      */
     indentString?: string;
+    /**
+     * The encoding to use for the output.
+     *
+     * @default The original encoding of the document or utf-8
+     */
+    encoding?: string;
 }
 
 export function xmlSaveOption(options?: SaveOptions): number {
@@ -580,8 +588,10 @@ export function xmlSaveToIO(
     format: number,
 ): XmlSaveCtxtPtr {
     const index = outputHandlerStorage.allocate(handler); // will be freed in outputClose
-    // Support only UTF-8 as of now
-    return libxml2._xmlSaveToIO(outputWrite, outputClose, index, 0, format);
+    return withStringUTF8(
+        encoding,
+        (encBuf) => libxml2._xmlSaveToIO(outputWrite, outputClose, index, encBuf, format),
+    );
 }
 
 enum XmlParserInputFlags {

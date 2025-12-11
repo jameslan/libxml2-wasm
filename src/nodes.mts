@@ -801,13 +801,15 @@ export class XmlElement extends XmlTreeNode {
     /**
      * Save the XmlElement to a buffer and invoke the callbacks to process.
      *
+     * By default, it outputs utf-8 encoded bytes. Use `options.encoding` to change it.
+     *
      * @param handler handlers to process the content in the buffer
      * @param options options to adjust the saving behavior
      * @see {@link toString}
      * @see {@link XmlDocument#save}
      */
     save(handler: XmlOutputBufferHandler, options?: SaveOptions) {
-        const ctxt = xmlSaveToIO(handler, null, xmlSaveOption(options));
+        const ctxt = xmlSaveToIO(handler, options?.encoding ?? 'utf-8', xmlSaveOption(options));
         if (options?.indentString) {
             if (xmlSaveSetIndentString(ctxt, options.indentString) < 0) {
                 throw new XmlError('Failed to set indent string');
@@ -819,13 +821,22 @@ export class XmlElement extends XmlTreeNode {
 
     /**
      * Save the XmlElement to a string
+     *
+     * By default, it outputs utf-8 encoded bytes,
+     * while `ascii` is another allowed option for `options.encoding`,
+     * which converts non-ascii characters into numeric character references.
+     *
      * @param options options to adjust the saving behavior
      * @see {@link save}
      * @see {@link XmlDocument#toString}
      */
     toString(options?: SaveOptions): string {
+        const saveOptions = options ?? { format: true };
+        if (saveOptions.encoding && saveOptions.encoding !== 'utf-8' && saveOptions.encoding !== 'ascii') {
+            throw new XmlError('Only utf-8 or ascii is supported in toString(). For other encodings, use save().');
+        }
         const handler = new XmlStringOutputBufferHandler();
-        this.save(handler, options);
+        this.save(handler, saveOptions);
 
         return handler.result;
     }
