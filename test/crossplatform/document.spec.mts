@@ -57,7 +57,7 @@ describe('XmlDocument', () => {
             const newDoc = XmlDocument.create();
             newDoc.createRoot('docs');
             expect(newDoc.toString()).to.equal(`\
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <docs/>
 `);
         });
@@ -66,7 +66,7 @@ describe('XmlDocument', () => {
             const newDoc = XmlDocument.create();
             newDoc.createRoot('docs', 'http://example.com');
             expect(newDoc.toString()).to.equal(`\
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <docs xmlns="http://example.com"/>
 `);
         });
@@ -75,7 +75,7 @@ describe('XmlDocument', () => {
             const newDoc = XmlDocument.create();
             newDoc.createRoot('docs', 'http://example.com', 'ex');
             expect(newDoc.toString()).to.equal(`\
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <ex:docs xmlns:ex="http://example.com"/>
 `);
         });
@@ -103,9 +103,18 @@ describe('XmlDocument', () => {
     });
 
     describe('toString', () => {
+        it('allows utf-8 or ascii', () => {
+            expect(() => doc.toString({ encoding: 'utf-8' })).to.not.throw();
+            expect(() => doc.toString({ encoding: 'ascii' })).to.not.throw();
+            expect(() => doc.toString({ encoding: 'iso8859-1' })).to.throw(
+                XmlError,
+                'Only utf-8 or ascii is supported in toString(). For other encodings, use save().',
+            );
+        });
+
         it('formats output by default', () => {
             expect(doc.toString()).to.equal(`\
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <docs>
   <doc/>
 </docs>
@@ -114,14 +123,14 @@ describe('XmlDocument', () => {
 
         it('not format when required', () => {
             expect(doc.toString({ format: false })).to.equal(`\
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <docs><doc/></docs>
 `);
         });
 
         it('can set indent string', () => {
             expect(doc.toString({ format: true, indentString: '    ' })).to.equal(`\
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <docs>
     <doc/>
 </docs>
@@ -138,7 +147,7 @@ describe('XmlDocument', () => {
 
         it('can avoid empty tags', () => {
             expect(doc.toString({ format: true, noEmptyTags: true })).to.equal(`\
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 <docs>
   <doc></doc>
 </docs>
@@ -164,6 +173,12 @@ describe('XmlDocument', () => {
             const text = d.toString();
             expect(text).to.contain('Jan Sedloň');
         });
+
+        it('generates numeric character references', () => {
+            using d = XmlDocument.fromString('<root><name>Jan Sedloň</name></root>');
+            const text = d.toString({ encoding: 'ascii' });
+            expect(text).to.contain('Jan Sedlo&#328;');
+        });
     });
 
     describe('processXInclude', () => {
@@ -173,7 +188,7 @@ describe('XmlDocument', () => {
 
         it('does nothing w/o XInclude nodes', () => {
             expect(doc.processXInclude()).to.equal(0);
-            expect(doc.toString({ format: false })).to.equal('<?xml version="1.0"?>\n<docs><doc/></docs>\n');
+            expect(doc.toString({ format: false })).to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><doc/></docs>\n');
         });
 
         it('processes XInclude nodes', () => {
