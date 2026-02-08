@@ -64,6 +64,7 @@ _xmlSchemaValidateOneElement
 _xmlSearchNs
 _xmlSetNs
 _xmlSetNsProp
+_xmlSetWinPathEnabled
 _xmlUnlinkNode
 _xmlXIncludeFreeContext
 _xmlXIncludeNewContext

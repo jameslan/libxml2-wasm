@@ -177,3 +177,33 @@ describe('Initialization', () => {
         execSync(`"${process.execPath}" test/testfiles/initialization🚀.test.js`);
     });
 });
+
+describe('Path handling', () => {
+    before(() => {
+        expect(xmlRegisterFsInputProviders()).to.be.true;
+    });
+
+    after(() => {
+        xmlCleanupInputProvider();
+    });
+
+    if (process.platform === 'win32') {
+        it('handles backslash on Windows', () => {
+            using doc = XmlDocument.fromString(
+                '<book><title>Dune</title><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="author.xml" /></book>',
+                { url: 'test\\testfiles\\book.xml', option: ParseOption.XML_PARSE_XINCLUDE },
+            );
+            expect(doc.get('/book/author/first-name')?.content).to.equal('Frank');
+        });
+    } else {
+        it('keeps backslash on non-Windows', () => {
+            // backslash is part of the filename, not path separator,
+            // so the include xml should be test/testfiles/author.xml
+            using doc = XmlDocument.fromString(
+                '<book><title>Dune</title><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="author.xml" /></book>',
+                { url: 'test/testfiles/book\\test.xml', option: ParseOption.XML_PARSE_XINCLUDE },
+            );
+            expect(doc.get('/book/author/first-name')?.content).to.equal('Frank');
+        });
+    }
+});
