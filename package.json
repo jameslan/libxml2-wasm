@@ -10,7 +10,7 @@
         "compile": "cd out && emmake make -j4",
         "config": "cd out && emconfigure ../libxml2/autogen.sh --with-winpath --without-sax1 --without-modules --without-html --without-threads --without-catalog --without-debug --disable-shared --enable-static CFLAGS='-O2'",
         "cov": "c8 npm run unit",
-        "dist": "cp out/libxml2raw.* src/libxml2raw.* lib",
+        "dist": "cp src/libxml2raw.* lib && sed 's/import\\((\"\\(node:\\)\\{0,1\\}module\")\\)/((m)=>import(m))\\1/' out/libxml2raw.mjs > lib/libxml2raw.mjs # see issue #140",
         "doc": "typedoc",
         "docwatch": "typedoc --watch",
         "init": "mkdir -p out && mkdir -p lib",
