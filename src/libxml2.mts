@@ -17,6 +17,12 @@ import moduleLoader from './libxml2raw.mjs';
 import { ContextStorage } from './utils.mjs';
 
 const libxml2 = await moduleLoader();
+/* c8 ignore next 2, the branch will be hit only on Windows */
+if (typeof process !== 'undefined' && process.platform === 'win32') {
+    libxml2._xmlSetWinPathEnabled(1);
+} else {
+    libxml2._xmlSetWinPathEnabled(0);
+}
 libxml2._xmlInitParser();
 
 /**

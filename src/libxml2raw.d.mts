@@ -160,6 +160,7 @@ export class LibXml2 {
     ): void;
     _xmlSchemaValidateDoc(ctx: XmlSchemaValidCtxtPtr, doc: XmlDocPtr): number;
     _xmlSchemaValidateOneElement(ctx: XmlSchemaValidCtxtPtr, elem: XmlNodePtr): number;
+    _xmlSetWinPathEnabled(enabled: number): void;
     _xmlUnlinkNode(cur: XmlNodePtr): void;
     _xmlC14NExecute(
         doc: XmlDocPtr,
