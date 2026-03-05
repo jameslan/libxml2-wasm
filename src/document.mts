@@ -521,7 +521,6 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
      *
      * @param handler handlers to process the content in the buffer
      * @param options options to adjust the canonicalization behavior
-     * @see {@link canonicalizeDocument}
      * @see {@link canonicalizeToString}
      */
     canonicalize(handler: XmlOutputBufferHandler, options?: C14NOptions): void {

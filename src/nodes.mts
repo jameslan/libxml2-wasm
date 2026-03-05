@@ -193,7 +193,6 @@ export abstract class XmlNode {
      *
      * @param handler handlers to process the content in the buffer
      * @param options options to adjust the canonicalization behavior
-     * @see {@link canonicalizeSubtree}
      * @see {@link canonicalizeToString}
      */
     canonicalize(handler: XmlOutputBufferHandler, options?: SubtreeC14NOptions): void {
