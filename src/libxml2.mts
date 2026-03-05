@@ -85,6 +85,31 @@ function allocUTF8Buffer(str: string | null) {
     return [buf, len];
 }
 
+class PointerRef<T extends Pointer> {
+  ptr: Pointer;
+
+  constructor(ptr: Pointer) {
+    this.ptr = ptr;
+  }
+
+  dereference(): T {
+    return libxml2.getValue(this.ptr, '*') as T;
+  }
+}
+
+// TODO: find out actual pointer size
+const POINTER_SIZE = 8;
+
+export function withPointerRef<T extends Pointer, R>(process: (pointerRef: PointerRef<T>) => R): R {
+  const buf = libxml2._malloc(POINTER_SIZE);
+
+  try {
+    return process(new PointerRef<T>(buf));
+  } finally {
+    libxml2._free(buf);
+  }
+}
+
 function withStrings<R>(process: (...buf: number[]) => R, ...strings: (string | null)[]): R {
     const args = strings.map((str) => {
         const [buf] = allocUTF8Buffer(str);
@@ -731,6 +756,7 @@ export const xmlXPathFreeContext = libxml2._xmlXPathFreeContext;
 export const xmlXPathFreeObject = libxml2._xmlXPathFreeObject;
 export const xmlXPathNewContext = libxml2._xmlXPathNewContext;
 export const xmlXPathSetContextNode = libxml2._xmlXPathSetContextNode;
+export const xmlDOMWrapCloneNode = libxml2._xmlDOMWrapCloneNode;
 
 /**
  * Create an output buffer using I/O callbacks (same pattern as xmlSaveToIO)

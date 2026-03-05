@@ -2,6 +2,7 @@ type Pointer = number;
 type CString = Pointer;
 type XmlAttrPtr = Pointer;
 type XmlCharEncodingHandlerPtr = Pointer;
+type XMLDomWrapCtxtPtr = Pointer;
 type XmlParserCtxtPtr = Pointer;
 type XmlParserInputBufferPtr = Pointer;
 type XmlDocPtr = Pointer;
@@ -62,6 +63,16 @@ export class LibXml2 {
     _xmlCtxtValidateDtd(ctxt: XmlParserCtxtPtr, doc: XmlDocPtr, dtd: XmlDtdPtr): number;
     _xmlFreeNode(node: XmlNodePtr): void;
     _xmlFreeParserCtxt(ctxt: XmlParserCtxtPtr): void;
+    _xmlDOMWrapCloneNode(
+      ctxt: XMLDomWrapCtxtPtr,
+      sourceDoc: XmlDocPtr,
+      node: XmlNodePtr,
+      resNode: Pointer,
+      destDoc: XmlDocPtr,
+      destParent: XmlDocPtr,
+      deep: number,
+      options: number,
+    ): number;
     _xmlDocGetRootElement(doc: XmlDocPtr): XmlNodePtr;
     _xmlDocSetRootElement(doc: XmlDocPtr, root: XmlNodePtr): XmlNodePtr;
     _xmlFreeDoc(Doc: XmlDocPtr): void;
