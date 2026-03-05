@@ -35,8 +35,10 @@ jobs:
           tag: v${{ inputs.version }}
           artifacts: ./artifact/*
           commit: ${{ github.sha }}
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20.x
+          node-version: 24.x
           registry-url: https://registry.npmjs.org
+      - name: Clear auth token for OIDC # see https://github.com/actions/setup-node/issues/1440
+        run: echo "NODE_AUTH_TOKEN=" >> $GITHUB_ENV
       - run: npm publish ./artifact/libxml2-wasm-*.tgz
