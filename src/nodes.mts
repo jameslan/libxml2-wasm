@@ -89,7 +89,8 @@ export function forNodeType<T extends XmlNode>(nodeType: XmlNodeStruct.Type) {
     };
 }
 
-function createNode(nodePtr: XmlNodePtr): XmlNode {
+/** @internal */
+export function createNode(nodePtr: XmlNodePtr): XmlNode {
     const nodeType = XmlNodeStruct.type(nodePtr);
 
     const Constructor = nodeConstructors.get(nodeType);
@@ -101,7 +102,8 @@ function createNode(nodePtr: XmlNodePtr): XmlNode {
     return new Constructor(nodePtr);
 }
 
-function createNullableNode(nodePtr: XmlNodePtr): XmlNode | null {
+/** @internal */
+export function createNullableNode(nodePtr: XmlNodePtr): XmlNode | null {
     return nodePtr ? createNode(nodePtr) : null;
 }
 
@@ -342,6 +344,37 @@ export abstract class XmlNode {
             xmlXPathFreeObject(xpathObj);
         }
     }
+}
+
+/**
+ *
+ */
+@forNodeType(XmlNodeStruct.Type.XML_DOCUMENT_NODE)
+export class XmlDocumentNode extends XmlNode {
+}
+
+@forNodeType(XmlNodeStruct.Type.XML_DTD_NODE)
+export class XmlDocumentTypeNode extends XmlNode {
+}
+
+@forNodeType(XmlNodeStruct.Type.XML_ELEMENT_DECL)
+export class XmlElementDeclNode extends XmlNode {
+}
+
+@forNodeType(XmlNodeStruct.Type.XML_ATTRIBUTE_DECL)
+export class XmlAttributeDeclNode extends XmlNode {
+}
+
+@forNodeType(XmlNodeStruct.Type.XML_ENTITY_DECL)
+export class XmlEntityDeclNode extends XmlNode {
+}
+
+@forNodeType(XmlNodeStruct.Type.XML_NAMESPACE_DECL)
+export class XmlNamespaceDeclNode extends XmlNode {
+}
+
+@forNodeType(XmlNodeStruct.Type.XML_PI_NODE)
+export class XmlProcessingInstructionNode extends XmlNode {
 }
 
 /**

@@ -9,9 +9,9 @@ import {
     XmlOutputBufferHandler,
     XmlTreeCommonStruct,
 } from './libxml2.mjs';
-import type { XmlNode } from './nodes.mjs';
+import { type XmlNode, createNode, createNullableNode } from './nodes.mjs';
 import type {
-    XmlDocPtr, XmlOutputBufferPtr, Pointer, XmlNodePtr,
+    XmlDocPtr, XmlOutputBufferPtr, Pointer,
 } from './libxml2raw.mjs';
 import type { XmlDocument } from './document.mjs';
 import { ContextStorage } from './utils.mjs';
@@ -63,7 +63,7 @@ const c14nIsVisibleCallback = addFunction(
                     return 0;
                 }
             }
-            const res = ctx.jsCallback(nodePtr, parentPtr) ? 1 : 0;
+            const res = ctx.jsCallback(createNode(nodePtr), createNullableNode(parentPtr)) ? 1 : 0;
             if (ctx.cascade && ctx.invisible && res === 0) {
                 ctx.invisible.add(nodePtr);
             }
@@ -96,7 +96,7 @@ export const XmlC14NMode = {
  * @param parent The parent of the node being evaluated
  * @returns true if the node should be included, false otherwise
  */
-export type XmlC14NIsVisibleCallback = (node: XmlNodePtr, parent: XmlNodePtr) => boolean;
+export type XmlC14NIsVisibleCallback = (node: XmlNode, parent: XmlNode | null) => boolean;
 
 /**
  * Options for XML canonicalization
@@ -289,12 +289,12 @@ export function canonicalizeSubtree(
     options: SubtreeC14NOptions = {},
 ): void {
     const subtreeRootPtr = subtreeRoot._nodePtr;
-    const isVisible = (nodePtr: number, parentPtr: number) => (
-        isNodeInSubtree(nodePtr, parentPtr, subtreeRootPtr)
+    const isVisible: XmlC14NIsVisibleCallback = (node, parent) => (
+        isNodeInSubtree(node._nodePtr, parent ? parent._nodePtr : 0, subtreeRootPtr)
     );
     // Use non-cascading behavior for subtree helper
     canonicalizeInternal(handler, doc._ptr, {
         ...options,
-        isVisible: isVisible as unknown as XmlC14NIsVisibleCallback,
+        isVisible,
     }, /* wrapCascade */ false);
 }
