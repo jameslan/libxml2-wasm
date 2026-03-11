@@ -343,8 +343,14 @@ export namespace XmlNodeStruct {
         XML_TEXT_NODE = 3,
         XML_CDATA_SECTION_NODE = 4,
         XML_ENTITY_REF_NODE = 5,
+        XML_PI_NODE = 7,
         XML_COMMENT_NODE = 8,
+        XML_DOCUMENT_NODE = 9,
         XML_DTD_NODE = 14,
+        XML_ELEMENT_DECL = 15,
+        XML_ATTRIBUTE_DECL = 16,
+        XML_ENTITY_DECL = 17,
+        XML_NAMESPACE_DECL = 18,
     }
 } /* c8 ignore next, a branch of typescript generated code is not covered */
 
