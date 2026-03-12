@@ -598,6 +598,38 @@ describe('XmlNamedNode/XmlAttribute', () => {
         });
     });
 
+    describe('isSameNode', () => {
+        it('should return true for the same node', () => {
+            const title = doc.root.get('book/title')!;
+            expect(title.isSameNode(title)).to.be.true;
+        });
+
+        it('should return true for nodes obtained from different queries', () => {
+            const title1 = doc.root.get('book/title')!;
+            const title2 = doc.get('/bookstore/book/title')!;
+            expect(title1.isSameNode(title2)).to.be.true;
+        });
+
+        it('should return false for different nodes', () => {
+            const title = doc.root.get('book/title')!;
+            const price = doc.root.get('book/price')!;
+            expect(title.isSameNode(price)).to.be.false;
+        });
+
+        it('should return false for nodes from different documents', () => {
+            using newDoc = XmlDocument.fromString('<bookstore><book><title>Test</title></book></bookstore>');
+            const title1 = doc.root.get('book/title')!;
+            const title2 = newDoc.root.get('book/title')!;
+            expect(title1.isSameNode(title2)).to.be.false;
+        });
+
+        it('should return true for attributes obtained differently', () => {
+            const attr1 = doc.root.get('book/title/@lang')!;
+            const attr2 = (doc.root.get('book/title') as XmlElement).attrs[0];
+            expect(attr1.isSameNode(attr2)).to.be.true;
+        });
+    });
+
     describe('removeFromParent', () => {
         it('should remove the node from its parent', () => {
             using newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');

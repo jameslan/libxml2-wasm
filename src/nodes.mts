@@ -191,6 +191,13 @@ export abstract class XmlNode {
     }
 
     /**
+     * Check if this node is the same as another node.
+     */
+    isSameNode(other: XmlNode): boolean {
+        return this._nodePtr === other._nodePtr;
+    }
+
+    /**
      * Canonicalize this node and its subtree to a buffer and invoke the handler to process.
      *
      * @param handler handlers to process the content in the buffer
