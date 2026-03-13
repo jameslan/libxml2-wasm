@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      contents: write # for creating release
+      contents: read # Use personal access token to create release, default token can be read only
       id-token: write # for OIDC when publishing to npm
     steps:
       - uses: actions/checkout@v4
@@ -35,6 +35,7 @@ jobs:
           tag: v${{ inputs.version }}
           artifacts: ./artifact/*
           commit: ${{ github.sha }}
+          token: ${{ secrets.RELEASE_TOKEN }} # Must be a PAT with contents write access, to trigger following doc workflow
       - uses: actions/setup-node@v6
         with:
           node-version: 24.x
