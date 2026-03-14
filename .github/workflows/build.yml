@@ -7,7 +7,7 @@ on:
   pull_request:
   workflow_call:
 env:
-  EM_VERSION: 4.0.8
+  EM_VERSION: 5.0.2
   EM_CACHE_FOLDER: 'emsdk-cache'
 jobs:
   build:
@@ -17,17 +17,17 @@ jobs:
     name: Build Package
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
       - name: Cache Emscripten system libraries
         id: cache-system-libraries
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.EM_CACHE_FOLDER }}
           key: ${{ env.EM_VERSION }}-${{ runner.os }}
       - name: Cache node modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.npm
           key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -51,7 +51,7 @@ jobs:
           echo ${{ github.event.number }} > coverage/pr/pr_num
           cp coverage/lcov.info coverage/pr
       - name: Upload coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: ${{ github.event_name == 'pull_request' }}
         with:
           name: coverage-artifact
@@ -60,7 +60,7 @@ jobs:
       - name: Pack
         run: npm pack
       - name: Upload package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: libxml2-wasm-*.tgz
   compatibility_backend:
@@ -73,7 +73,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4 # Run test only, don't need C source
+        uses: actions/checkout@v6 # Run test only, don't need C source
       - name: Install nodeJs
         uses: actions/setup-node@v6
         with:
@@ -81,7 +81,7 @@ jobs:
       - name: Install npm packages
         run: npm ci
       - name: Download libxml2-wasm
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: artifact
       - name: Install libxml2-wasm

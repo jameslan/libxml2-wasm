@@ -13,7 +13,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Find variables
         id: vars
         # if on master branch push, use "dev", otherwise major.minor
@@ -26,7 +26,7 @@ jobs:
       - name: Build the document
         run: npm run doc -- --gitRevision $GITHUB_REF_NAME
       - name: Checkout the site
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: site
           ref: gh-pages
@@ -35,7 +35,7 @@ jobs:
           rm -rf site/${{ steps.vars.outputs.version }}
           mv _site site/${{ steps.vars.outputs.version }}
       - name: Commit to site branch
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           repository: site
           branch: gh-pages

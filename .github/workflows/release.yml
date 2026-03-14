@@ -12,7 +12,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: verify version
         run: test $(jq -r .version package.json) = ${{ inputs.version }}
   build:
@@ -25,8 +25,8 @@ jobs:
       contents: read # Use personal access token to create release, default token can be read only
       id-token: write # for OIDC when publishing to npm
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
       - name: create release
         uses: ncipollo/release-action@v1
         with:
