@@ -8,9 +8,11 @@ import {
     XmlNsStruct,
     XmlOutputBufferHandler,
     XmlXPathObjectStruct,
+    withPointerRef,
     xmlAddChild,
     xmlAddNextSibling,
     xmlAddPrevSibling,
+    xmlDOMWrapCloneNode,
     xmlFreeNode,
     xmlGetNsList,
     xmlHasNsProp,
@@ -835,6 +837,37 @@ export class XmlElement extends XmlTreeNode {
         return new XmlEntityReference(
             addNode(this._nodePtr, name, xmlNewReference, xmlAddChild),
         );
+    }
+
+    /**
+     * Insert a clone of the given source node to the end of the children list.
+     */
+    addClone(srcNode: XmlElement, deep: boolean = true): XmlElement {
+      return withPointerRef((resNodePtr) => {
+        const result = xmlDOMWrapCloneNode(
+          0,
+          srcNode.doc._ptr,
+          srcNode._nodePtr,
+          resNodePtr.ptr,
+          this.doc._ptr,
+          this._nodePtr,
+          deep ? 1 : 0,
+          0,
+        );
+
+        switch (result) {
+          case 0:
+            {
+              const resNode = resNodePtr.dereference();
+              xmlAddChild(this._nodePtr, resNode);
+              return new XmlElement(resNode);
+            }
+          case 1:
+            throw new Error('Unsupported node type given to addClone');
+          default:
+            throw new Error('Internal error in addClone');
+        }
+      });
     }
 
     /**
