@@ -11,6 +11,7 @@ _xmlCtxtSetErrorHandler
 _xmlCtxtValidateDtd
 _xmlDocGetRootElement
 _xmlDocSetRootElement
+_xmlDOMWrapCloneNode
 _xmlFreeDoc
 _xmlFreeDtd
 _xmlFreeNode
