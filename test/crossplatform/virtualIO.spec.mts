@@ -1,5 +1,4 @@
 import {
-    ParseOption,
     xmlCleanupInputProvider,
     XmlDocument,
     XmlParseError,
@@ -33,10 +32,11 @@ describe('Virtual IO', () => {
             },
         });
 
-        expect(() => XmlDocument.fromString(
+        using doc = XmlDocument.fromString(
             '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
-            { url: 'path/doc.xml', option: ParseOption.XML_PARSE_XINCLUDE },
-        )).to.throw(
+            { url: 'path/doc.xml' },
+        );
+        expect(() => doc.processXInclude()).to.throw(
             XmlParseError,
             'failed to load "path/sub.xml": No such file or directory\ncould not load path/sub.xml, and no fallback was found\n',
         ).with.deep.property('details', [{
@@ -72,10 +72,11 @@ describe('Virtual IO', () => {
             },
         });
 
-        expect(() => XmlDocument.fromString(
+        using doc = XmlDocument.fromString(
             '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
-            { url: 'path/doc.xml', option: ParseOption.XML_PARSE_XINCLUDE },
-        )).to.throw(
+            { url: 'path/doc.xml' },
+        );
+        expect(() => doc.processXInclude()).to.throw(
             XmlParseError,
             'failed to load "path/sub.xml": No such file or directory\ncould not load path/sub.xml, and no fallback was found\n',
         ).with.deep.property('details', [{
@@ -113,10 +114,11 @@ describe('Virtual IO', () => {
             },
         });
 
-        expect(() => XmlDocument.fromString(
+        using doc = XmlDocument.fromString(
             '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
-            { url: 'path/doc.xml', option: ParseOption.XML_PARSE_XINCLUDE },
-        )).to.throw(
+            { url: 'path/doc.xml' },
+        );
+        expect(() => doc.processXInclude()).to.throw(
             XmlParseError,
             'Unknown IO error\nDocument is empty\ncould not load path/sub.xml, and no fallback was found\n',
         ).with.deep.property('details', [{

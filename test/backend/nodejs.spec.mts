@@ -5,7 +5,6 @@ import * as chai from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import {
-    ParseOption,
     xmlCleanupInputProvider,
     XmlDocument,
     XmlValidateError,
@@ -34,8 +33,9 @@ describe('Node.js input callbacks', () => {
         using validator = XsdValidator.fromDoc(schemaDoc);
         using doc = XmlDocument.fromBuffer(
             fs.readFileSync('test/testfiles/book.xml'),
-            { url: 'test/testfiles/book.xml', option: ParseOption.XML_PARSE_XINCLUDE },
+            { url: 'test/testfiles/book.xml' },
         );
+        doc.processXInclude();
         validator.validate(doc);
     });
 
@@ -47,8 +47,9 @@ describe('Node.js input callbacks', () => {
         using validator = XsdValidator.fromDoc(schemaDoc);
         using doc = XmlDocument.fromBuffer(
             fs.readFileSync('test/testfiles/book.xml'),
-            { url: join('test', 'testfiles', 'book.xml'), option: ParseOption.XML_PARSE_XINCLUDE },
+            { url: join('test', 'testfiles', 'book.xml') },
         );
+        doc.processXInclude();
         validator.validate(doc);
     });
 
@@ -62,17 +63,18 @@ describe('Node.js input callbacks', () => {
             fs.readFileSync('test/testfiles/book.xml'),
             {
                 url: `file:///${resolve('test/testfiles/book.xml').replaceAll('\\', '/')}`,
-                option: ParseOption.XML_PARSE_XINCLUDE,
             },
         );
+        doc.processXInclude();
         validator.validate(doc);
     });
 
     it('can read big file', () => {
         using doc = XmlDocument.fromBuffer(
             fs.readFileSync('test/testfiles/geography.xml'),
-            { url: 'test/testfiles/geography.xml', option: ParseOption.XML_PARSE_XINCLUDE },
+            { url: 'test/testfiles/geography.xml' },
         );
+        doc.processXInclude();
 
         expect(doc.get('//country/capital[../name="United States"]')?.content).to.equal('Washington D.C.');
     });
@@ -191,8 +193,9 @@ describe('Path handling', () => {
         it('handles backslash on Windows', () => {
             using doc = XmlDocument.fromString(
                 '<book><title>Dune</title><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="author.xml" /></book>',
-                { url: 'test\\testfiles\\book.xml', option: ParseOption.XML_PARSE_XINCLUDE },
+                { url: 'test\\testfiles\\book.xml' },
             );
+            doc.processXInclude();
             expect(doc.get('/book/author/first-name')?.content).to.equal('Frank');
         });
     } else {
@@ -201,8 +204,9 @@ describe('Path handling', () => {
             // so the include xml should be test/testfiles/author.xml
             using doc = XmlDocument.fromString(
                 '<book><title>Dune</title><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="author.xml" /></book>',
-                { url: 'test/testfiles/book\\test.xml', option: ParseOption.XML_PARSE_XINCLUDE },
+                { url: 'test/testfiles/book\\test.xml' },
             );
+            doc.processXInclude();
             expect(doc.get('/book/author/first-name')?.content).to.equal('Frank');
         });
     }

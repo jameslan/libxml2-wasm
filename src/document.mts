@@ -99,6 +99,7 @@ export enum ParseOption {
     /**
      * Enable XInclude processing. This option only affects the xmlTextReader
      * and XInclude interfaces.
+     * @deprecated
      */
     XML_PARSE_XINCLUDE = 1 << 10,
     /**
@@ -250,9 +251,6 @@ function parse<Input>(
         throw new XmlParseError('Failed to parse XML', []);
     }
     const xmlDocument = XmlDocument.getInstance(xml);
-    if (xmlOptions & ParseOption.XML_PARSE_XINCLUDE) {
-        xmlDocument.processXInclude();
-    }
     return xmlDocument;
 }
 

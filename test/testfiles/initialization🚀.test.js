@@ -6,7 +6,6 @@ const libPath = fs.existsSync('./lib/index.mjs')
 
 import(`${libPath}/lib/nodejs.mjs`).then(({ xmlRegisterFsInputProviders }) => {
     import(`${libPath}/lib/index.mjs`).then(({
-        ParseOption,
         xmlCleanupInputProvider,
         XmlDocument,
         XsdValidator,
@@ -17,8 +16,9 @@ import(`${libPath}/lib/nodejs.mjs`).then(({ xmlRegisterFsInputProviders }) => {
         const validator = XsdValidator.fromDoc(schemaDoc);
         const doc = XmlDocument.fromBuffer(
             fs.readFileSync('test/testfiles/book.xml'),
-            { url: 'test/testfiles/book.xml', option: ParseOption.XML_PARSE_XINCLUDE },
+            { url: 'test/testfiles/book.xml' },
         );
+        doc.processXInclude();
         try {
             validator.validate(doc);
         } finally {

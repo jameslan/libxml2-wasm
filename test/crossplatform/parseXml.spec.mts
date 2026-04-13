@@ -173,34 +173,16 @@ describe('XInclude', () => {
         expect(inc.attr('href')?.content).to.equal('sub.xml');
     });
 
-    it('should process xml with XInclude', () => {
+    it('wont process xml with XInclude even with XML_PARSE_XINCLUDE flag', () => {
         registerCallbacks('path/sub.xml', '<sub foo="bar"></sub>');
         using doc = XmlDocument.fromString(
             '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
             { url: 'path/doc.xml', option: ParseOption.XML_PARSE_XINCLUDE },
         );
 
-        expect(doc.get('/doc/sub/@foo')?.content).to.equal('bar');
-    });
-
-    it('should handle errors in the included XML', () => {
-        registerCallbacks('path/sub.xml', '<sub foo="bar">');
-        expect(() => XmlDocument.fromString(
-            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
-            { url: 'path/doc.xml', option: ParseOption.XML_PARSE_XINCLUDE },
-        )).to.throw(
-            XmlParseError,
-            'Premature end of data in tag sub line 1\ncould not load path/sub.xml, and no fallback was found',
-        ).with.deep.property('details', [{
-            message: 'Premature end of data in tag sub line 1\n',
-            file: 'path/sub.xml',
-            line: 1,
-            col: 16,
-        }, {
-            message: 'could not load path/sub.xml, and no fallback was found\n',
-            file: 'path/doc.xml',
-            line: 1,
-            col: 0,
-        }]);
+        const inc = doc.root.firstChild as XmlElement;
+        expect(inc.name).to.equal('include');
+        expect(inc.prefix).to.equal('xi');
+        expect(inc.attr('href')?.content).to.equal('sub.xml');
     });
 });
