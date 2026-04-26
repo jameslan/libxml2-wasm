@@ -1,15 +1,16 @@
 import { disposeBy, XmlDisposable } from './disposable.mjs';
-import { XmlParseError, XmlDocument } from './document.mjs';
+import { XmlDocument, XmlParseError } from './document.mjs';
 import {
-  XmlTreeCommonStruct,
-  error,
-  xmlCtxtParseDtd,
-  xmlCtxtSetErrorHandler,
-  xmlFreeParserCtxt,
-  xmlFreeDtd,
-  xmlNewParserCtxt,
+    error,
+    xmlCtxtParseDtd,
+    xmlCtxtSetErrorHandler,
+    xmlFreeDtd,
+    xmlFreeParserCtxt,
+    xmlNewParserCtxt,
+    XmlTreeCommonStruct,
 } from './libxml2.mjs';
-import { XmlDtdPtr } from './libxml2raw.mjs';
+
+import type { XmlDtdPtr } from './libxml2raw.mjs';
 
 function freeDtd(ptr: XmlDtdPtr): void {
     if (XmlTreeCommonStruct.parent(ptr) !== 0) {
@@ -53,7 +54,7 @@ export class XmlDtd extends XmlDisposable<XmlDtd> {
         error.storage.free(errIndex);
         xmlFreeParserCtxt(parserCtxt);
         if (!ptr) {
-            throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
+            throw new XmlParseError(errDetails.map((d) => d.message).join(''), errDetails);
         }
         return XmlDtd.getInstance(ptr);
     }

@@ -1,15 +1,20 @@
 import { expect } from 'chai';
+
 import {
-    XmlDocument,
-    XmlError,
-    XmlValidateError,
-    XsdValidator,
+    DtdValidator,
     RelaxNGValidator,
     xmlCleanupInputProvider,
-    XmlInputProvider,
+    XmlDocument,
+    XmlError,
     xmlRegisterInputProvider,
+    XmlValidateError,
+    XsdValidator,
+} from '@libxml2-wasm/lib/index.mjs';
+
+import type {
+    XmlDtd,
     XmlElement,
-    DtdValidator,
+    XmlInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
 
 describe('XsdValidator', () => {
@@ -61,7 +66,9 @@ describe('XsdValidator', () => {
     </bookstore>
 </market>`);
 
-        xml.find('/market/bookstore').forEach((bookstore) => validator.validate(bookstore as XmlElement));
+        xml.find('/market/bookstore').forEach((bookstore) => validator.validate(
+            bookstore as XmlElement,
+        ));
     });
 
     it('should fail on invalid xml', () => {
@@ -97,8 +104,8 @@ describe('XsdValidator', () => {
         expect(() => validator.validate(xml)).to.throw(
             XmlValidateError,
             'Missing child element',
-            ).with.deep.property(
-                'details',
+        ).with.deep.property(
+            'details',
             [{
                 message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
                 line: 1,
@@ -126,7 +133,10 @@ describe('XsdValidator', () => {
     it('should fail on null schema', () => {
         const schema = XmlDocument.create();
         schema.dispose();
-        expect(() => XsdValidator.fromDoc(schema)).to.throw(XmlError, 'Schema is null or failed to allocate memory');
+        expect(() => XsdValidator.fromDoc(schema)).to.throw(
+            XmlError,
+            'Schema is null or failed to allocate memory',
+        );
     });
 
     it('should fail on invalid schema', () => {
@@ -145,7 +155,8 @@ describe('XsdValidator', () => {
         ).with.deep.property(
             'details',
             [{
-                message: 'element decl. \'book\', attribute \'type\': The QName value \'Book\' does not resolve to a(n) type definition.\n',
+                message: 'element decl. \'book\', attribute \'type\': '
+                    + 'The QName value \'Book\' does not resolve to a(n) type definition.\n',
                 line: 6,
                 col: 0,
             }],
@@ -195,47 +206,58 @@ describe('XsdValidator', () => {
     });
 
     describe('string input callbacks', () => {
-        const documents: { [filename: string ]: string } = {
+        const documents: Record<string, string> = {
             'test/author.xsd':
                 `<?xml version="1.0" encoding="utf-8"?>
-                 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+                 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                     elementFormDefault="qualified" attributeFormDefault="unqualified">
                      <xsd:complexType name="author">
                          <xsd:sequence>
-                             <xsd:element minOccurs="1" maxOccurs="1" name="first-name" type="xsd:string" />
-                             <xsd:element minOccurs="1" maxOccurs="1" name="last-name" type="xsd:string" />
-                             <xsd:element minOccurs="0" maxOccurs="1" name="country" type="xsd:string" />
+                             <xsd:element minOccurs="1" maxOccurs="1" name="first-name"
+                              type="xsd:string" />
+                             <xsd:element minOccurs="1" maxOccurs="1" name="last-name"
+                              type="xsd:string" />
+                             <xsd:element minOccurs="0" maxOccurs="1" name="country"
+                              type="xsd:string" />
                          </xsd:sequence>
                      </xsd:complexType>
                  </xsd:schema>`,
             'book.xsd':
                 `<?xml version="1.0" encoding="utf-8"?>
-                <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+                <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                    elementFormDefault="qualified" attributeFormDefault="unqualified">
                     <xsd:include schemaLocation="author.xsd" />
                     <xsd:element name="book">
                         <xsd:complexType>
                             <xsd:sequence>
-                                <xsd:element name="title" type="xsd:string" maxOccurs="1" minOccurs="1" />
-                                <xsd:element name="author" type="author" maxOccurs="1" minOccurs="1" />
+                                <xsd:element name="title" type="xsd:string" maxOccurs="1"
+                                    minOccurs="1" />
+                                <xsd:element name="author" type="author" maxOccurs="1"
+                                    minOccurs="1" />
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:element>
                 </xsd:schema>`,
             'book_wronginclude.xsd':
                 `<?xml version="1.0" encoding="utf-8"?>
-                <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+                <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                    elementFormDefault="qualified" attributeFormDefault="unqualified">
                     <xsd:include schemaLocation="wronginclude.xsd" />
                     <xsd:element name="book">
                         <xsd:complexType>
                             <xsd:sequence>
-                                <xsd:element name="title" type="xsd:string" maxOccurs="1" minOccurs="1" />
-                                <xsd:element name="author" type="author" maxOccurs="1" minOccurs="1" />
+                                <xsd:element name="title" type="xsd:string" maxOccurs="1"
+                                    minOccurs="1" />
+                                <xsd:element name="author" type="author" maxOccurs="1"
+                                    minOccurs="1" />
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:element>
                 </xsd:schema>`,
             'book.xml':
                 `<?xml version="1.0" encoding="utf-8"?>
-                <book xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="book.xsd">
+                <book xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:noNamespaceSchemaLocation="book.xsd">
                     <title>Dune</title>
                     <author>
                         <first-name>Frank</first-name>
@@ -247,7 +269,7 @@ describe('XsdValidator', () => {
         /**
          * Simple array to keep file descriptors. First element is dummy to avoid returning 0 for fd
          */
-        const fds: Array<{ filename: string, pos: number }> = [
+        const fds: { filename: string; pos: number }[] = [
             { filename: 'dummy', pos: -1 },
         ];
 
@@ -295,7 +317,10 @@ describe('XsdValidator', () => {
         });
 
         it('should be able to handle includes when strings are read', () => {
-            const schemaDoc = XmlDocument.fromString(documents['book.xsd'], { url: 'test/book.xsd' });
+            const schemaDoc = XmlDocument.fromString(
+                documents['book.xsd'],
+                { url: 'test/book.xsd' },
+            );
             const validator = XsdValidator.fromDoc(schemaDoc);
             const instDoc = XmlDocument.fromString(documents['book.xml']);
             validator.validate(instDoc);
@@ -331,7 +356,7 @@ describe('DtdValidator', () => {
 <body>Don't forget me this weekend</body>
 </note>`);
 
-        const validator = new DtdValidator(xml.dtd!);
+        const validator = new DtdValidator(xml.dtd as XmlDtd);
         validator.validate(xml);
         // It's ok to not dispose the validator, because its DTD is owned by the document
     });
@@ -348,14 +373,15 @@ describe('DtdValidator', () => {
 <to>Tove</to>
 </note>`);
 
-        const validator = new DtdValidator(xml.dtd!);
+        const validator = new DtdValidator(xml.dtd as XmlDtd);
         expect(() => validator.validate(xml)).to.throw(
             XmlValidateError,
             'Element note content does not follow the DTD, expecting (to , from), got (to )\n',
         ).with.deep.property(
             'details',
             [{
-                message: 'Element note content does not follow the DTD, expecting (to , from), got (to )\n',
+                message: 'Element note content does not follow the DTD, '
+                    + 'expecting (to , from), got (to )\n',
                 line: 7,
                 col: 0,
             }],
@@ -366,7 +392,8 @@ describe('DtdValidator', () => {
 
 describe('RelaxNGValidator', () => {
     const rng = `<?xml version="1.0" encoding="UTF-8"?>
-<grammar ns="" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+<grammar ns="" xmlns="http://relaxng.org/ns/structure/1.0"
+    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
     <start>
         <element name="bookstore">
             <oneOrMore>
@@ -423,14 +450,15 @@ describe('RelaxNGValidator', () => {
         using validator = RelaxNGValidator.fromDoc(schema);
 
         using xml = XmlDocument.fromString(
-            '<bookstore><book><title>Harry Potter</title></book>\n<book><title>Learning XML</title></book></bookstore>',
+            '<bookstore><book><title>Harry Potter</title></book>\n'
+            + '<book><title>Learning XML</title></book></bookstore>',
         );
 
         expect(() => validator.validate(xml)).to.throw(
             XmlValidateError,
             'Expecting an element',
-            ).with.deep.property(
-                'details',
+        ).with.deep.property(
+            'details',
             [{
                 message: 'Expecting an element , got nothing\n',
                 line: 1,
@@ -511,7 +539,8 @@ describe('RelaxNGValidator', () => {
         );
 
         using xml2 = XmlDocument.fromString(
-            '<bookstore><book><title>Harry Potter</title></book>\n<book><title>Learning XML</title></book></bookstore>',
+            '<bookstore><book><title>Harry Potter</title></book>\n'
+            + '<book><title>Learning XML</title></book></bookstore>',
         );
 
         expect(() => validator.validate(xml2)).to.throw(

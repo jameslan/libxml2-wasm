@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+
 import {
     XmlAttribute,
     XmlCData,
@@ -7,16 +8,19 @@ import {
     XmlElement,
     XmlEntityReference,
     XmlError,
-    XmlNode,
     XmlText,
     XmlXPath,
     XmlXPathError,
 } from '@libxml2-wasm/lib/index.mjs';
 
+import type { XmlNode } from '@libxml2-wasm/lib/index.mjs';
+
 const doc = XmlDocument.fromString(`<?xml version="1.0" encoding="UTF-8"?>
 <bookstore xmlns:m="http://www.federalreserve.gov" xmlns:n="http://www.xml.org"><!--comment1-->
-    <book><title lang="en" author="J.K. Rowling">Harry Potter</title><price m:currency="USD"><![CDATA[29.99]]></price></book>
-    <book><title lang="en" author="Erik Ray">Learning XML</title><price m:currency="USD">39.95</price></book>
+    <book><title lang="en" author="J.K. Rowling">Harry Potter</title>\
+<price m:currency="USD"><![CDATA[29.99]]></price></book>
+    <book><title lang="en" author="Erik Ray">Learning XML</title>\
+<price m:currency="USD">39.95</price></book>
 <!--comment2--></bookstore>`);
 
 describe('XmlNode', () => {
@@ -33,18 +37,25 @@ describe('XmlNode', () => {
         });
 
         it('should throw XmlXPathError for invalid xpath', () => {
-            expect(() => doc.get('doc[@lang')).to.throw(XmlXPathError, 'Failed to compile XPath expression: doc[@lang');
+            expect(() => doc.get('doc[@lang')).to.throw(
+                XmlXPathError,
+                'Failed to compile XPath expression: doc[@lang',
+            );
         });
 
         it('should throw XmlXPathError for null xpath(accidentally)', () => {
-            expect(() => doc.get(null!)).to.throw(XmlXPathError, 'Failed to compile XPath expression: null');
+            expect(() => doc.get(null!)).to.throw(
+                XmlXPathError,
+                'Failed to compile XPath expression: null',
+            );
         });
 
         it('should be able to return XmlAttribute', () => {
-            const attr = doc.root.get('book/title/@lang');
-            expect(attr).to.be.instanceOf(XmlAttribute);
-            expect((attr as XmlAttribute).name).to.equal('lang');
-            expect(attr!.content).to.equal('en');
+            const attrNode = doc.root.get('book/title/@lang');
+            expect(attrNode).to.be.instanceOf(XmlAttribute);
+            const attr = attrNode as XmlAttribute;
+            expect(attr.name).to.equal('lang');
+            expect(attr.content).to.equal('en');
         });
 
         it('should be able to return XmlText', () => {
@@ -170,8 +181,8 @@ describe('XmlNode', () => {
 
     describe('prev getter', () => {
         it('should return null for the first node', () => {
-            const price = (doc.get('book') as XmlElement).firstChild;
-            expect(price?.prev).to.be.null;
+            const title = (doc.get('book') as XmlElement).firstChild;
+            expect(title?.prev).to.be.null;
         });
 
         it('should return previous sibling element', () => {
@@ -283,29 +294,33 @@ describe('XmlNode', () => {
         it('adds a new comment node after the current node', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
             (newDoc.get('/docs/doc') as XmlElement).appendComment('comment');
-            expect(newDoc.toString({ format: false }))
-                .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><doc/><!--comment--></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs><doc/><!--comment--></docs>\n',
+            );
         });
 
         it('adds a new comment node before the current node', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
             (newDoc.get('/docs/doc') as XmlElement).prependComment('comment');
-            expect(newDoc.toString({ format: false }))
-                .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><!--comment--><doc/></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs><!--comment--><doc/></docs>\n',
+            );
         });
 
         it('adds a new CDATA node after the current node', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
             (newDoc.get('/docs/doc') as XmlElement).appendCData('content');
-            expect(newDoc.toString({ format: false }))
-                .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><doc/><![CDATA[content]]></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs><doc/><![CDATA[content]]></docs>\n',
+            );
         });
 
         it('adds a new CDATA node before the current node', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
             (newDoc.get('/docs/doc') as XmlElement).prependCData('content');
-            expect(newDoc.toString({ format: false }))
-                .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><![CDATA[content]]><doc/></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs><![CDATA[content]]><doc/></docs>\n',
+            );
         });
 
         it('adds a new element after the current node', () => {
@@ -347,12 +362,14 @@ describe('XmlNode', () => {
         });
 
         it('should throw XmlXPathError for invalid xpath', () => {
-            expect(() => doc.find('doc[@lang')).to.throw('Failed to compile XPath expression: doc[@lang');
+            expect(() => doc.find('doc[@lang'))
+                .to.throw('Failed to compile XPath expression: doc[@lang');
         });
 
         it('should return multiple elements', () => {
             const nodes = doc.find('book/title');
-            expect(nodes.map((node) => node.content)).to.deep.equal(['Harry Potter', 'Learning XML']);
+            expect(nodes.map((node) => node.content))
+                .to.deep.equal(['Harry Potter', 'Learning XML']);
         });
 
         it('should return multiple attributes', () => {
@@ -450,7 +467,10 @@ describe('XmlNode', () => {
         });
 
         it('should handle namespace in XPath expressions', () => {
-            const result = doc.root.eval('book/price/@m:currency', { m: 'http://www.federalreserve.gov' });
+            const result = doc.root.eval(
+                'book/price/@m:currency',
+                { m: 'http://www.federalreserve.gov' },
+            );
             expect(result).to.be.an('array');
             expect(result).to.have.length(2);
             expect((result as XmlNode[])[0]).to.be.instanceOf(XmlAttribute);
@@ -476,7 +496,8 @@ describe('XmlNode', () => {
         });
 
         it('should throw XmlXPathError for invalid XPath expressions', () => {
-            expect(() => doc.root.eval('invalid[@xpath')).to.throw('Failed to compile XPath expression: invalid[@xpath');
+            expect(() => doc.root.eval('invalid[@xpath'))
+                .to.throw('Failed to compile XPath expression: invalid[@xpath');
         });
 
         it('should throw XmlXPathError for null XPath expressions', () => {
@@ -576,7 +597,9 @@ describe('XmlNamedNode/XmlAttribute', () => {
         });
 
         it('sets default namespace', () => {
-            using newDoc = XmlDocument.fromString('<ex:docs xmlns:ex="http://example.net/" xmlns="http://xml.org/"/>');
+            using newDoc = XmlDocument.fromString(
+                '<ex:docs xmlns:ex="http://example.net/" xmlns="http://xml.org/"/>',
+            );
 
             expect(newDoc.root.namespacePrefix).to.equal('ex');
             newDoc.root.namespacePrefix = '';
@@ -594,37 +617,41 @@ describe('XmlNamedNode/XmlAttribute', () => {
         it('fails on unknown prefix', () => {
             using newDoc = XmlDocument.fromString('<docs/>');
 
-            expect(() => { newDoc.root.namespacePrefix = 'ex'; }).to.throw(XmlError, 'Namespace prefix "ex" not found');
+            expect(() => {
+                newDoc.root.namespacePrefix = 'ex';
+            }).to.throw(XmlError, 'Namespace prefix "ex" not found');
         });
     });
 
     describe('isSameNode', () => {
         it('should return true for the same node', () => {
-            const title = doc.root.get('book/title')!;
+            const title = doc.root.get('book/title') as XmlNode;
             expect(title.isSameNode(title)).to.be.true;
         });
 
         it('should return true for nodes obtained from different queries', () => {
-            const title1 = doc.root.get('book/title')!;
-            const title2 = doc.get('/bookstore/book/title')!;
+            const title1 = doc.root.get('book/title') as XmlNode;
+            const title2 = doc.get('/bookstore/book/title') as XmlNode;
             expect(title1.isSameNode(title2)).to.be.true;
         });
 
         it('should return false for different nodes', () => {
-            const title = doc.root.get('book/title')!;
-            const price = doc.root.get('book/price')!;
+            const title = doc.root.get('book/title') as XmlNode;
+            const price = doc.root.get('book/price') as XmlNode;
             expect(title.isSameNode(price)).to.be.false;
         });
 
         it('should return false for nodes from different documents', () => {
-            using newDoc = XmlDocument.fromString('<bookstore><book><title>Test</title></book></bookstore>');
-            const title1 = doc.root.get('book/title')!;
-            const title2 = newDoc.root.get('book/title')!;
+            using newDoc = XmlDocument.fromString(
+                '<bookstore><book><title>Test</title></book></bookstore>',
+            );
+            const title1 = doc.root.get('book/title') as XmlNode;
+            const title2 = newDoc.root.get('book/title') as XmlNode;
             expect(title1.isSameNode(title2)).to.be.false;
         });
 
         it('should return true for attributes obtained differently', () => {
-            const attr1 = doc.root.get('book/title/@lang')!;
+            const attr1 = doc.root.get('book/title/@lang') as XmlAttribute;
             const attr2 = (doc.root.get('book/title') as XmlElement).attrs[0];
             expect(attr1.isSameNode(attr2)).to.be.true;
         });
@@ -635,7 +662,9 @@ describe('XmlNamedNode/XmlAttribute', () => {
             using newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
             const lang = newDoc.get('/docs/doc/@lang') as XmlAttribute;
             lang.remove();
-            expect(newDoc.toString({ format: false })).to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><doc/></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs><doc/></docs>\n',
+            );
         });
 
         it('2nd remove call do nothing', () => {
@@ -643,7 +672,9 @@ describe('XmlNamedNode/XmlAttribute', () => {
             const lang = newDoc.get('/docs/doc/@lang') as XmlAttribute;
             lang.remove();
             lang.remove();
-            expect(newDoc.toString({ format: false })).to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><doc/></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs><doc/></docs>\n',
+            );
         });
     });
 
@@ -663,9 +694,13 @@ describe('XmlNamedNode/XmlAttribute', () => {
             using newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
             const lang = newDoc.get('/docs/doc/@lang') as XmlAttribute;
             lang.value = 'de';
-            expect(newDoc.toString({ format: false })).to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><doc lang="de"/></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs><doc lang="de"/></docs>\n',
+            );
             lang.content = 'fr';
-            expect(newDoc.toString({ format: false })).to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><doc lang="fr"/></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs><doc lang="fr"/></docs>\n',
+            );
         });
     });
 });
@@ -689,10 +724,11 @@ describe('XmlElement', () => {
         });
 
         it('should return the attribute', () => {
-            const lang = (doc.get('book/title') as XmlElement).attr('lang');
-            expect(lang).is.not.null;
-            expect(lang!.name).to.equal('lang');
-            expect(lang!.content).to.equal('en');
+            const langNode = (doc.get('book/title') as XmlElement).attr('lang');
+            expect(langNode).is.not.null;
+            const lang = langNode as XmlAttribute;
+            expect(lang.name).to.equal('lang');
+            expect(lang.content).to.equal('en');
         });
 
         it('should handle namespace', () => {
@@ -705,13 +741,17 @@ describe('XmlElement', () => {
             const attr = (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'en');
             expect(attr.name).to.equal('lang');
             expect(attr.content).to.equal('en');
-            expect(newDoc.toString({ format: false }))
-                .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><doc lang="en"/></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs><doc lang="en"/></docs>\n',
+            );
         });
 
         it('could add new attribute with default namespace', () => {
-            using newDoc = XmlDocument.fromString('<docs xmlns="http://example.net/"><doc/></docs>');
-            const attr = (newDoc.get('/n:docs/n:doc', { n: 'http://example.net/' }) as XmlElement).setAttr('lang', 'en');
+            using newDoc = XmlDocument.fromString(
+                '<docs xmlns="http://example.net/"><doc/></docs>',
+            );
+            const attr = (newDoc.get('/n:docs/n:doc', { n: 'http://example.net/' }) as XmlElement)
+                .setAttr('lang', 'en');
             expect(attr.name).to.equal('lang');
             expect(attr.content).to.equal('en');
             expect(attr.namespacePrefix).to.equal('');
@@ -719,28 +759,33 @@ describe('XmlElement', () => {
         });
 
         it('could add new attribute with namespace', () => {
-            using newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.net/"><doc/></docs>');
+            using newDoc = XmlDocument.fromString(
+                '<docs xmlns:ex="http://example.net/"><doc/></docs>',
+            );
             const attr = (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'en', 'ex');
             expect(attr.name).to.equal('lang');
             expect(attr.content).to.equal('en');
             expect(attr.namespaceUri).to.equal('http://example.net/');
             expect(attr.namespacePrefix).to.equal('ex');
-            expect(newDoc.toString({ format: false }))
-                .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs xmlns:ex="http://example.net/"><doc ex:lang="en"/></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n'
+                + '<docs xmlns:ex="http://example.net/"><doc ex:lang="en"/></docs>\n',
+            );
         });
 
         it('could set attribute to a new value', () => {
             using newDoc = XmlDocument.fromString('<docs><doc lang="en"/></docs>');
             const attr = (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'de');
             expect(attr.content).to.equal('de');
-            expect(newDoc.toString({ format: false }))
-                .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><doc lang="de"/></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs><doc lang="de"/></docs>\n',
+            );
         });
 
         it('fails on unknown prefix', () => {
             using newDoc = XmlDocument.fromString('<docs><doc/></docs>');
 
-            expect(() => { (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'en', 'ex'); })
+            expect(() => (newDoc.get('/docs/doc') as XmlElement).setAttr('lang', 'en', 'ex'))
                 .to.throw(XmlError, 'Namespace prefix "ex" not found');
         });
     });
@@ -760,7 +805,9 @@ describe('XmlElement', () => {
         it('could add namespace declaration on the element', () => {
             using newDoc = XmlDocument.fromString('<docs/>');
             newDoc.root.addNsDeclaration('http://example.com', 'ex');
-            expect(newDoc.toString()).to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs xmlns:ex="http://example.com"/>\n');
+            expect(newDoc.toString()).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs xmlns:ex="http://example.com"/>\n',
+            );
         });
 
         it('throws when add namespace multiple times', () => {
@@ -770,7 +817,9 @@ describe('XmlElement', () => {
         });
 
         it('could add default namespace declaration', () => {
-            using newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.com"/>');
+            using newDoc = XmlDocument.fromString(
+                '<docs xmlns:ex="http://example.com"/>',
+            );
             newDoc.root.addNsDeclaration('http://www.federalreserve.gov');
 
             expect(newDoc.root.nsDeclarations).to.deep.equal({
@@ -785,9 +834,10 @@ describe('XmlElement', () => {
             using newDoc = XmlDocument.fromString('<docs/>');
             newDoc.root.addComment('This is a comment');
 
-            expect(newDoc.toString({ format: false }))
-                .to
-                .equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><!--This is a comment--></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n'
+                    + '<docs><!--This is a comment--></docs>\n',
+            );
         });
 
         it('adds two comment nodes', () => {
@@ -795,9 +845,10 @@ describe('XmlElement', () => {
             newDoc.root.addComment('comment1');
             newDoc.root.addComment('comment2');
 
-            expect(newDoc.toString({ format: false }))
-                .to
-                .equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><!--comment1--><!--comment2--></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n'
+                    + '<docs><!--comment1--><!--comment2--></docs>\n',
+            );
         });
     });
 
@@ -806,8 +857,10 @@ describe('XmlElement', () => {
             using newDoc = XmlDocument.fromString('<docs/>');
             newDoc.root.addCData('This is a CDATA block');
 
-            expect(newDoc.toString({ format: false }))
-                .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><![CDATA[This is a CDATA block]]></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n'
+                    + '<docs><![CDATA[This is a CDATA block]]></docs>\n',
+            );
         });
 
         it('adds two CDATA nodes', () => {
@@ -815,8 +868,10 @@ describe('XmlElement', () => {
             newDoc.root.addCData('block1');
             newDoc.root.addCData('block2');
 
-            expect(newDoc.toString({ format: false }))
-                .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><![CDATA[block1]]><![CDATA[block2]]></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n'
+                    + '<docs><![CDATA[block1]]><![CDATA[block2]]></docs>\n',
+            );
         });
     });
 
@@ -833,16 +888,20 @@ describe('XmlElement', () => {
             using newDoc = XmlDocument.fromString('<docs xmlns:ex="http://example.com"/>');
             newDoc.root.addElement('doc', 'ex');
 
-            expect(newDoc.toString({ format: false }))
-                .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs xmlns:ex="http://example.com"><ex:doc/></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n'
+                    + '<docs xmlns:ex="http://example.com"><ex:doc/></docs>\n',
+            );
         });
 
         it('adds a new element with default namespace', () => {
             using newDoc = XmlDocument.fromString('<docs xmlns="http://example.com"/>');
             newDoc.root.addElement('doc');
 
-            expect(newDoc.toString({ format: false }))
-                .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs xmlns="http://example.com"><doc/></docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n'
+                    + '<docs xmlns="http://example.com"><doc/></docs>\n',
+            );
         });
 
         it('fails on unknown prefix', () => {
@@ -858,8 +917,9 @@ describe('XmlElement', () => {
             using newDoc = XmlDocument.fromString('<docs/>');
             newDoc.root.addText('This is a text node');
 
-            expect(newDoc.toString({ format: false }))
-                .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs>This is a text node</docs>\n');
+            expect(newDoc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs>This is a text node</docs>\n',
+            );
         });
 
         it('merge two text nodes', () => {
@@ -892,31 +952,46 @@ describe('XmlElement', () => {
         });
 
         it('should return the XML string representation of the node with format', () => {
-            using newDoc = XmlDocument.fromString('<bookstore><book><title>title</title></book></bookstore>');
+            using newDoc = XmlDocument.fromString(
+                '<bookstore><book><title>title</title></book></bookstore>',
+            );
             const node = newDoc.get('/bookstore/book') as XmlElement;
-            expect(node.toString({ format: true })).to.equal('<book>\n  <title>title</title>\n</book>');
+            expect(node.toString({ format: true }))
+                .to.equal('<book>\n  <title>title</title>\n</book>');
         });
 
         it('should return the XML string representation of the node without format', () => {
-            using newDoc = XmlDocument.fromString('<bookstore><book><title>title</title></book></bookstore>');
+            using newDoc = XmlDocument.fromString(
+                '<bookstore><book><title>title</title></book></bookstore>',
+            );
             const node = newDoc.get('/bookstore/book') as XmlElement;
             expect(node.toString({ format: false })).to.equal('<book><title>title</title></book>');
         });
 
         it('should return the XML string representation of the node with format and indent', () => {
-            using newDoc = XmlDocument.fromString('<bookstore><book><title>title</title></book></bookstore>');
+            using newDoc = XmlDocument.fromString(
+                '<bookstore><book><title>title</title></book></bookstore>',
+            );
             const node = newDoc.get('/bookstore/book') as XmlElement;
-            expect(node.toString({ format: true, indentString: '    ' })).to.equal('<book>\n    <title>title</title>\n</book>');
+            expect(node.toString({ format: true, indentString: '    ' })).to.equal(
+                '<book>\n    <title>title</title>\n</book>',
+            );
         });
 
         it('can avoid empty tags', () => {
-            using newDoc = XmlDocument.fromString('<bookstore><book><title></title></book></bookstore>');
+            using newDoc = XmlDocument.fromString(
+                '<bookstore><book><title></title></book></bookstore>',
+            );
             const node = newDoc.get('/bookstore/book') as XmlElement;
-            expect(node.toString({ format: true, noEmptyTags: true })).to.equal('<book>\n  <title></title>\n</book>');
+            expect(node.toString({ format: true, noEmptyTags: true })).to.equal(
+                '<book>\n  <title></title>\n</book>',
+            );
         });
 
         it('fails on invalid indentString', () => {
-            using newDoc = XmlDocument.fromString('<bookstore><book><title>title</title></book></bookstore>');
+            using newDoc = XmlDocument.fromString(
+                '<bookstore><book><title>title</title></book></bookstore>',
+            );
             const node = newDoc.get('/bookstore/book') as XmlElement;
             expect(() => node.toString({ format: true, indentString: ' '.repeat(61) })).to.throw(
                 XmlError,
@@ -972,7 +1047,9 @@ describe('XmlElement', () => {
         it('could add namespace declaration on the element', () => {
             using newDoc = XmlDocument.fromString('<docs/>');
             newDoc.root.addLocalNamespace('http://example.com', 'ex');
-            expect(newDoc.toString()).to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs xmlns:ex="http://example.com"/>\n');
+            expect(newDoc.toString()).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs xmlns:ex="http://example.com"/>\n',
+            );
         });
     });
 });
@@ -991,7 +1068,10 @@ describe('XmlText', () => {
 
 describe('XmlEntityReference', () => {
     it('should get name and content of entity references', () => {
-        using newDoc = XmlDocument.fromString('<!DOCTYPE doc [<!ENTITY first "First Value"><!ENTITY second "Second Value">]><doc>&first; and &second;</doc>');
+        using newDoc = XmlDocument.fromString(
+            '<!DOCTYPE doc [<!ENTITY first "First Value"><!ENTITY second "Second Value">]>'
+            + '<doc>&first; and &second;</doc>',
+        );
 
         // Get the first entity reference
         const firstEntity = newDoc.root.firstChild as XmlEntityReference;
@@ -1014,8 +1094,7 @@ describe('XmlEntityReference', () => {
     it('should append an entity reference after an element', () => {
         using newDoc = XmlDocument.fromString('<doc><child>text</child></doc>');
         const child = newDoc.get('child') as XmlElement;
-        // Cast child to XmlTreeNode to access the appendEntityReference method
-        const entityRef = (child as any).appendEntityReference('lt');
+        const entityRef = child.appendEntityReference('lt');
 
         expect(entityRef).to.be.instanceOf(XmlEntityReference);
         expect(entityRef.name).to.equal('lt');
@@ -1027,8 +1106,7 @@ describe('XmlEntityReference', () => {
     it('should prepend an entity reference before an element', () => {
         using newDoc = XmlDocument.fromString('<doc><child>text</child></doc>');
         const child = newDoc.get('child') as XmlElement;
-        // Cast child to XmlTreeNode to access the prependEntityReference method
-        const entityRef = (child as any).prependEntityReference('gt');
+        const entityRef = child.prependEntityReference('gt');
 
         expect(entityRef).to.be.instanceOf(XmlEntityReference);
         expect(entityRef.name).to.equal('gt');
@@ -1039,8 +1117,7 @@ describe('XmlEntityReference', () => {
 
     it('should add an entity reference as a child of an element', () => {
         using newDoc = XmlDocument.fromString('<doc></doc>');
-        // Cast to any to bypass TypeScript checking
-        const entityRef = (newDoc.root as any).addEntityReference('amp');
+        const entityRef = newDoc.root.addEntityReference('amp');
 
         expect(entityRef).to.be.instanceOf(XmlEntityReference);
         expect(entityRef.name).to.equal('amp');
@@ -1050,9 +1127,10 @@ describe('XmlEntityReference', () => {
     });
 
     it('should handle custom entity references', () => {
-        using newDoc = XmlDocument.fromString('<!DOCTYPE doc [<!ENTITY custom "Custom Content">]><doc></doc>');
-        // Cast to any to bypass TypeScript checking
-        const entityRef = (newDoc.root as any).addEntityReference('custom');
+        using newDoc = XmlDocument.fromString(
+            '<!DOCTYPE doc [<!ENTITY custom "Custom Content">]><doc></doc>',
+        );
+        const entityRef = newDoc.root.addEntityReference('custom');
 
         expect(entityRef).to.be.instanceOf(XmlEntityReference);
         expect(entityRef.name).to.equal('custom');
@@ -1066,7 +1144,9 @@ describe('XmlEntityReference', () => {
     });
 
     it('should remove an entity reference from a document', () => {
-        using newDoc = XmlDocument.fromString('<!DOCTYPE doc [<!ENTITY custom "Custom Content">]><doc>&custom;</doc>');
+        using newDoc = XmlDocument.fromString(
+            '<!DOCTYPE doc [<!ENTITY custom "Custom Content">]><doc>&custom;</doc>',
+        );
 
         // Check initial state
         const initialOutput = newDoc.toString({ format: false });

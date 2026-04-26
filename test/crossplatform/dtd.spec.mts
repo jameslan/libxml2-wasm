@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+
 import {
     DtdValidator,
     ParseOption,
@@ -48,7 +49,7 @@ describe('XmlDtd', () => {
 ]>
 <note>
 </note>`);
-        const dtd = xml.dtd!;
+        const dtd = xml.dtd as XmlDtd;
         xml.dispose();
         using xml2 = XmlDocument.fromString(`\
 <?xml version="1.0"?>
@@ -138,8 +139,9 @@ describe('XmlDtd', () => {
         });
 
         it('validate with external subset', () => {
+            const dtd = 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd';
             const buffers = new XmlBufferInputProvider({
-                'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd': new TextEncoder().encode(`\
+                [dtd]: new TextEncoder().encode(`\
 <!ELEMENT note (to,from,heading,body)>
 <!ELEMENT to (#PCDATA)>
 <!ELEMENT from (#PCDATA)>
@@ -149,6 +151,7 @@ describe('XmlDtd', () => {
             });
             xmlRegisterInputProvider(buffers);
 
+            // XML_PARSE_DTDLOAD is required to load external subset
             // missing element heading and body
             using xml = XmlDocument.fromString(`\
 <?xml version="1.0"?>
@@ -158,8 +161,8 @@ describe('XmlDtd', () => {
 <note>
 <to>Tove</to>
 <from>Jani</from>
-</note>`, { option: ParseOption.XML_PARSE_DTDLOAD }); // this option is required to load external subset
-            using validator = new DtdValidator(xml.dtd!);
+</note>`, { option: ParseOption.XML_PARSE_DTDLOAD });
+            using validator = new DtdValidator(xml.dtd as XmlDtd);
             expect(() => validator.validate(xml)).to.throw(XmlValidateError);
         });
     });

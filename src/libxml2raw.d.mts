@@ -180,6 +180,7 @@ export class LibXml2 {
     _xmlOutputBufferClose(out: XmlOutputBufferPtr): number;
     // runtime functions
     UTF8ToString(ptr: CString, maxBytesToRead?: number): string;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     addFunction(func: Function, sig: string): Pointer;
     getValue(ptr: Pointer, type: string): number;
     lengthBytesUTF8(str: string): number;

@@ -11,46 +11,45 @@
  */
 export * as diag from './diag.mjs';
 export * as disposable from './disposable.mjs';
-export { XmlXPath, XmlXPathError, NamespaceMap } from './xpath.mjs';
+export type { NamespaceMap } from './xpath.mjs';
+export { XmlXPath, XmlXPathError } from './xpath.mjs';
+export type { XmlNamedNode } from './nodes.mjs';
 export {
     XmlAttribute,
     XmlCData,
     XmlComment,
     XmlElement,
     XmlEntityReference,
-    XmlNamedNode,
     XmlNode,
     XmlSimpleNode,
     XmlText,
     XmlTreeNode,
 } from './nodes.mjs';
-export {
-    ParseOption,
-    ParseOptions,
-    XmlDocument,
-    XmlParseError,
-} from './document.mjs';
-export {
+export type { ParseOptions } from './document.mjs';
+export { ParseOption, XmlDocument, XmlParseError } from './document.mjs';
+export type {
     ErrorDetail,
     SaveOptions,
-    XmlError,
-    XmlLibError,
-    xmlCleanupInputProvider,
     XmlInputProvider,
     XmlOutputBufferHandler,
+} from './libxml2.mjs';
+export {
+    xmlCleanupInputProvider,
+    XmlError,
+    XmlLibError,
     xmlRegisterInputProvider,
 } from './libxml2.mjs';
 export { XmlDtd } from './dtd.mjs';
 export {
     DtdValidator,
     RelaxNGValidator,
-    XsdValidator,
     XmlValidateError,
+    XsdValidator,
 } from './validates.mjs';
 export {
+    closeBuffer,
     openBuffer,
     readBuffer,
-    closeBuffer,
     XmlBufferInputProvider,
     XmlStringOutputBufferHandler,
 } from './utils.mjs';
