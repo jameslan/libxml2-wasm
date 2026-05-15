@@ -1,13 +1,12 @@
-import type { Pointer } from './libxml2raw.mjs';
+import { tracker } from './diag.mjs';
 import './disposeShim.mjs';
 import './metadataShim.mjs';
-import { tracker } from './diag.mjs';
+
+import type { Pointer } from './libxml2raw.mjs';
 
 const symXmlDisposableInternal = Symbol('XmlDisposableInternal');
 
-interface XmlDisposableConstructor<T extends XmlDisposable<T>> {
-    new (ptr: Pointer, ...args: any[]): T;
-}
+type XmlDisposableConstructor<T extends XmlDisposable<T>> = new (ptr: Pointer, ...args: any[]) => T;
 
 interface XmlDisposableInternal<T extends XmlDisposable<T>> {
     instances: Map<Pointer, WeakRef<T>>;
@@ -20,7 +19,7 @@ export function disposeBy<T extends XmlDisposable<T>>(free: (value: Pointer) => 
     return function decorator(
         target: XmlDisposableConstructor<T>,
         context: ClassDecoratorContext,
-    ) {
+    ): void {
         context.metadata[symXmlDisposableInternal] = {
             instances: new Map<Pointer, WeakRef<T>>(),
             finalization: new FinalizationRegistry(free),
@@ -91,11 +90,11 @@ export abstract class XmlDisposable<T extends XmlDisposable<T>> implements Dispo
         ptr: Pointer,
         ...args: any[]
     ): U {
-        const inst = (this as any).peekInstance(ptr);
+        const inst: U | null = (this as any).peekInstance(ptr);
         if (inst) {
             return inst;
         }
-        const internal = (this as any).getDisposableInternal();
+        const internal: XmlDisposableInternal<U> = (this as any).getDisposableInternal();
         const newInst = new this(ptr, ...args);
         internal.instances.set(ptr, new WeakRef(newInst));
         internal.finalization.register(newInst, ptr, newInst);
@@ -111,10 +110,10 @@ export abstract class XmlDisposable<T extends XmlDisposable<T>> implements Dispo
         this: XmlDisposableConstructor<U>,
         ptr: Pointer,
     ): U | null {
-        const internal = (this as any).getDisposableInternal();
+        const internal: XmlDisposableInternal<U> = (this as any).getDisposableInternal();
         const instRef = internal.instances.get(ptr);
         if (instRef) {
-            return instRef.deref() || null;
+            return instRef.deref() ?? null;
         }
         return null;
     }

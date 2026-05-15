@@ -1,8 +1,7 @@
+import { disposeBy, XmlDisposable } from './disposable.mjs';
 import { XmlDocument } from './document.mjs';
-import { XmlElement } from './nodes.mjs';
 import {
     error,
-    ErrorDetail,
     xmlCtxtSetErrorHandler,
     xmlCtxtValidateDtd,
     XmlError,
@@ -29,8 +28,10 @@ import {
     xmlSchemaValidateDoc,
     xmlSchemaValidateOneElement,
 } from './libxml2.mjs';
-import { disposeBy, XmlDisposable } from './disposable.mjs';
-import { XmlDtd } from './dtd.mjs';
+
+import type { XmlDtd } from './dtd.mjs';
+import type { ErrorDetail } from './libxml2.mjs';
+import type { XmlElement } from './nodes.mjs';
 
 /**
  * The exception that is thrown when validating XML against a schema.
@@ -102,7 +103,8 @@ export class DtdValidator {
  *
  * Note: This validator must be disposed explicitly.
  *
- * @deprecated libxml2 is planing to remove this: https://gitlab.gnome.org/GNOME/libxml2/-/releases/v2.14.0#planned-removals
+ * @deprecated libxml2 is planing to remove this:
+ * https://gitlab.gnome.org/GNOME/libxml2/-/releases/v2.14.0#planned-removals
  */
 @disposeBy(xmlRelaxNGFree)
 export class RelaxNGValidator extends XmlDisposable<RelaxNGValidator> {
@@ -127,7 +129,7 @@ export class RelaxNGValidator extends XmlDisposable<RelaxNGValidator> {
             throw new XmlError('Invalid input or internal error');
         }
         if (ret > 0) {
-            throw XmlValidateError.fromDetails(errDetails!);
+            throw XmlValidateError.fromDetails(errDetails);
         }
     }
 
@@ -153,7 +155,7 @@ export class RelaxNGValidator extends XmlDisposable<RelaxNGValidator> {
         error.storage.free(errIndex);
         xmlRelaxNGFreeParserCtxt(ctx);
         if (schema === 0) {
-            throw XmlValidateError.fromDetails(errDetails!);
+            throw XmlValidateError.fromDetails(errDetails);
         }
 
         // create Validator object
@@ -199,7 +201,7 @@ export class XsdValidator extends XmlDisposable<XsdValidator> {
             throw new XmlError('Invalid input or internal error');
         }
         if (ret > 0) {
-            throw XmlValidateError.fromDetails(errDetails!);
+            throw XmlValidateError.fromDetails(errDetails);
         }
     }
 
@@ -226,7 +228,7 @@ export class XsdValidator extends XmlDisposable<XsdValidator> {
         error.storage.free(errIndex);
         xmlSchemaFreeParserCtxt(ctx);
         if (schema === 0) {
-            throw XmlValidateError.fromDetails(errDetails!);
+            throw XmlValidateError.fromDetails(errDetails);
         }
 
         // create Validator object

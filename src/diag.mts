@@ -1,8 +1,8 @@
 /** @internal */
 export interface MemTracker {
-    trackAllocate(obj: Disposable): void;
-    trackDeallocate(obj: Disposable): void;
-    report(): any;
+    trackAllocate: (obj: Disposable) => void;
+    trackDeallocate: (obj: Disposable) => void;
+    report: () => any;
 }
 
 const noopTracker: MemTracker = {
@@ -83,7 +83,7 @@ class MemTrackerImpl implements MemTracker {
         const memReport: any = {};
         this.disposableInfo.forEach((info) => {
             // eslint-disable-next-line no-multi-assign
-            const classReport = memReport[info.classname] ||= {
+            const classReport = memReport[info.classname] ??= {
                 garbageCollected: 0,
                 totalInstances: 0,
                 instances: [],
@@ -100,8 +100,10 @@ class MemTrackerImpl implements MemTracker {
                 classReport.garbageCollected += 1;
             }
             if (this.callerStats) {
-                const callers = (classReport.callers ||= {}); // eslint-disable-line no-multi-assign
-                callers[info.callstack!] = (callers[info.callstack!] || 0) + 1;
+                const callers = (classReport.callers ??= {}); // eslint-disable-line no-multi-assign
+                if (info.callstack) {
+                    callers[info.callstack] = (callers[info.callstack] ?? 0) + 1;
+                }
             }
         });
         return memReport;
@@ -141,7 +143,7 @@ export interface DiagOptions {
  * @param options
  * @see {@link report}
  */
-export function configure(options: DiagOptions) {
+export function configure(options: DiagOptions): void {
     if (options.enabled) {
         memTracker = new MemTrackerImpl(
             options.callerDetail === true,
@@ -166,6 +168,6 @@ export function report(): any {
 let memTracker: MemTracker = noopTracker;
 
 /** @internal */
-export function tracker() : MemTracker {
+export function tracker(): MemTracker {
     return memTracker;
 }

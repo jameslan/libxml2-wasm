@@ -1,3 +1,6 @@
+import moduleLoader from './libxml2raw.mjs';
+import { ContextStorage } from './utils.mjs';
+
 import type {
     CString,
     Pointer,
@@ -13,8 +16,6 @@ import type {
     XmlXPathCompExprPtr,
     XmlXPathContextPtr,
 } from './libxml2raw.mjs';
-import moduleLoader from './libxml2raw.mjs';
-import { ContextStorage } from './utils.mjs';
 
 const libxml2 = await moduleLoader();
 /* c8 ignore next 2, the branch will be hit only on Windows */
@@ -258,10 +259,10 @@ export function xmlXPathCtxtCompile(ctxt: XmlXPathContextPtr, str: string): XmlX
     return withStrings((buf) => libxml2._xmlXPathCtxtCompile(ctxt, buf), str);
 }
 
-export namespace error {
-    export const storage = new ContextStorage<ErrorDetail[]>();
+export const error = {
+    storage: new ContextStorage<ErrorDetail[]>(),
 
-    export const errorCollector = libxml2.addFunction((index: number, err: XmlErrorPtr) => {
+    errorCollector: libxml2.addFunction((index: number, err: XmlErrorPtr) => {
         const file = XmlErrorStruct.file(err);
         const detail: ErrorDetail = {
             message: XmlErrorStruct.message(err),
@@ -271,9 +272,9 @@ export namespace error {
         if (file != null) {
             detail.file = file;
         }
-        storage.get(index).push(detail);
-    }, 'vii');
-}
+        error.storage.get(index).push(detail);
+    }, 'vii'),
+};
 
 export class XmlXPathObjectStruct {
     static type = getValueFunc(0, 'i32');
@@ -285,21 +286,19 @@ export class XmlXPathObjectStruct {
     static floatval = getValueFunc(16, 'double'); // 8 bytes padding
 
     static stringval = getStringValueFunc(24);
-}
 
-export namespace XmlXPathObjectStruct {
-    export enum Type {
-        XPATH_NODESET = 1,
-        XPATH_BOOLEAN = 2,
-        XPATH_NUMBER = 3,
-        XPATH_STRING = 4,
-    }
-} /* c8 ignore next, a branch of typescript generated code is not covered */
+    static Type = {
+        XPATH_NODESET: 1,
+        XPATH_BOOLEAN: 2,
+        XPATH_NUMBER: 3,
+        XPATH_STRING: 4,
+    } as const;
+}
 
 export class XmlNodeSetStruct {
     static nodeCount = getValueFunc(0, 'i32');
 
-    static nodeTable(nodeSetPtr: Pointer, size: number) {
+    static nodeTable(nodeSetPtr: Pointer, size: number): Int32Array {
         // pointer to a pointer array, return the pointer array
         const tablePtr = libxml2.getValue(nodeSetPtr + 8, '*') / libxml2.HEAP32.BYTES_PER_ELEMENT;
         return libxml2.HEAP32.subarray(tablePtr, tablePtr + size);
@@ -336,23 +335,21 @@ export class XmlNodeStruct extends XmlNamedNodeStruct {
     static line = getValueFunc(56, 'i32');
 }
 
-export namespace XmlNodeStruct {
-    export enum Type {
-        XML_ELEMENT_NODE = 1,
-        XML_ATTRIBUTE_NODE = 2,
-        XML_TEXT_NODE = 3,
-        XML_CDATA_SECTION_NODE = 4,
-        XML_ENTITY_REF_NODE = 5,
-        XML_PI_NODE = 7,
-        XML_COMMENT_NODE = 8,
-        XML_DOCUMENT_NODE = 9,
-        XML_DTD_NODE = 14,
-        XML_ELEMENT_DECL = 15,
-        XML_ATTRIBUTE_DECL = 16,
-        XML_ENTITY_DECL = 17,
-        XML_NAMESPACE_DECL = 18,
-    }
-} /* c8 ignore next, a branch of typescript generated code is not covered */
+export enum XmlNodeType {
+    XML_ELEMENT_NODE = 1,
+    XML_ATTRIBUTE_NODE = 2,
+    XML_TEXT_NODE = 3,
+    XML_CDATA_SECTION_NODE = 4,
+    XML_ENTITY_REF_NODE = 5,
+    XML_PI_NODE = 7,
+    XML_COMMENT_NODE = 8,
+    XML_DOCUMENT_NODE = 9,
+    XML_DTD_NODE = 14,
+    XML_ELEMENT_DECL = 15,
+    XML_ATTRIBUTE_DECL = 16,
+    XML_ENTITY_DECL = 17,
+    XML_NAMESPACE_DECL = 18,
+}
 
 export class XmlNsStruct {
     static next = getValueFunc(0, '*');
@@ -429,14 +426,14 @@ export interface XmlInputProvider {
      * @param filename The file name/path/url
      * @returns true if the provider should handle it.
      */
-    match(filename: string): boolean;
+    match: (filename: string) => boolean;
 
     /**
      * Open the file and return a file descriptor (handle) representing the file.
      * @param filename The file name/path/url
      * @returns undefined on error, number on success.
      */
-    open(filename: string): number | undefined;
+    open: (filename: string) => number | undefined;
 
     /**
      * Read from the file.
@@ -444,14 +441,14 @@ export interface XmlInputProvider {
      * @param buf Buffer to read into, with a maximum read size of its byteLength.
      * @returns number of bytes actually read, -1 on error.
      */
-    read(fd: Pointer, buf: Uint8Array): number;
+    read: (fd: Pointer, buf: Uint8Array) => number;
 
     /**
      * Close the file.
      * @param fd File descriptor
      * @returns `true` if succeeded.
      */
-    close(fd: Pointer): boolean;
+    close: (fd: Pointer) => boolean;
 }
 
 /**
@@ -470,7 +467,7 @@ export function xmlRegisterInputProvider(
     const openFunc = libxml2.addFunction((cfilename: CString) => {
         const filename = libxml2.UTF8ToString(cfilename);
         const res = provider.open(filename);
-        return res === undefined ? 0 : res;
+        return res ?? 0;
     }, 'ii');
     const readFunc = libxml2.addFunction(
         (
@@ -567,14 +564,14 @@ export interface XmlOutputBufferHandler {
      *
      * @returns The bytes had been consumed or -1 on errors
      */
-    write(buf: Uint8Array): number;
+    write: (buf: Uint8Array) => number;
 
     /**
      * The callback function that will be triggered once all the data has been consumed.
      *
      * @returns Whether the operation is succeeded.
      */
-    close(): boolean;
+    close: () => boolean;
 }
 
 const outputHandlerStorage = new ContextStorage<XmlOutputBufferHandler>();

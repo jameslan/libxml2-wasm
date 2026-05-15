@@ -1,13 +1,17 @@
+import { readFile } from 'node:fs/promises';
+
 import { expect } from 'chai';
-import { XmlDocument, XmlElement, XsdValidator } from '@libxml2-wasm/lib/index.mjs';
-import * as fs from 'node:fs/promises';
+
+import { XmlDocument, XsdValidator } from '@libxml2-wasm/lib/index.mjs';
+
+import type { XmlElement } from '@libxml2-wasm/lib/index.mjs';
 
 // Use iso8859-15 input, which has to be a file, and has to use node fs module to read the file
 describe('encoding', () => {
     let xmlBuffer: Buffer;
 
     before(async () => {
-        xmlBuffer = await fs.readFile('test/testfiles/iso8859-15.xml');
+        xmlBuffer = await readFile('test/testfiles/iso8859-15.xml');
     });
 
     describe('parse', () => {
@@ -58,7 +62,10 @@ describe('encoding', () => {
 
             const outputBuffer = Buffer.alloc(xmlBuffer.length);
             doc.save({
-                write: (buf: Uint8Array) => { outputBuffer.set(buf); return buf.byteLength; },
+                write: (buf: Uint8Array) => {
+                    outputBuffer.set(buf);
+                    return buf.byteLength;
+                },
                 close: () => true,
             });
             expect(outputBuffer).to.deep.equal(xmlBuffer);
@@ -91,7 +98,10 @@ describe('encoding', () => {
 
             const outputBuffer = Buffer.alloc(xmlBuffer.length);
             (doc.get('/levelone/asdf') as XmlElement).save({
-                write: (buf: Uint8Array) => { outputBuffer.set(buf); return buf.byteLength; },
+                write: (buf: Uint8Array) => {
+                    outputBuffer.set(buf);
+                    return buf.byteLength;
+                },
                 close: () => true,
             });
             expect(outputBuffer.indexOf(Buffer.from('RT="Müller"'))).to.above(0);
@@ -106,7 +116,10 @@ describe('encoding', () => {
 
             const outputBuffer = Buffer.alloc(1024);
             (doc.get('/levelone/asdf') as XmlElement).save({
-                write: (buf: Uint8Array) => { outputBuffer.set(buf); return buf.byteLength; },
+                write: (buf: Uint8Array) => {
+                    outputBuffer.set(buf);
+                    return buf.byteLength;
+                },
                 close: () => true,
             }, { encoding: 'iso8859-15' });
             const posRT = outputBuffer.indexOf(Buffer.from('RT="M'));

@@ -1,5 +1,5 @@
-import { XmlInputProvider, XmlOutputBufferHandler } from './libxml2.mjs';
-import { Pointer } from './libxml2raw.mjs';
+import type { XmlInputProvider, XmlOutputBufferHandler } from './libxml2.mjs';
+import type { Pointer } from './libxml2raw.mjs';
 
 /**
  * Manage JS context object for wasm.
@@ -22,16 +22,16 @@ export class ContextStorage<T> {
         return this.index;
     }
 
-    free(index: number) {
+    free(index: number): void {
         this.storage.delete(index);
     }
 
     get(index: number): T {
-        return this.storage.get(index)!;
+        return this.storage.get(index) as T;
     }
 }
 
-const bufferContexts: Map<number, [Uint8Array, number]> = new Map();
+const bufferContexts = new Map<number, [Uint8Array, number]>();
 let contextIndex = 1;
 
 /**
@@ -55,7 +55,7 @@ export class XmlBufferInputProvider implements XmlInputProvider {
      * @param filename The filename of the buffer.
      * @param buffer The buffer to add.
      */
-    addBuffer(filename: string, buffer: Uint8Array) {
+    addBuffer(filename: string, buffer: Uint8Array): void {
         this._data[filename] = buffer;
     }
 
@@ -63,7 +63,7 @@ export class XmlBufferInputProvider implements XmlInputProvider {
      * Remove a buffer from the provider.
      * @param filename The filename of the buffer to remove.
      */
-    removeBuffer(filename: string) {
+    removeBuffer(filename: string): void {
         delete this._data[filename];
     }
 
@@ -120,7 +120,7 @@ export function readBuffer(fd: number, buffer: Uint8Array): number {
  * Close the buffer reader.
  * @param fd The file descriptor for the buffer reader.
  */
-export function closeBuffer(fd: Pointer) {
+export function closeBuffer(fd: Pointer): void {
     bufferContexts.delete(fd);
 }
 

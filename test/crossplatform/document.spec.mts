@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+
 import {
     ParseOption,
     XmlBufferInputProvider,
@@ -6,11 +7,12 @@ import {
     XmlDocument,
     XmlElement,
     XmlError,
-    XmlNode,
     XmlParseError,
     xmlRegisterInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
 import { XmlStringOutputBufferHandler } from '@libxml2-wasm/lib/utils.mjs';
+
+import type { XmlNode } from '@libxml2-wasm/lib/index.mjs';
 
 describe('XmlDocument', () => {
     const doc = XmlDocument.fromString('<docs><doc></doc></docs>');
@@ -188,7 +190,9 @@ describe('XmlDocument', () => {
 
         it('does nothing w/o XInclude nodes', () => {
             expect(doc.processXInclude()).to.equal(0);
-            expect(doc.toString({ format: false })).to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs><doc/></docs>\n');
+            expect(doc.toString({ format: false })).to.equal(
+                '<?xml version="1.0" encoding="utf-8"?>\n<docs><doc/></docs>\n',
+            );
         });
 
         it('processes XInclude nodes', () => {

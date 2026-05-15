@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+
 import { XmlDocument, XmlXPath, XmlXPathError } from '@libxml2-wasm/lib/index.mjs';
 
 describe('XPath', () => {
@@ -25,7 +26,10 @@ describe('XPath', () => {
     });
 
     it('should throw XmlXPathError for null xpath string', () => {
-        expect(() => XmlXPath.compile(null!)).to.throw(XmlXPathError, 'Failed to compile XPath expression: null');
+        expect(() => XmlXPath.compile(null!)).to.throw(
+            XmlXPathError,
+            'Failed to compile XPath expression: null',
+        );
     });
 
     it('handles namespace', () => {

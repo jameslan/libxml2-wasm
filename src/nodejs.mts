@@ -8,8 +8,11 @@
  * @packageDocumentation
  */
 import fs from 'node:fs';
-import { SaveOptions, XmlInputProvider, xmlRegisterInputProvider } from './libxml2.mjs';
-import { XmlDocument } from './document.mjs';
+
+import { xmlRegisterInputProvider } from './libxml2.mjs';
+
+import type { XmlDocument } from './document.mjs';
+import type { SaveOptions, XmlInputProvider } from './libxml2.mjs';
 
 function filePath(filename: string): string | null {
     try {
@@ -91,7 +94,7 @@ export function xmlRegisterFsInputProviders(): boolean {
  * @param fd The file descriptor returned by `fs.open` or `fs.openSync`, etc.
  * @param options Options for saving.
  */
-export function saveDocSync(doc: XmlDocument, fd: number, options?: SaveOptions) {
+export function saveDocSync(doc: XmlDocument, fd: number, options?: SaveOptions): void {
     const handler = {
         fd,
 

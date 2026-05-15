@@ -1,6 +1,7 @@
-import { use as chaiUse, expect } from 'chai';
+import { readFileSync } from 'node:fs';
+
+import { expect, use as chaiUse } from 'chai';
 import chaiSorted from 'chai-sorted';
-import { readFileSync } from 'fs';
 
 chaiUse(chaiSorted);
 

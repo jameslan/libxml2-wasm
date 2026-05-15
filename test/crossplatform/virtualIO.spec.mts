@@ -1,3 +1,6 @@
+import { assert, expect } from 'chai';
+import sinon from 'sinon';
+
 import {
     ParseOption,
     xmlCleanupInputProvider,
@@ -5,8 +8,6 @@ import {
     XmlParseError,
     xmlRegisterInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
-import { assert, expect } from 'chai';
-import sinon from 'sinon';
 
 describe('Virtual IO', () => {
     afterEach(() => {
@@ -34,11 +35,13 @@ describe('Virtual IO', () => {
         });
 
         expect(() => XmlDocument.fromString(
-            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
+            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml">'
+            + '</xi:include></doc>',
             { url: 'path/doc.xml', option: ParseOption.XML_PARSE_XINCLUDE },
         )).to.throw(
             XmlParseError,
-            'failed to load "path/sub.xml": No such file or directory\ncould not load path/sub.xml, and no fallback was found\n',
+            'failed to load "path/sub.xml": No such file or directory\n'
+            + 'could not load path/sub.xml, and no fallback was found\n',
         ).with.deep.property('details', [{
             message: 'failed to load "path/sub.xml": No such file or directory\n',
             line: 0,
@@ -73,11 +76,13 @@ describe('Virtual IO', () => {
         });
 
         expect(() => XmlDocument.fromString(
-            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
+            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml">'
+            + '</xi:include></doc>',
             { url: 'path/doc.xml', option: ParseOption.XML_PARSE_XINCLUDE },
         )).to.throw(
             XmlParseError,
-            'failed to load "path/sub.xml": No such file or directory\ncould not load path/sub.xml, and no fallback was found\n',
+            'failed to load "path/sub.xml": No such file or directory\n'
+            + 'could not load path/sub.xml, and no fallback was found\n',
         ).with.deep.property('details', [{
             message: 'failed to load "path/sub.xml": No such file or directory\n',
             line: 0,
@@ -114,11 +119,14 @@ describe('Virtual IO', () => {
         });
 
         expect(() => XmlDocument.fromString(
-            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
+            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml">'
+            + '</xi:include></doc>',
             { url: 'path/doc.xml', option: ParseOption.XML_PARSE_XINCLUDE },
         )).to.throw(
             XmlParseError,
-            'Unknown IO error\nDocument is empty\ncould not load path/sub.xml, and no fallback was found\n',
+            'Unknown IO error\n'
+            + 'Document is empty\n'
+            + 'could not load path/sub.xml, and no fallback was found\n',
         ).with.deep.property('details', [{
             message: 'Unknown IO error\n',
             file: 'path/sub.xml',
@@ -140,7 +148,10 @@ describe('Virtual IO', () => {
     it('should ignore error if failed to close', () => {
         const read = sinon.stub()
             .onFirstCall().callsFake(
-                (fd: number, buf: Uint8Array) => new TextEncoder().encodeInto('<sub foo="bar"/>', buf).read,
+                (fd: number, buf: Uint8Array) => new TextEncoder().encodeInto(
+                    '<sub foo="bar"/>',
+                    buf,
+                ).read,
             )
             .onSecondCall()
             .returns(0);
@@ -164,7 +175,8 @@ describe('Virtual IO', () => {
         });
 
         using doc = XmlDocument.fromString(
-            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
+            '<doc xmlns:xi="http://www.w3.org/2001/XInclude">'
+            + '<xi:include href="sub.xml"></xi:include></doc>',
             { url: 'path/doc.xml' },
         );
         doc.processXInclude();

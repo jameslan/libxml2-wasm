@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+
 import { diag, XmlDocument } from '@libxml2-wasm/lib/index.mjs';
 
 describe('diagnostics', () => {
@@ -55,7 +56,9 @@ describe('diagnostics', () => {
         XmlDocument.fromString('<doc/>'); // to be GC'ed
 
         // allow finalizer to run
-        await new Promise((resolve) => { setTimeout(resolve, 0); });
+        await new Promise((resolve) => {
+            setTimeout(resolve, 0);
+        });
         (global as any).gc();
         const report = diag.report();
 
@@ -73,7 +76,9 @@ describe('diagnostics', () => {
         XmlDocument.fromString('<doc/>'); // to be GC'ed
 
         // allow finalizer to run
-        await new Promise((resolve) => { setTimeout(resolve, 0); });
+        await new Promise((resolve) => {
+            setTimeout(resolve, 0);
+        });
         (global as any).gc();
         const report = diag.report();
 

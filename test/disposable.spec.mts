@@ -1,8 +1,9 @@
 import { expect } from 'chai';
+
 import { disposeBy, XmlDisposable } from '../src/disposable.mjs';
 
 function fixture(free: number[]) {
-    @disposeBy((val) => { free.push(val); })
+    @disposeBy((val) => free.push(val))
     class Fixture extends XmlDisposable<Fixture> {
     }
 
@@ -16,12 +17,16 @@ describe('Disposable', () => {
         const Fixture = fixture(f1);
         Fixture.getInstance(51);
 
-        await new Promise((resolve) => { setTimeout(resolve, 0); });
+        await new Promise((resolve) => {
+            setTimeout(resolve, 0);
+        });
         for (let i = 0; i < 3; i += 1) { // try 3 times
             (global as any).gc();
             // allow finalizer to run
             // eslint-disable-next-line no-await-in-loop
-            await new Promise((resolve) => { setTimeout(resolve, 0); });
+            await new Promise((resolve) => {
+                setTimeout(resolve, 0);
+            });
         }
 
         expect(f1).to.deep.equal([51]);
@@ -38,10 +43,14 @@ describe('Disposable', () => {
 
         // explicit call to dispose already freed the resource and record it in f1 array, reset it.
         f1.length = 0;
-        await new Promise((resolve) => { setTimeout(resolve, 0); });
+        await new Promise((resolve) => {
+            setTimeout(resolve, 0);
+        });
         (global as any).gc();
         // allow finalizer to finish
-        await new Promise((resolve) => { setTimeout(resolve, 0); });
+        await new Promise((resolve) => {
+            setTimeout(resolve, 0);
+        });
 
         expect(f1).to.deep.equal([]);
     });

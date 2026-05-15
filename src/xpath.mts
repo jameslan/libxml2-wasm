@@ -1,10 +1,11 @@
+import { disposeBy, XmlDisposable } from './disposable.mjs';
 import {
+    XmlError,
     xmlXPathCtxtCompile,
     xmlXPathFreeCompExpr,
-    XmlError,
 } from './libxml2.mjs';
+
 import type { XmlXPathCompExprPtr } from './libxml2raw.mjs';
-import { disposeBy, XmlDisposable } from './disposable.mjs';
 
 /**
  * An exception class for XPath compilation errors.
@@ -14,9 +15,7 @@ export class XmlXPathError extends XmlError {}
 /**
  * Map between the prefix and the URI of the namespace
  */
-export interface NamespaceMap {
-    [prefix: string]: string;
-}
+export type NamespaceMap = Record<string, string>;
 
 /**
  * The XPath object.

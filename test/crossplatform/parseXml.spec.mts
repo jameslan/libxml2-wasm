@@ -1,14 +1,16 @@
 import { expect } from 'chai';
+
 import {
     ParseOption,
     XmlCData,
     xmlCleanupInputProvider,
     XmlDocument,
-    XmlElement,
     XmlError,
     XmlParseError,
     xmlRegisterInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
+
+import type { XmlElement } from '@libxml2-wasm/lib/index.mjs';
 
 describe('parseXmlString', () => {
     it('should parse valid xml string', () => {
@@ -163,7 +165,8 @@ describe('XInclude', () => {
 
     it('wont process xml with XInclude by default', () => {
         using doc = XmlDocument.fromString(
-            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
+            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml">'
+            + '</xi:include></doc>',
             { url: 'path/doc.xml' },
         );
 
@@ -176,7 +179,8 @@ describe('XInclude', () => {
     it('should process xml with XInclude', () => {
         registerCallbacks('path/sub.xml', '<sub foo="bar"></sub>');
         using doc = XmlDocument.fromString(
-            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
+            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml">'
+            + '</xi:include></doc>',
             { url: 'path/doc.xml', option: ParseOption.XML_PARSE_XINCLUDE },
         );
 
@@ -186,11 +190,13 @@ describe('XInclude', () => {
     it('should handle errors in the included XML', () => {
         registerCallbacks('path/sub.xml', '<sub foo="bar">');
         expect(() => XmlDocument.fromString(
-            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
+            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml">'
+            + '</xi:include></doc>',
             { url: 'path/doc.xml', option: ParseOption.XML_PARSE_XINCLUDE },
         )).to.throw(
             XmlParseError,
-            'Premature end of data in tag sub line 1\ncould not load path/sub.xml, and no fallback was found',
+            'Premature end of data in tag sub line 1\ncould not load path/sub.xml, '
+            + 'and no fallback was found',
         ).with.deep.property('details', [{
             message: 'Premature end of data in tag sub line 1\n',
             file: 'path/sub.xml',
