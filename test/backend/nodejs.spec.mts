@@ -1,9 +1,11 @@
-import fs from 'node:fs';
 import { execSync } from 'node:child_process';
+import fs from 'node:fs';
 import { join, resolve } from 'node:path';
-import * as chai from 'chai';
+
+import { expect, use } from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
+
 import {
     xmlCleanupInputProvider,
     XmlDocument,
@@ -16,8 +18,7 @@ import {
     xmlRegisterFsInputProviders,
 } from '@libxml2-wasm/lib/nodejs.mjs';
 
-chai.use(sinonChai);
-const { expect } = chai;
+use(sinonChai);
 
 describe('Node.js input callbacks', () => {
     before(() => {
@@ -29,7 +30,10 @@ describe('Node.js input callbacks', () => {
     });
 
     it('handles includes with relative path', () => {
-        using schemaDoc = XmlDocument.fromBuffer(fs.readFileSync('test/testfiles/book.xsd'), { url: 'test/testfiles/book.xsd' });
+        using schemaDoc = XmlDocument.fromBuffer(
+            fs.readFileSync('test/testfiles/book.xsd'),
+            { url: 'test/testfiles/book.xsd' },
+        );
         using validator = XsdValidator.fromDoc(schemaDoc);
         using doc = XmlDocument.fromBuffer(
             fs.readFileSync('test/testfiles/book.xml'),
@@ -76,7 +80,8 @@ describe('Node.js input callbacks', () => {
         );
         doc.processXInclude();
 
-        expect(doc.get('//country/capital[../name="United States"]')?.content).to.equal('Washington D.C.');
+        expect(doc.get('//country/capital[../name="United States"]')?.content)
+            .to.equal('Washington D.C.');
     });
 
     it('reports error conditions', () => {
@@ -87,15 +92,18 @@ describe('Node.js input callbacks', () => {
         expect(() => XsdValidator.fromDoc(wrongIncludeDoc)).to.throw(
             XmlValidateError,
             'failed to load "test/testfiles/wronginclude.xsd": No such file or directory\n'
-            + 'Element \'{http://www.w3.org/2001/XMLSchema}include\': Failed to load the document \'test/testfiles/wronginclude.xsd\' for inclusion.\n',
+            + 'Element \'{http://www.w3.org/2001/XMLSchema}include\': '
+            + 'Failed to load the document \'test/testfiles/wronginclude.xsd\' for inclusion.\n',
         ).with.deep.property(
             'details',
             [{
-                message: 'failed to load "test/testfiles/wronginclude.xsd": No such file or directory\n',
+                message: 'failed to load "test/testfiles/wronginclude.xsd": '
+                + 'No such file or directory\n',
                 line: 0,
                 col: 0,
             }, {
-                message: 'Element \'{http://www.w3.org/2001/XMLSchema}include\': Failed to load the document \'test/testfiles/wronginclude.xsd\' for inclusion.\n',
+                message: 'Element \'{http://www.w3.org/2001/XMLSchema}include\': Failed to load '
+                + 'the document \'test/testfiles/wronginclude.xsd\' for inclusion.\n',
                 file: 'test/testfiles/book_wronginclude.xsd',
                 line: 3,
                 col: 0,
@@ -158,7 +166,8 @@ describe('saveDocSync', () => {
     it('writes to file', () => {
         const calledWithCorrectArg = writeStub.withArgs(
             42,
-            sinon.match((value) => value instanceof Uint8Array && new TextDecoder().decode(value) === `\
+            sinon.match((value) => value instanceof Uint8Array
+                && new TextDecoder().decode(value) === `\
 <?xml version="1.0"?>
 <docs>
   <doc/>
@@ -192,7 +201,8 @@ describe('Path handling', () => {
     if (process.platform === 'win32') {
         it('handles backslash on Windows', () => {
             using doc = XmlDocument.fromString(
-                '<book><title>Dune</title><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="author.xml" /></book>',
+                '<book><title>Dune</title><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" '
+                + 'href="author.xml" /></book>',
                 { url: 'test\\testfiles\\book.xml' },
             );
             doc.processXInclude();
@@ -203,7 +213,8 @@ describe('Path handling', () => {
             // backslash is part of the filename, not path separator,
             // so the include xml should be test/testfiles/author.xml
             using doc = XmlDocument.fromString(
-                '<book><title>Dune</title><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="author.xml" /></book>',
+                '<book><title>Dune</title><xi:include xmlns:xi="http://www.w3.org/2001/XInclude" '
+                + 'href="author.xml" /></book>',
                 { url: 'test/testfiles/book\\test.xml' },
             );
             doc.processXInclude();

@@ -1,6 +1,8 @@
+import { canonicalizeDocument } from './c14n.mjs';
+import { disposeBy, XmlDisposable } from './disposable.mjs';
+import { XmlDtd } from './dtd.mjs';
 import {
     error,
-    SaveOptions,
     xmlCtxtSetErrorHandler,
     xmlDocGetRootElement,
     xmlDocSetRootElement,
@@ -13,7 +15,6 @@ import {
     xmlNewDoc,
     xmlNewDocNode,
     xmlNewParserCtxt,
-    XmlOutputBufferHandler,
     xmlReadMemory,
     xmlReadString,
     xmlSaveClose,
@@ -26,13 +27,14 @@ import {
     xmlXIncludeProcessNode,
     xmlXIncludeSetErrorHandler,
 } from './libxml2.mjs';
-import { XmlElement, type XmlNode } from './nodes.mjs';
-import { NamespaceMap, XmlXPath } from './xpath.mjs';
-import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.mjs';
-import { disposeBy, XmlDisposable } from './disposable.mjs';
-import { XmlDtd } from './dtd.mjs';
+import { XmlElement } from './nodes.mjs';
 import { XmlStringOutputBufferHandler } from './utils.mjs';
-import { type C14NOptions, canonicalizeDocument } from './c14n.mjs';
+
+import type { C14NOptions } from './c14n.mjs';
+import type { SaveOptions, XmlOutputBufferHandler } from './libxml2.mjs';
+import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.mjs';
+import type { XmlNode } from './nodes.mjs';
+import type { NamespaceMap, XmlXPath } from './xpath.mjs';
 
 export enum ParseOption {
     XML_PARSE_DEFAULT = 0,
@@ -239,7 +241,7 @@ function parse<Input>(
             if (!xml) {
                 xmlFreeDoc(xml);
             }
-            throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
+            throw new XmlParseError(errDetails.map((d) => d.message).join(''), errDetails);
         }
     } finally {
         error.storage.free(errIndex);
@@ -292,7 +294,9 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
         options: ParseOptions = {},
     ): XmlDocument {
         if (options.encoding && options.encoding !== 'utf-8') {
-            throw new XmlError('Non-UTF-8 encoding is not supported for string input, use fromBuffer instead');
+            throw new XmlError(
+                'Non-UTF-8 encoding is not supported for string input, use fromBuffer instead',
+            );
         }
         return parse(xmlReadString, source, options.url ?? null, options);
     }
@@ -322,8 +326,11 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
      */
     toString(options?: SaveOptions): string {
         const saveOptions = options ?? { format: true };
-        if (saveOptions.encoding && saveOptions.encoding !== 'utf-8' && saveOptions.encoding !== 'ascii') {
-            throw new XmlError('Only utf-8 or ascii is supported in toString(). For other encodings, use save().');
+        if (saveOptions.encoding && saveOptions.encoding !== 'utf-8'
+            && saveOptions.encoding !== 'ascii') {
+            throw new XmlError(
+                'Only utf-8 or ascii is supported in toString(). For other encodings, use save().',
+            );
         }
         const handler = new XmlStringOutputBufferHandler();
         this.save(handler, { encoding: 'utf-8', ...saveOptions });
@@ -336,8 +343,8 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
      *
      * @deprecated Use `save` instead.
      */
-    toBuffer(handler: XmlOutputBufferHandler, options?: SaveOptions) {
-        return this.save(handler, options);
+    toBuffer(handler: XmlOutputBufferHandler, options?: SaveOptions): void {
+        this.save(handler, options);
     }
 
     /**
@@ -350,7 +357,7 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
      * @see {@link toString}
      * @see {@link XmlElement#save}
      */
-    save(handler: XmlOutputBufferHandler, options?: SaveOptions) {
+    save(handler: XmlOutputBufferHandler, options?: SaveOptions): void {
         const ctxt = xmlSaveToIO(handler, options?.encoding ?? null, xmlSaveOption(options));
         if (options?.indentString) {
             if (xmlSaveSetIndentString(ctxt, options.indentString) < 0) {
@@ -505,7 +512,7 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
             const ret = xmlXIncludeProcessNode(xinc, this._ptr);
             if (ret < 0) {
                 const errDetails = error.storage.get(errIndex);
-                throw new XmlParseError(errDetails!.map((d) => d.message).join(''), errDetails!);
+                throw new XmlParseError(errDetails.map((d) => d.message).join(''), errDetails);
             }
             return ret;
         } finally {

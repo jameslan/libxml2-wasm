@@ -3,18 +3,21 @@ import {
     allocCStringArray,
     free,
     xmlC14NExecute,
-    xmlOutputBufferCreateIO,
-    xmlOutputBufferClose,
     XmlError,
-    XmlOutputBufferHandler,
+    xmlOutputBufferClose,
+    xmlOutputBufferCreateIO,
     XmlTreeCommonStruct,
+
 } from './libxml2.mjs';
-import { type XmlNode, createNode, createNullableNode } from './nodes.mjs';
-import type {
-    XmlDocPtr, XmlOutputBufferPtr, Pointer,
-} from './libxml2raw.mjs';
-import type { XmlDocument } from './document.mjs';
+import { createNode, createNullableNode } from './nodes.mjs';
 import { ContextStorage } from './utils.mjs';
+
+import type { XmlDocument } from './document.mjs';
+import type { XmlOutputBufferHandler } from './libxml2.mjs';
+import type {
+    Pointer, XmlDocPtr, XmlOutputBufferPtr,
+} from './libxml2raw.mjs';
+import type { XmlNode } from './nodes.mjs';
 
 /**
  * Context for the C14N isVisible callback.
@@ -73,7 +76,7 @@ const c14nIsVisibleCallback = addFunction(
         return 1;
     },
     'iiii',
-) as Pointer;
+);
 
 /**
  * C14N (Canonical XML) modes supported by libxml2
@@ -165,11 +168,11 @@ function canonicalizeInternal(
     handler: XmlOutputBufferHandler,
     docPtr: XmlDocPtr,
     options: C14NOptions = {},
-    cascade: boolean = true,
+    cascade = true,
 ): void {
     const hasIsVisible = (opts: C14NOptions):
         opts is C14NOptions & {
-            isVisible: XmlC14NIsVisibleCallback
+            isVisible: XmlC14NIsVisibleCallback;
         } => typeof (opts as any).isVisible === 'function';
 
     const hasNodeSet = (opts: C14NOptions):
@@ -182,7 +185,7 @@ function canonicalizeInternal(
 
     let outputBufferPtr: XmlOutputBufferPtr | null = null;
     let prefixArrayPtr: Pointer = 0;
-    let contextIndex: number = 0;
+    let contextIndex = 0;
 
     try {
         // Create output buffer using IO callbacks
@@ -212,7 +215,7 @@ function canonicalizeInternal(
 
         const result = xmlC14NExecute(
             docPtr,
-            contextIndex !== 0 ? c14nIsVisibleCallback : 0 as Pointer,
+            contextIndex !== 0 ? c14nIsVisibleCallback : 0,
             contextIndex, // user_data is the storage index
             mode,
             prefixArrayPtr,

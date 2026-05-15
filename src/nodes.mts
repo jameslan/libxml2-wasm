@@ -1,19 +1,14 @@
+import { canonicalizeSubtree } from './c14n.mjs';
 import { XmlDocument } from './document.mjs';
 import {
-    SaveOptions,
-    XmlError,
-    XmlNamedNodeStruct,
-    XmlNodeSetStruct,
-    XmlNodeStruct,
-    XmlNsStruct,
-    XmlOutputBufferHandler,
-    XmlXPathObjectStruct,
     xmlAddChild,
     xmlAddNextSibling,
     xmlAddPrevSibling,
+    XmlError,
     xmlFreeNode,
     xmlGetNsList,
     xmlHasNsProp,
+    XmlNamedNodeStruct,
     xmlNewCDataBlock,
     xmlNewDocComment,
     xmlNewDocNode,
@@ -22,6 +17,10 @@ import {
     xmlNewReference,
     xmlNodeGetContent,
     xmlNodeSetContent,
+    XmlNodeSetStruct,
+    XmlNodeStruct,
+    XmlNodeType,
+    XmlNsStruct,
     xmlRemoveProp,
     xmlSaveClose,
     xmlSaveOption,
@@ -36,13 +35,20 @@ import {
     xmlXPathFreeContext,
     xmlXPathFreeObject,
     xmlXPathNewContext,
+    XmlXPathObjectStruct,
     xmlXPathRegisterNs,
     xmlXPathSetContextNode,
 } from './libxml2.mjs';
-import type { XmlDocPtr, XmlNodePtr, XmlNsPtr } from './libxml2raw.mjs';
 import { XmlStringOutputBufferHandler } from './utils.mjs';
-import { NamespaceMap, XmlXPath } from './xpath.mjs';
-import { canonicalizeSubtree, SubtreeC14NOptions } from './c14n.mjs';
+import { XmlXPath } from './xpath.mjs';
+
+import type { SubtreeC14NOptions } from './c14n.mjs';
+import type {
+    SaveOptions,
+    XmlOutputBufferHandler,
+} from './libxml2.mjs';
+import type { XmlDocPtr, XmlNodePtr, XmlNsPtr } from './libxml2raw.mjs';
+import type { NamespaceMap } from './xpath.mjs';
 
 function compiledXPathEval(nodePtr: XmlNodePtr, xpath: XmlXPath) {
     const context = xmlXPathNewContext(XmlNodeStruct.doc(nodePtr));
@@ -69,21 +75,19 @@ function xpathEval(nodePtr: XmlNodePtr, xpath: string | XmlXPath, namespaces?: N
     return ret;
 }
 
-interface XmlNodeConstructor<T extends XmlNode> {
-    new (ptr: XmlNodePtr): T;
-}
+type XmlNodeConstructor<T extends XmlNode> = new (ptr: XmlNodePtr) => T;
 
-const nodeConstructors: Map<
-    XmlNodeStruct.Type,
+const nodeConstructors = new Map<
+    XmlNodeType,
     XmlNodeConstructor<XmlNode>
-> = new Map();
+>();
 
 /** @internal */
-export function forNodeType<T extends XmlNode>(nodeType: XmlNodeStruct.Type) {
+export function forNodeType<T extends XmlNode>(nodeType: XmlNodeType) {
     return function decorator(
         constructor: XmlNodeConstructor<T>,
         _context_: ClassDecoratorContext,
-    ) {
+    ): XmlNodeConstructor<T> {
         nodeConstructors.set(nodeType, constructor);
         return constructor;
     };
@@ -120,7 +124,7 @@ function addNode(
 
 function findNamespace(nodePtr: XmlNodePtr, prefix?: string): XmlNsPtr {
     // Check if the namespace prefix valid for the current node
-    const ns = xmlSearchNs(XmlNodeStruct.doc(nodePtr), nodePtr, prefix || null);
+    const ns = xmlSearchNs(XmlNodeStruct.doc(nodePtr), nodePtr, prefix ?? null);
     if (!ns && prefix) {
         throw new XmlError(`Namespace prefix "${prefix}" not found`);
     }
@@ -343,9 +347,8 @@ export abstract class XmlNode {
                 }
                 /* c8 ignore next 4, defensive code, there's no test case can cover this */
                 default:
-                    throw new XmlError(
-                        `XPath selector returned an unsupported type: ${XmlXPathObjectStruct.type(xpathObj)}`,
-                    );
+                    throw new XmlError(`XPath selector returned an unsupported type: ${
+                        XmlXPathObjectStruct.type(xpathObj)}`);
             }
         } finally {
             xmlXPathFreeObject(xpathObj);
@@ -356,31 +359,31 @@ export abstract class XmlNode {
 /**
  *
  */
-@forNodeType(XmlNodeStruct.Type.XML_DOCUMENT_NODE)
+@forNodeType(XmlNodeType.XML_DOCUMENT_NODE)
 export class XmlDocumentNode extends XmlNode {
 }
 
-@forNodeType(XmlNodeStruct.Type.XML_DTD_NODE)
+@forNodeType(XmlNodeType.XML_DTD_NODE)
 export class XmlDocumentTypeNode extends XmlNode {
 }
 
-@forNodeType(XmlNodeStruct.Type.XML_ELEMENT_DECL)
+@forNodeType(XmlNodeType.XML_ELEMENT_DECL)
 export class XmlElementDeclNode extends XmlNode {
 }
 
-@forNodeType(XmlNodeStruct.Type.XML_ATTRIBUTE_DECL)
+@forNodeType(XmlNodeType.XML_ATTRIBUTE_DECL)
 export class XmlAttributeDeclNode extends XmlNode {
 }
 
-@forNodeType(XmlNodeStruct.Type.XML_ENTITY_DECL)
+@forNodeType(XmlNodeType.XML_ENTITY_DECL)
 export class XmlEntityDeclNode extends XmlNode {
 }
 
-@forNodeType(XmlNodeStruct.Type.XML_NAMESPACE_DECL)
+@forNodeType(XmlNodeType.XML_NAMESPACE_DECL)
 export class XmlNamespaceDeclNode extends XmlNode {
 }
 
-@forNodeType(XmlNodeStruct.Type.XML_PI_NODE)
+@forNodeType(XmlNodeType.XML_PI_NODE)
 export class XmlProcessingInstructionNode extends XmlNode {
 }
 
@@ -558,16 +561,16 @@ export interface XmlNamedNode {
     get prefix(): string;
 
     /**
-     * Alias of {@link prefix}
-     */
-    get namespacePrefix(): string;
-
-    /**
      * Set the namespace prefix of this node.
      * @param prefix The new prefix to set.
      * Use empty string to remove the prefix.
      */
     set prefix(prefix: string);
+
+    /**
+     * Alias of {@link prefix}
+     */
+    get namespacePrefix(): string;
 
     set namespacePrefix(prefix: string);
 
@@ -580,7 +583,7 @@ export interface XmlNamedNode {
      * Find out corresponding namespace URI for a prefix
      * @param prefix
      */
-    namespaceForPrefix(prefix: string): string | null;
+    namespaceForPrefix: (prefix: string) => string | null;
 }
 
 function namedNode<T extends XmlNode>(
@@ -626,7 +629,8 @@ function namedNode<T extends XmlNode>(
 
         namespacePrefix: {
             get() {
-                return this.prefix;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                return this.prefix; // the linter can't analyze this properly
             },
 
             set(prefix: string) {
@@ -655,7 +659,7 @@ export interface XmlElement extends XmlNamedNode {}
 /**
  * The class representing an XML element node.
  */
-@forNodeType(XmlNodeStruct.Type.XML_ELEMENT_NODE)
+@forNodeType(XmlNodeType.XML_ELEMENT_NODE)
 @namedNode
 export class XmlElement extends XmlTreeNode {
     /**
@@ -847,7 +851,7 @@ export class XmlElement extends XmlTreeNode {
      * @see {@link toString}
      * @see {@link XmlDocument#save}
      */
-    save(handler: XmlOutputBufferHandler, options?: SaveOptions) {
+    save(handler: XmlOutputBufferHandler, options?: SaveOptions): void {
         const ctxt = xmlSaveToIO(handler, options?.encoding ?? 'utf-8', xmlSaveOption(options));
         if (options?.indentString) {
             if (xmlSaveSetIndentString(ctxt, options.indentString) < 0) {
@@ -871,8 +875,11 @@ export class XmlElement extends XmlTreeNode {
      */
     toString(options?: SaveOptions): string {
         const saveOptions = options ?? { format: true };
-        if (saveOptions.encoding && saveOptions.encoding !== 'utf-8' && saveOptions.encoding !== 'ascii') {
-            throw new XmlError('Only utf-8 or ascii is supported in toString(). For other encodings, use save().');
+        if (saveOptions.encoding && saveOptions.encoding !== 'utf-8'
+            && saveOptions.encoding !== 'ascii') {
+            throw new XmlError(
+                'Only utf-8 or ascii is supported in toString(). For other encodings, use save().',
+            );
         }
         const handler = new XmlStringOutputBufferHandler();
         this.save(handler, saveOptions);
@@ -886,7 +893,7 @@ export interface XmlAttribute extends XmlNamedNode {}
 /**
  * The class representing an XML attribute node.
  */
-@forNodeType(XmlNodeStruct.Type.XML_ATTRIBUTE_NODE)
+@forNodeType(XmlNodeType.XML_ATTRIBUTE_NODE)
 @namedNode
 export class XmlAttribute extends XmlNode {
     /**
@@ -946,19 +953,19 @@ export abstract class XmlSimpleNode extends XmlTreeNode {
     }
 }
 
-@forNodeType(XmlNodeStruct.Type.XML_CDATA_SECTION_NODE)
+@forNodeType(XmlNodeType.XML_CDATA_SECTION_NODE)
 export class XmlCData extends XmlSimpleNode {
 }
 
-@forNodeType(XmlNodeStruct.Type.XML_COMMENT_NODE)
+@forNodeType(XmlNodeType.XML_COMMENT_NODE)
 export class XmlComment extends XmlSimpleNode {
 }
 
-@forNodeType(XmlNodeStruct.Type.XML_TEXT_NODE)
+@forNodeType(XmlNodeType.XML_TEXT_NODE)
 export class XmlText extends XmlSimpleNode {
 }
 
-@forNodeType(XmlNodeStruct.Type.XML_ENTITY_REF_NODE)
+@forNodeType(XmlNodeType.XML_ENTITY_REF_NODE)
 export class XmlEntityReference extends XmlTreeNode {
     /**
      * The name of the entity this node references.

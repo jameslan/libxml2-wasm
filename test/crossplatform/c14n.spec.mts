@@ -1,16 +1,19 @@
 import { assert, expect } from 'chai';
+
 import {
     diag,
-    XmlDocument,
-    XmlC14NMode,
-    XmlStringOutputBufferHandler,
-    XmlElement,
-    XmlText,
-    XmlComment,
-    XmlCData,
     XmlAttribute,
+    XmlC14NMode,
+    XmlCData,
+    XmlComment,
+    XmlDocument,
+    XmlElement,
     XmlEntityReference,
+    XmlStringOutputBufferHandler,
+    XmlText,
 } from '@libxml2-wasm/lib/index.mjs';
+
+import type { XmlNode } from '@libxml2-wasm/lib/index.mjs';
 
 describe('C14N (XML Canonicalization)', () => {
     beforeEach(() => {
@@ -41,17 +44,22 @@ describe('C14N (XML Canonicalization)', () => {
                 mode: XmlC14NMode.XML_C14N_1_0,
             });
             expect(canonical).to.be.a('string');
-            expect(canonical).to.equal('<root><child attr1="value1" attr2="value2">text</child></root>');
+            expect(canonical)
+                .to.equal('<root><child attr1="value1" attr2="value2">text</child></root>');
         });
 
         it('should sort namespace declarations', () => {
-            const xmlString = '<root xmlns:ns2="uri:ns2" xmlns:ns1="uri:ns1" ns2:attr="value"><ns1:child>text</ns1:child></root>';
+            const xmlString = '<root xmlns:ns2="uri:ns2" xmlns:ns1="uri:ns1" ns2:attr="value">'
+                + '<ns1:child>text</ns1:child></root>';
             using doc = XmlDocument.fromString(xmlString);
             const canonical = doc.canonicalizeToString({
                 mode: XmlC14NMode.XML_C14N_1_0,
             });
             expect(canonical).to.be.a('string');
-            expect(canonical).to.equal('<root xmlns:ns1="uri:ns1" xmlns:ns2="uri:ns2" ns2:attr="value"><ns1:child>text</ns1:child></root>');
+            expect(canonical).to.equal(
+                '<root xmlns:ns1="uri:ns1" xmlns:ns2="uri:ns2" ns2:attr="value">'
+                + '<ns1:child>text</ns1:child></root>',
+            );
         });
 
         it('should remove whitespace between attributes', () => {
@@ -61,7 +69,8 @@ describe('C14N (XML Canonicalization)', () => {
                 mode: XmlC14NMode.XML_C14N_1_0,
             });
             expect(canonical).to.be.a('string');
-            expect(canonical).to.equal('<root><child attr1="value1" attr2="value2">text</child></root>');
+            expect(canonical)
+                .to.equal('<root><child attr1="value1" attr2="value2">text</child></root>');
         });
 
         it('should replace self-closing tags with full tags', () => {
@@ -75,7 +84,8 @@ describe('C14N (XML Canonicalization)', () => {
         });
 
         it('should remove the XML declaration', () => {
-            const xmlString = '<?xml version="1.0" encoding="UTF-8"?><root><child>text</child></root>';
+            const xmlString = '<?xml version="1.0" encoding="UTF-8"?>'
+                + '<root><child>text</child></root>';
             using doc = XmlDocument.fromString(xmlString);
             const canonical = doc.canonicalizeToString({
                 mode: XmlC14NMode.XML_C14N_1_0,
@@ -97,7 +107,9 @@ describe('C14N (XML Canonicalization)', () => {
 
     describe('canonicalizeSubtree', () => {
         it('should canonicalize only a specific subtree', () => {
-            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child><sibling>other</sibling></root>';
+            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused">'
+                + '<ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child>'
+                + '<sibling>other</sibling></root>';
             using doc = XmlDocument.fromString(xmlString);
             const node = doc.get('//ns1:child', { ns1: 'uri:ns1' });
             assert(node instanceof XmlElement);
@@ -107,24 +119,33 @@ describe('C14N (XML Canonicalization)', () => {
             });
 
             expect(canonical).to.be.a('string');
-            expect(canonical).to.equal('<ns1:child xmlns:ns1="uri:ns1" attr="value"><childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child>');
+            expect(canonical).to.equal('<ns1:child xmlns:ns1="uri:ns1" attr="value">'
+                + '<childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child>');
         });
 
         it('should canonicalize from root', () => {
-            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child><sibling>other</sibling></root>';
+            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused">'
+                + '<ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child>'
+                + '<sibling>other</sibling></root>';
             using doc = XmlDocument.fromString(xmlString);
-            const node = doc.get('/');
+            const node = doc.get('/') as XmlNode;
 
-            const canonical = node!.canonicalizeToString({
+            const canonical = node.canonicalizeToString({
                 mode: XmlC14NMode.XML_C14N_1_0,
             });
 
             expect(canonical).to.be.a('string');
-            expect(canonical).to.equal('<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child><sibling>other</sibling></root>');
+            expect(canonical).to.equal(
+                '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused">'
+                + '<ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child>'
+                + '<sibling>other</sibling></root>',
+            );
         });
 
         it('should include inclusive namespaces with exclusive canonicalization', () => {
-            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused" xmlns:ns3="uri:alsonotused"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child><sibling>other</sibling></root>';
+            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused" '
+            + 'xmlns:ns3="uri:alsonotused"><ns1:child attr="value"><childofchild attr="val">text'
+            + '</childofchild></ns1:child><sibling>other</sibling></root>';
             using doc = XmlDocument.fromString(xmlString);
             const inclusiveNamespaces = ['ns3'];
             const node = doc.get('//ns1:child', { ns1: 'uri:ns1' });
@@ -135,15 +156,20 @@ describe('C14N (XML Canonicalization)', () => {
                 inclusiveNamespacePrefixes: inclusiveNamespaces,
             });
             expect(canonical).to.be.a('string');
-            expect(canonical).to.equal('<ns1:child xmlns:ns1="uri:ns1" xmlns:ns3="uri:alsonotused" attr="value"><childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child>');
+            expect(canonical).to.equal(
+                '<ns1:child xmlns:ns1="uri:ns1" xmlns:ns3="uri:alsonotused" attr="value">'
+                + '<childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child>',
+            );
         });
     });
 
     describe('canonicalizeNodeSet', () => {
         it('should work with nodeset', () => {
-            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child><sibling>other</sibling></root>';
+            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused">'
+                + '<ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child>'
+                + '<sibling>other</sibling></root>';
             using doc = XmlDocument.fromString(xmlString);
-            const nodes = doc.find('//ns1:child | //ns:sibling', { ns: 'uri:root', ns1: 'uri:ns1' });
+            const nodes = doc.find('//ns1:child|//ns:sibling', { ns: 'uri:root', ns1: 'uri:ns1' });
 
             expect(nodes).to.have.lengthOf(2);
 
@@ -153,7 +179,9 @@ describe('C14N (XML Canonicalization)', () => {
             );
 
             expect(canonical).to.be.a('string');
-            expect(canonical).to.equal('<ns1:child xmlns:ns1="uri:ns1" attr="value"><childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child><sibling xmlns="uri:root">other</sibling>');
+            expect(canonical).to.equal('<ns1:child xmlns:ns1="uri:ns1" attr="value">'
+                + '<childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child>'
+                + '<sibling xmlns="uri:root">other</sibling>');
         });
     });
 
@@ -192,7 +220,7 @@ describe('C14N (XML Canonicalization)', () => {
             expect(() => doc.canonicalizeToString({
                 isVisible: () => true,
                 nodeSet,
-            } as any)).to.throw('Cannot specify both isVisible and nodeSet');
+            })).to.throw('Cannot specify both isVisible and nodeSet');
         });
     });
 
@@ -216,7 +244,8 @@ describe('C14N (XML Canonicalization)', () => {
     });
 
     describe('all C14N modes', () => {
-        const xmlString = '<root xmlns="uri:default" xmlns:ns1="uri:ns1"><ns1:child attr="value">text</ns1:child></root>';
+        const xmlString = '<root xmlns="uri:default" xmlns:ns1="uri:ns1">'
+            + '<ns1:child attr="value">text</ns1:child></root>';
 
         it('should canonicalize with XML_C14N_1_0', () => {
             using doc = XmlDocument.fromString(xmlString);
@@ -244,7 +273,9 @@ describe('C14N (XML Canonicalization)', () => {
 
     describe('node.toCanonicalString() / node.canonicalize()', () => {
         it('should canonicalize a node subtree', () => {
-            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child><sibling>other</sibling></root>';
+            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1"><ns1:child attr="value">'
+                + '<childofchild attr="val">text</childofchild></ns1:child><sibling>other</sibling>'
+                + '</root>';
             using doc = XmlDocument.fromString(xmlString);
             const node = doc.get('//ns1:child', { ns1: 'uri:ns1' });
             assert(node instanceof XmlElement);
@@ -254,7 +285,8 @@ describe('C14N (XML Canonicalization)', () => {
             });
 
             expect(canonical).to.be.a('string');
-            expect(canonical).to.equal('<ns1:child xmlns:ns1="uri:ns1" attr="value"><childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child>');
+            expect(canonical).to.equal('<ns1:child xmlns:ns1="uri:ns1" attr="value">'
+                + '<childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child>');
         });
 
         it('should work with default options', () => {
@@ -270,7 +302,9 @@ describe('C14N (XML Canonicalization)', () => {
         });
 
         it('should support inclusive namespaces', () => {
-            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused" xmlns:ns3="uri:alsonotused"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child></root>';
+            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1" xmlns:ns2="uri:notused" '
+                + 'xmlns:ns3="uri:alsonotused"><ns1:child attr="value">'
+                + '<childofchild attr="val">text</childofchild></ns1:child></root>';
             using doc = XmlDocument.fromString(xmlString);
             const node = doc.get('//ns1:child', { ns1: 'uri:ns1' });
             assert(node instanceof XmlElement);
@@ -281,7 +315,10 @@ describe('C14N (XML Canonicalization)', () => {
             });
 
             expect(canonical).to.be.a('string');
-            expect(canonical).to.equal('<ns1:child xmlns:ns1="uri:ns1" xmlns:ns3="uri:alsonotused" attr="value"><childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child>');
+            expect(canonical).to.equal(
+                '<ns1:child xmlns:ns1="uri:ns1" xmlns:ns3="uri:alsonotused" attr="value">'
+                + '<childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child>',
+            );
         });
 
         it('should include comments when requested', () => {
@@ -297,7 +334,9 @@ describe('C14N (XML Canonicalization)', () => {
         });
 
         it('should support canonicalize(handler, options) API', () => {
-            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1"><ns1:child attr="value"><childofchild attr="val">text</childofchild></ns1:child><sibling>other</sibling></root>';
+            const xmlString = '<root xmlns="uri:root" xmlns:ns1="uri:ns1"><ns1:child attr="value">'
+                + '<childofchild attr="val">text</childofchild></ns1:child>'
+                + '<sibling>other</sibling></root>';
             using doc = XmlDocument.fromString(xmlString);
             const node = doc.get('//ns1:child', { ns1: 'uri:ns1' });
             assert(node instanceof XmlElement);
@@ -308,7 +347,10 @@ describe('C14N (XML Canonicalization)', () => {
             });
 
             expect(handler.result).to.be.a('string');
-            expect(handler.result).to.equal('<ns1:child xmlns:ns1="uri:ns1" attr="value"><childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child>');
+            expect(handler.result).to.equal(
+                '<ns1:child xmlns:ns1="uri:ns1" attr="value">'
+                + '<childofchild xmlns="uri:root" attr="val">text</childofchild></ns1:child>',
+            );
         });
     });
 
@@ -383,7 +425,8 @@ describe('C14N (XML Canonicalization)', () => {
              * C14N states that all entity references must be expanded. Therefore, the concept
              * of canonicalizing an Entity Reference node as a distinct object is paradoxical
              */
-            expect(() => entityRef.canonicalizeToString()).to.throw('Failed to canonicalize XML document');
+            expect(() => entityRef.canonicalizeToString())
+                .to.throw('Failed to canonicalize XML document');
         });
     });
 });

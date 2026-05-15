@@ -1,14 +1,16 @@
 import { expect } from 'chai';
+
 import {
     ParseOption,
     XmlCData,
     xmlCleanupInputProvider,
     XmlDocument,
-    XmlElement,
     XmlError,
     XmlParseError,
     xmlRegisterInputProvider,
 } from '@libxml2-wasm/lib/index.mjs';
+
+import type { XmlElement } from '@libxml2-wasm/lib/index.mjs';
 
 describe('parseXmlString', () => {
     it('should parse valid xml string', () => {
@@ -163,7 +165,8 @@ describe('XInclude', () => {
 
     it('wont process xml with XInclude by default', () => {
         using doc = XmlDocument.fromString(
-            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
+            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml">'
+            + '</xi:include></doc>',
             { url: 'path/doc.xml' },
         );
 
@@ -176,7 +179,8 @@ describe('XInclude', () => {
     it('wont process xml with XInclude even with XML_PARSE_XINCLUDE flag', () => {
         registerCallbacks('path/sub.xml', '<sub foo="bar"></sub>');
         using doc = XmlDocument.fromString(
-            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml"></xi:include></doc>',
+            '<doc xmlns:xi="http://www.w3.org/2001/XInclude"><xi:include href="sub.xml">'
+            + '</xi:include></doc>',
             { url: 'path/doc.xml', option: ParseOption.XML_PARSE_XINCLUDE },
         );
 
