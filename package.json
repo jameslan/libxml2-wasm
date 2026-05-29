@@ -33,7 +33,8 @@
     "author": "James Lan",
     "license": "MIT",
     "files": [
-        "lib/*"
+        "lib/*",
+        "LICENSE.libxml2"
     ],
     "devDependencies": {
         "@types/chai": "^5.2.1",

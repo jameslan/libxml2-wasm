@@ -2,6 +2,11 @@ MIT License
 
 Copyright (c) 2023 James Lan
 
+This license applies to the libxml2-wasm wrapper code only. The published
+npm package additionally bundles a WebAssembly build of libxml2, which is
+distributed under its own license; see LICENSE.libxml2 for the libxml2
+copyright notice and license terms.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
