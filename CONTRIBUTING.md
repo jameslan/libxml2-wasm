@@ -206,6 +206,14 @@ using doc = XmlDocument.fromString('<root/>');
 **"emcc: command not found"**  
 → Activate Emscripten: `source /path/to/emsdk/emsdk_env.sh`
 
+**`libxml2` submodule out of sync**  
+The submodule is checked out at a different commit than the repo records. This happens after pulling a change that bumps the submodule ref.
+Building against the mismatched source can fail (e.g. `wasm-ld: symbol ... not found`) or silently produce a stale WASM. Resync, then rebuild:
+```bash
+git submodule update --checkout libxml2
+npm run build
+```
+
 ---
 
 Questions? [GitHub Discussions](https://github.com/jameslan/libxml2-wasm/discussions) |
