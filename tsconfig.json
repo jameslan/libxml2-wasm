@@ -5,6 +5,7 @@
     "target": "es2021",
     "lib": [
       "es2021",
+      "es2022.object",
       "esnext.disposable"
     ],
 

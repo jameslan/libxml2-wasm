@@ -94,6 +94,51 @@ describe('buffer reader', () => {
     });
 });
 
+describe('XmlBufferInputProvider prototype-key robustness', () => {
+    afterEach(() => {
+        xmlCleanupInputProvider();
+    });
+
+    it('does not match inherited Object.prototype keys', () => {
+        const buffers = new XmlBufferInputProvider({
+            'a.xml': new TextEncoder().encode('<a/>'),
+        });
+
+        expect(buffers.match('toString')).to.be.false;
+        expect(buffers.match('constructor')).to.be.false;
+        expect(buffers.match('hasOwnProperty')).to.be.false;
+        expect(buffers.match('valueOf')).to.be.false;
+        expect(buffers.match('__proto__')).to.be.false;
+        // sanity: real key still matches
+        expect(buffers.match('a.xml')).to.be.true;
+    });
+
+    it('open returns undefined for a prototype key instead of a non-buffer handle', () => {
+        const buffers = new XmlBufferInputProvider({});
+
+        expect(buffers.open('toString')).to.be.undefined;
+        expect(buffers.open('constructor')).to.be.undefined;
+        expect(buffers.open('missing.xml')).to.be.undefined;
+    });
+
+    it('fails cleanly when a document references a prototype key as system id', () => {
+        const buffers = new XmlBufferInputProvider({
+            'a.xml': new TextEncoder().encode('<a/>'),
+        });
+        xmlRegisterInputProvider(buffers);
+
+        using doc = XmlDocument.fromString(`\
+<?xml version="1.0"?>
+<docs xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="toString"/>
+</docs>
+`);
+        // Must fail gracefully (XInclude cannot resolve), not crash with
+        // "TypeError: data.slice is not a function".
+        expect(() => doc.processXInclude()).to.throw().and.not.be.an.instanceOf(TypeError);
+    });
+});
+
 describe('XmlStringOutputBufferHandler', () => {
     it('accumulates decoded string data', () => {
         const handler = new XmlStringOutputBufferHandler();

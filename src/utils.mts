@@ -67,12 +67,18 @@ export class XmlBufferInputProvider implements XmlInputProvider {
         delete this._data[filename];
     }
 
-    match(filename: string): boolean {
-        return this._data[filename] != null;
+    private buffer(filename: string): Uint8Array | undefined {
+        const buf = Object.hasOwn(this._data, filename) ? this._data[filename] : undefined;
+        return buf instanceof Uint8Array ? buf : undefined;
     }
 
-    open(filename: string): number {
-        return openBuffer(this._data[filename]);
+    match(filename: string): boolean {
+        return this.buffer(filename) !== undefined;
+    }
+
+    open(filename: string): number | undefined {
+        const buf = this.buffer(filename);
+        return buf !== undefined ? openBuffer(buf) : undefined;
     }
 
     read(fd: number, buffer: Uint8Array): number { // eslint-disable-line class-methods-use-this
