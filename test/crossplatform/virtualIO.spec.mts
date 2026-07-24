@@ -44,10 +44,12 @@ describe('Virtual IO', () => {
             + 'could not load path/sub.xml, and no fallback was found\n',
         ).with.deep.property('details', [{
             message: 'failed to load "path/sub.xml": No such file or directory\n',
+            level: 1,
             line: 0,
             col: 0,
         }, {
             message: 'could not load path/sub.xml, and no fallback was found\n',
+            level: 2,
             file: 'path/doc.xml',
             line: 1,
             col: 0,
@@ -86,10 +88,12 @@ describe('Virtual IO', () => {
             + 'could not load path/sub.xml, and no fallback was found\n',
         ).with.deep.property('details', [{
             message: 'failed to load "path/sub.xml": No such file or directory\n',
+            level: 1,
             line: 0,
             col: 0,
         }, {
             message: 'could not load path/sub.xml, and no fallback was found\n',
+            level: 2,
             file: 'path/doc.xml',
             line: 1,
             col: 0,
@@ -131,16 +135,19 @@ describe('Virtual IO', () => {
             + 'could not load path/sub.xml, and no fallback was found\n',
         ).with.deep.property('details', [{
             message: 'Unknown IO error\n',
+            level: 1,
             file: 'path/sub.xml',
             line: 1,
             col: 1,
         }, {
             message: 'Document is empty\n',
+            level: 3,
             file: 'path/sub.xml',
             line: 1,
             col: 1,
         }, {
             message: 'could not load path/sub.xml, and no fallback was found\n',
+            level: 2,
             file: 'path/doc.xml',
             line: 1,
             col: 0,

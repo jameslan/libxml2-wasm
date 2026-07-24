@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 
 import {
+    diag,
     ParseOption,
     XmlCData,
     xmlCleanupInputProvider,
@@ -27,6 +28,7 @@ describe('parseXmlString', () => {
             'Premature end of data in tag doc line 1\n',
         ).with.deep.property('details', [{
             message: 'Premature end of data in tag doc line 1\n',
+            level: 3,
             line: 1,
             col: 6,
         }]);
@@ -40,14 +42,17 @@ describe('parseXmlString', () => {
                 + 'Opening and ending tag mismatch: b line 2 and doc\n',
         ).with.deep.property('details', [{
             message: 'Opening and ending tag mismatch: book line 1 and b\n',
+            level: 3,
             line: 1,
             col: 19,
         }, {
             message: 'Opening and ending tag mismatch: book line 2 and b\n',
+            level: 3,
             line: 2,
             col: 14,
         }, {
             message: 'Opening and ending tag mismatch: b line 2 and doc\n',
+            level: 3,
             line: 2,
             col: 20,
         }]);
@@ -86,6 +91,7 @@ describe('parseXmlBuffer', () => {
             'Premature end of data in tag doc line 1\n',
         ).with.deep.property('details', [{
             message: 'Premature end of data in tag doc line 1\n',
+            level: 3,
             line: 1,
             col: 6,
         }]);
@@ -101,14 +107,17 @@ describe('parseXmlBuffer', () => {
             + 'Opening and ending tag mismatch: b line 2 and doc\n',
         ).with.deep.property('details', [{
             message: 'Opening and ending tag mismatch: book line 1 and b\n',
+            level: 3,
             line: 1,
             col: 19,
         }, {
             message: 'Opening and ending tag mismatch: book line 2 and b\n',
+            level: 3,
             line: 2,
             col: 14,
         }, {
             message: 'Opening and ending tag mismatch: b line 2 and doc\n',
+            level: 3,
             line: 2,
             col: 20,
         }]);
@@ -128,6 +137,78 @@ describe('parseXmlBuffer', () => {
         );
         expect(doc.root.firstChild).to.not.be.instanceOf(XmlCData);
         expect(doc.root.content).to.equal('3>2');
+    });
+});
+
+describe('parse warnings (non-fatal diagnostics)', () => {
+    // Input is well-formed; XML_PARSE_PEDANTIC makes libxml2 emit WARNING-level
+    // diagnostics ("URI is not absolute") while still returning a valid document.
+    const warningXml = '<a xmlns:p="u" xmlns:q="u"/>';
+    const pedantic = { option: ParseOption.XML_PARSE_PEDANTIC };
+
+    it('should not reject a valid document that only produces warnings (string)', () => {
+        using doc = XmlDocument.fromString(warningXml, pedantic);
+        expect(doc.root.name).to.equal('a');
+    });
+
+    it('should not reject a valid document that only produces warnings (buffer)', () => {
+        using doc = XmlDocument.fromBuffer(new TextEncoder().encode(warningXml), pedantic);
+        expect(doc.root.name).to.equal('a');
+    });
+
+    it('should surface the warnings that were produced on the parsed document', () => {
+        using doc = XmlDocument.fromString(warningXml, pedantic);
+        // The parse must actually have emitted warnings (not merely "not thrown"):
+        // two WARNING-level (1) "URI is not absolute" diagnostics, one per namespace.
+        expect(doc.warnings).to.deep.equal([{
+            message: 'xmlns:p: URI u is not absolute\n',
+            level: 1,
+            line: 1,
+            col: 15,
+        }, {
+            message: 'xmlns:q: URI u is not absolute\n',
+            level: 1,
+            line: 1,
+            col: 27,
+        }]);
+    });
+
+    it('should expose no warnings for a clean parse', () => {
+        using doc = XmlDocument.fromString('<doc/>');
+        expect(doc.warnings).to.deep.equal([]);
+    });
+
+    it('should still reject a well-formed but invalid document (validity error)', () => {
+        // Well-formed, so libxml2 returns a non-null doc; XML_PARSE_DTDVALID makes
+        // the content model violation an ERROR-level (2) diagnostic, which must throw.
+        expect(() => XmlDocument.fromString(
+            '<!DOCTYPE a [<!ELEMENT a EMPTY>]><a><b/></a>',
+            { option: ParseOption.XML_PARSE_DTDVALID },
+        )).to.throw(XmlParseError);
+    });
+
+    it('should track and free the document produced alongside warnings', async () => {
+        diag.configure({ enabled: true });
+        try {
+            const doc = XmlDocument.fromString(warningXml, pedantic);
+            const tracked = diag.report();
+            expect(tracked.XmlDocument.totalInstances).to.equal(1);
+            expect(tracked.XmlDocument.garbageCollected).to.equal(0);
+            expect(tracked.XmlDocument.instances[0].instance).to.equal(doc);
+
+            doc.dispose();
+            // allow the finalizer to run; a properly disposed doc must not resurface
+            await new Promise((resolve) => {
+                setTimeout(resolve, 0);
+            });
+            (global as any).gc();
+            // dispose untracks the wrapper, so the class entry is gone entirely —
+            // proving the native document was owned and freed, not leaked.
+            const after = diag.report();
+            expect(after.XmlDocument).to.be.undefined;
+        } finally {
+            diag.configure({ enabled: false });
+        }
     });
 });
 

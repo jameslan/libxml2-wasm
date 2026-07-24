@@ -31,7 +31,7 @@ import { XmlElement } from './nodes.mjs';
 import { XmlStringOutputBufferHandler } from './utils.mjs';
 
 import type { C14NOptions } from './c14n.mjs';
-import type { SaveOptions, XmlOutputBufferHandler } from './libxml2.mjs';
+import type { ErrorDetail, SaveOptions, XmlOutputBufferHandler } from './libxml2.mjs';
 import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.mjs';
 import type { XmlNode } from './nodes.mjs';
 import type { NamespaceMap, XmlXPath } from './xpath.mjs';
@@ -212,6 +212,9 @@ export interface ParseOptions {
 export class XmlParseError extends XmlLibError {
 }
 
+/** libxml2 xmlErrorLevel: diagnostics at this severity or above are failures. */
+const XML_ERR_ERROR = 2;
+
 function parse<Input>(
     parser: (
         ctxt: XmlParserCtxtPtr,
@@ -235,24 +238,35 @@ function parse<Input>(
         options.encoding ?? null,
         xmlOptions,
     );
+    let warnings: ErrorDetail[] = [];
     try {
         const errDetails = error.storage.get(errIndex);
-        if (errDetails.length > 0) {
-            if (!xml) {
+        // Warnings (level 1) are non-fatal: libxml2 still returns a valid document.
+        // Only error/fatal diagnostics, or a null result, count as a parse failure.
+        const fatal = errDetails.some((d) => d.level >= XML_ERR_ERROR);
+        if (fatal || !xml) {
+            if (xml) {
+                // A document was produced (e.g. XML_PARSE_RECOVER) but is being
+                // discarded; free it here since no wrapper/finalizer will own it.
                 xmlFreeDoc(xml);
             }
-            throw new XmlParseError(errDetails.map((d) => d.message).join(''), errDetails);
+            throw new XmlParseError(
+                errDetails.length > 0
+                    ? errDetails.map((d) => d.message).join('')
+                    : 'Failed to parse XML', // no diagnostics, usually invalid input
+                errDetails,
+            );
         }
+        // Every diagnostic here is non-fatal (a warning); surface it on the document
+        // before the storage slot is freed below.
+        warnings = errDetails;
     } finally {
         error.storage.free(errIndex);
         xmlFreeParserCtxt(ctxt);
     }
 
-    if (!xml) {
-        // no error from libxml2, but failed to parse. Usually due to invalid input.
-        throw new XmlParseError('Failed to parse XML', []);
-    }
     const xmlDocument = XmlDocument.getInstance(xml);
+    xmlDocument.warnings.push(...warnings);
     return xmlDocument;
 }
 
@@ -272,6 +286,13 @@ function freeDocument(ptr: XmlDocPtr) {
  */
 @disposeBy(freeDocument)
 export class XmlDocument extends XmlDisposable<XmlDocument> {
+    /**
+     * Non-fatal diagnostics (warning-level, {@link ErrorDetail.level} === 1) emitted by
+     * libxml2 while parsing this document. Empty for documents created via {@link create}
+     * or parsed without any warnings. Fatal diagnostics are thrown as {@link XmlParseError}.
+     */
+    readonly warnings: ErrorDetail[] = [];
+
     /** Create a new document from scratch.
      * To parse an existing xml, use {@link fromBuffer} or {@link fromString}.
      */

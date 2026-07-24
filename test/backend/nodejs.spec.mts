@@ -99,11 +99,13 @@ describe('Node.js input callbacks', () => {
             [{
                 message: 'failed to load "test/testfiles/wronginclude.xsd": '
                 + 'No such file or directory\n',
+                level: 1,
                 line: 0,
                 col: 0,
             }, {
                 message: 'Element \'{http://www.w3.org/2001/XMLSchema}include\': Failed to load '
                 + 'the document \'test/testfiles/wronginclude.xsd\' for inclusion.\n',
+                level: 2,
                 file: 'test/testfiles/book_wronginclude.xsd',
                 line: 3,
                 col: 0,

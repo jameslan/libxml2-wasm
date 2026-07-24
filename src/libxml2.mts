@@ -51,6 +51,12 @@ export interface ErrorDetail {
     file?: string;
 
     /**
+     * The severity of the diagnostic (libxml2 xmlErrorLevel):
+     * 1 = warning, 2 = error, 3 = fatal.
+     */
+    level: number;
+
+    /**
      * The line number in the xml file where the error occurred.
      */
     line: number;
@@ -266,6 +272,7 @@ export const error = {
         const file = XmlErrorStruct.file(err);
         const detail: ErrorDetail = {
             message: XmlErrorStruct.message(err),
+            level: XmlErrorStruct.level(err),
             line: XmlErrorStruct.line(err),
             col: XmlErrorStruct.col(err),
         };
@@ -364,6 +371,8 @@ export class XmlAttrStruct extends XmlTreeCommonStruct {
 
 export class XmlErrorStruct {
     static message = getStringValueFunc(8);
+
+    static level = getValueFunc(12, 'i32');
 
     static file = getNullableStringValueFunc(16);
 
