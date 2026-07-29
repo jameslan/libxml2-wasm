@@ -86,6 +86,7 @@ describe('XsdValidator', () => {
             'details',
             [{
                 message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
+                level: 2,
                 line: 1,
                 col: 0,
             }],
@@ -108,10 +109,12 @@ describe('XsdValidator', () => {
             'details',
             [{
                 message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
+                level: 2,
                 line: 1,
                 col: 0,
             }, {
                 message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
+                level: 2,
                 line: 2,
                 col: 0,
             }],
@@ -157,6 +160,7 @@ describe('XsdValidator', () => {
             [{
                 message: 'element decl. \'book\', attribute \'type\': '
                     + 'The QName value \'Book\' does not resolve to a(n) type definition.\n',
+                level: 2,
                 line: 6,
                 col: 0,
             }],
@@ -179,6 +183,7 @@ describe('XsdValidator', () => {
             'details',
             [{
                 message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
+                level: 2,
                 line: 1,
                 col: 0,
             }],
@@ -195,10 +200,12 @@ describe('XsdValidator', () => {
             'details',
             [{
                 message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
+                level: 2,
                 line: 1,
                 col: 0,
             }, {
                 message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
+                level: 2,
                 line: 2,
                 col: 0,
             }],
@@ -382,6 +389,7 @@ describe('DtdValidator', () => {
             [{
                 message: 'Element note content does not follow the DTD, '
                     + 'expecting (to , from), got (to )\n',
+                level: 2,
                 line: 7,
                 col: 0,
             }],
@@ -439,6 +447,7 @@ describe('RelaxNGValidator', () => {
             'details',
             [{
                 message: 'Expecting an element , got nothing\n',
+                level: 2,
                 line: 1,
                 col: 0,
             }],
@@ -461,10 +470,12 @@ describe('RelaxNGValidator', () => {
             'details',
             [{
                 message: 'Expecting an element , got nothing\n',
+                level: 2,
                 line: 1,
                 col: 0,
             }, {
                 message: 'Expecting an element , got nothing\n',
+                level: 2,
                 line: 2,
                 col: 0,
             }],
@@ -511,6 +522,7 @@ describe('RelaxNGValidator', () => {
             'details',
             [{
                 message: 'xmlRelaxNGParse: schemas is empty\n',
+                level: 2,
                 line: -1,
                 col: 0,
             }],
@@ -533,6 +545,7 @@ describe('RelaxNGValidator', () => {
             'details',
             [{
                 message: 'Expecting an element , got nothing\n',
+                level: 2,
                 line: 1,
                 col: 0,
             }],
@@ -550,10 +563,12 @@ describe('RelaxNGValidator', () => {
             'details',
             [{
                 message: 'Expecting an element , got nothing\n',
+                level: 2,
                 line: 1,
                 col: 0,
             }, {
                 message: 'Expecting an element , got nothing\n',
+                level: 2,
                 line: 2,
                 col: 0,
             }],
