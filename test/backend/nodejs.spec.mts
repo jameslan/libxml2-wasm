@@ -109,6 +109,7 @@ describe('Node.js input callbacks', () => {
                 file: 'test/testfiles/book_wronginclude.xsd',
                 line: 3,
                 col: 0,
+                xpath: '/xsd:schema/xsd:include',
             }],
         );
     });

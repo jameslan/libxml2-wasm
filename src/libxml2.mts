@@ -65,6 +65,11 @@ export interface ErrorDetail {
      * The column number in the XML file where the error occurred.
      */
     col: number;
+
+    /**
+     * The XPath to the node associated with the error, when available.
+     */
+    xpath?: string;
 }
 
 /**
@@ -201,6 +206,17 @@ export function xmlNodeGetContent(node: XmlNodePtr): string {
     return moveUtf8ToString(libxml2._xmlNodeGetContent(node));
 }
 
+export function xmlGetNodePath(node: XmlNodePtr): string | null {
+    if (node === 0) {
+        return null;
+    }
+    const path = libxml2._xmlGetNodePath(node);
+    if (path === 0) {
+        return null;
+    }
+    return moveUtf8ToString(path);
+}
+
 export function xmlNodeSetContent(node: XmlNodePtr, content: string): number {
     return withStringUTF8(content, (buf, len) => libxml2._xmlNodeSetContentLen(node, buf, len));
 }
@@ -278,6 +294,11 @@ export const error = {
         };
         if (file != null) {
             detail.file = file;
+        }
+        const node = XmlErrorStruct.node(err);
+        const xpath = xmlGetNodePath(node);
+        if (xpath != null) {
+            detail.xpath = xpath;
         }
         error.storage.get(index).push(detail);
     }, 'vii'),
@@ -379,6 +400,13 @@ export class XmlErrorStruct {
     static line = getValueFunc(20, 'i32');
 
     static col = getValueFunc(40, 'i32');
+
+    static node(err: XmlErrorPtr): XmlNodePtr {
+        if (err === 0) {
+            return 0;
+        }
+        return libxml2.getValue(err + 48, '*');
+    }
 }
 
 export function xmlNewCDataBlock(doc: XmlDocPtr, content: string): XmlNodePtr {
