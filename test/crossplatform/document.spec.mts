@@ -18,6 +18,22 @@ describe('XmlDocument', () => {
     const doc = XmlDocument.fromString('<docs><doc></doc></docs>');
     after(() => doc.dispose());
 
+    describe('info', () => {
+        using d = XmlDocument.create();
+
+        it('returns undefined version on creation', () => {
+            expect(d.getVersion()).to.equal(undefined);
+        });
+
+        it('returns undefined encoding on creation', () => {
+            expect(d.getEncoding()).to.equal(undefined);
+        });
+
+        it('returns undefined standalone on creation', () => {
+            expect(d.getStandalone()).to.equal(undefined);
+        });
+    });
+
     describe('root property', () => {
         it('returns root element', () => {
             const { root } = doc;

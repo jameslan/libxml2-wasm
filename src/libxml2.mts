@@ -381,6 +381,14 @@ export class XmlErrorStruct {
     static col = getValueFunc(40, 'i32');
 }
 
+export class XmlDocStruct {
+    static standalone = getValueFunc(40, 'i32');
+
+    static version = getStringValueFunc(56);
+
+    static encoding = getNullableStringValueFunc(60);
+}
+
 export function xmlNewCDataBlock(doc: XmlDocPtr, content: string): XmlNodePtr {
     return withStringUTF8(content, (buf, len) => libxml2._xmlNewCDataBlock(doc, buf, len));
 }

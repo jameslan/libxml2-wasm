@@ -74,6 +74,22 @@ describe('parseXmlString', () => {
             'Non-UTF-8 encoding is not supported for string input, use fromBuffer instead',
         );
     });
+
+    it('should use null as default encoding', () => {
+        const doc = XmlDocument.fromString('<doc/>');
+        expect(doc.getVersion()).to.equal('1.0');
+        expect(doc.getStandalone()).to.equal(-1);
+        expect(doc.getEncoding()).to.equal(null);
+    });
+
+    it('should use encoding from xml declaration', () => {
+        const doc = XmlDocument.fromString(
+            '<?xml version="1.0" encoding="Utf-8"?><doc/>',
+        );
+        expect(doc.getVersion()).to.equal('1.0');
+        expect(doc.getStandalone()).to.equal(-2);
+        expect(doc.getEncoding()).to.equal('Utf-8');
+    });
 });
 
 describe('parseXmlBuffer', () => {
