@@ -211,6 +211,7 @@ export function xmlGetNodePath(node: XmlNodePtr): string | null {
         return null;
     }
     const path = libxml2._xmlGetNodePath(node);
+    /* c8 ignore next 3, defensive code, only hit if libxml2 fails to allocate the path */
     if (path === 0) {
         return null;
     }
