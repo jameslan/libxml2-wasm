@@ -17,6 +17,7 @@ _xmlFreeNode
 _xmlFreeParserCtxt
 _xmlGetIntSubset
 _xmlGetLastError
+_xmlGetNodePath
 _xmlGetNsList
 _xmlHasNsProp
 _xmlInitParser

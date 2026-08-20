@@ -290,6 +290,7 @@ describe('XInclude', () => {
             level: 2,
             line: 1,
             col: 0,
+            xpath: '/doc/xi:include',
         }]);
     });
 });

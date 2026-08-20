@@ -89,6 +89,7 @@ describe('XsdValidator', () => {
                 level: 2,
                 line: 1,
                 col: 0,
+                xpath: '/bookstore/book',
             }],
         );
     });
@@ -112,11 +113,13 @@ describe('XsdValidator', () => {
                 level: 2,
                 line: 1,
                 col: 0,
+                xpath: '/bookstore/book[1]',
             }, {
                 message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
                 level: 2,
                 line: 2,
                 col: 0,
+                xpath: '/bookstore/book[2]',
             }],
         );
     });
@@ -163,6 +166,7 @@ describe('XsdValidator', () => {
                 level: 2,
                 line: 6,
                 col: 0,
+                xpath: '/xsd:schema/xsd:complexType/xsd:sequence/xsd:element',
             }],
         );
         schema.dispose();
@@ -186,6 +190,7 @@ describe('XsdValidator', () => {
                 level: 2,
                 line: 1,
                 col: 0,
+                xpath: '/bookstore/book',
             }],
         );
 
@@ -203,11 +208,13 @@ describe('XsdValidator', () => {
                 level: 2,
                 line: 1,
                 col: 0,
+                xpath: '/bookstore/book[1]',
             }, {
                 message: 'Element \'book\': Missing child element(s). Expected is ( price ).\n',
                 level: 2,
                 line: 2,
                 col: 0,
+                xpath: '/bookstore/book[2]',
             }],
         );
     });
@@ -392,6 +399,7 @@ describe('DtdValidator', () => {
                 level: 2,
                 line: 7,
                 col: 0,
+                xpath: '/note',
             }],
         );
         validator.dispose();
@@ -450,6 +458,7 @@ describe('RelaxNGValidator', () => {
                 level: 2,
                 line: 1,
                 col: 0,
+                xpath: '/bookstore/book',
             }],
         );
     });
@@ -473,11 +482,13 @@ describe('RelaxNGValidator', () => {
                 level: 2,
                 line: 1,
                 col: 0,
+                xpath: '/bookstore/book[1]',
             }, {
                 message: 'Expecting an element , got nothing\n',
                 level: 2,
                 line: 2,
                 col: 0,
+                xpath: '/bookstore/book[2]',
             }],
         );
     });
@@ -525,6 +536,7 @@ describe('RelaxNGValidator', () => {
                 level: 2,
                 line: -1,
                 col: 0,
+                xpath: '/',
             }],
         );
         xsd.dispose();
@@ -548,6 +560,7 @@ describe('RelaxNGValidator', () => {
                 level: 2,
                 line: 1,
                 col: 0,
+                xpath: '/bookstore/book',
             }],
         );
 
@@ -566,11 +579,13 @@ describe('RelaxNGValidator', () => {
                 level: 2,
                 line: 1,
                 col: 0,
+                xpath: '/bookstore/book[1]',
             }, {
                 message: 'Expecting an element , got nothing\n',
                 level: 2,
                 line: 2,
                 col: 0,
+                xpath: '/bookstore/book[2]',
             }],
         );
     });
