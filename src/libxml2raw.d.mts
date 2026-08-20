@@ -68,6 +68,7 @@ export class LibXml2 {
     _xmlFreeDtd(dtd: XmlDtdPtr): void;
     _xmlGetIntSubset(doc: XmlDocPtr): XmlDtdPtr;
     _xmlGetLastError(): XmlErrorPtr;
+    _xmlGetNodePath(node: XmlNodePtr): CString;
     _xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): Pointer;
     _xmlHasNsProp(node: XmlNodePtr, name: CString, namespace: CString): XmlAttrPtr;
     _xmlInitParser(): void;
