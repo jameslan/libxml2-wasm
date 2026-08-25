@@ -8,7 +8,7 @@ import {
 import type { XmlXPathCompExprPtr } from './libxml2raw.mjs';
 
 /**
- * An exception class for XPath compilation errors.
+ * An exception class for XPath compilation or evaluation errors.
  */
 export class XmlXPathError extends XmlError {}
 

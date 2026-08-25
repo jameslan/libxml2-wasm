@@ -61,6 +61,7 @@ describe('Virtual IO', () => {
             file: 'path/doc.xml',
             line: 1,
             col: 0,
+            xpath: '/doc/xi:include',
         }]);
     });
 
@@ -105,6 +106,7 @@ describe('Virtual IO', () => {
             file: 'path/doc.xml',
             line: 1,
             col: 0,
+            xpath: '/doc/xi:include',
         }]);
     });
 
@@ -159,6 +161,7 @@ describe('Virtual IO', () => {
             file: 'path/doc.xml',
             line: 1,
             col: 0,
+            xpath: '/doc/xi:include',
         }]);
     });
 

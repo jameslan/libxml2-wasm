@@ -92,6 +92,13 @@ describe('XmlNode', () => {
                 'XPath selector must return a node set',
             );
         });
+
+        it('should throw XmlXPathError for an undefined namespace prefix', () => {
+            // 'x' was never registered; libxml2 fails evaluation and returns NULL.
+            // This must surface as an XmlXPathError forwarding libxml2's real
+            // diagnostic, not a generic 'Access with null pointer' internal error.
+            expect(() => doc.get('//x:y')).to.throw(XmlXPathError, 'Undefined namespace prefix: x');
+        });
     });
 
     describe('doc property', () => {
@@ -502,6 +509,19 @@ describe('XmlNode', () => {
 
         it('should throw XmlXPathError for null XPath expressions', () => {
             expect(() => doc.root.eval(null!)).to.throw('Failed to compile XPath expression: null');
+        });
+
+        // A runtime evaluation failure makes xmlXPathCompiledEval return NULL. Each of
+        // these previously surfaced as a generic 'Access with null pointer' error; they
+        // must now throw XmlXPathError forwarding libxml2's real diagnostic.
+        [
+            ['undefined namespace prefix', '//x:y', 'Undefined namespace prefix: x'],
+            ['undefined variable', '$undefinedVar', 'Undefined variable: undefinedVar'],
+            ['unregistered function', 'nope()', 'Unregistered function: nope'],
+        ].forEach(([cause, xpath, message]) => {
+            it(`should throw XmlXPathError with the real cause for an ${cause}`, () => {
+                expect(() => doc.root.eval(xpath)).to.throw(XmlXPathError, message);
+            });
         });
 
         it('should handle complex numeric expressions', () => {
