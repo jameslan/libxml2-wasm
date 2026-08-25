@@ -489,6 +489,10 @@ export interface XmlInputProvider {
     close: (fd: Pointer) => boolean;
 }
 
+// Function-table entries of the registered callbacks. addFunction never reuses an entry
+// until it is removed, so they are tracked here and released by xmlCleanupInputProvider.
+const inputCallbackFuncs: Pointer[] = [];
+
 /**
  * Register the callbacks from the provider to the system.
  *
@@ -519,17 +523,30 @@ export function xmlRegisterInputProvider(
         (fd: Pointer) => (provider.close(fd) ? 0 : -1),
         'ii',
     );
+    const funcs = [matchFunc, openFunc, readFunc, closeFunc];
 
     const res = libxml2._xmlRegisterInputCallbacks(matchFunc, openFunc, readFunc, closeFunc);
-    return res >= 0;
+    if (res < 0) {
+        // libxml2 didn't take the callbacks, its callback table is full.
+        funcs.forEach((func) => libxml2.removeFunction(func));
+        return false;
+    }
+    inputCallbackFuncs.push(...funcs);
+    return true;
 }
 
 /**
  * Remove and cleanup all registered input providers.
+ *
+ * This releases the wasm function-table entries of the registered callbacks, so it must
+ * not be called from a provider callback: libxml2 keeps calling the read and close
+ * callbacks of the files it still has open.
  * @alpha
  */
 export function xmlCleanupInputProvider(): void {
     libxml2._xmlCleanupInputCallbacks();
+    inputCallbackFuncs.forEach((func) => libxml2.removeFunction(func));
+    inputCallbackFuncs.length = 0;
 }
 
 /**

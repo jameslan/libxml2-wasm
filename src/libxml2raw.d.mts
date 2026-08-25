@@ -185,6 +185,7 @@ export class LibXml2 {
     addFunction(func: Function, sig: string): Pointer;
     getValue(ptr: Pointer, type: string): number;
     lengthBytesUTF8(str: string): number;
+    removeFunction(func: Pointer): void;
     stringToUTF8(str: string, outPtr: CString, maxBytesToWrite: number): CString;
 }
 
