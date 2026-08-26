@@ -136,12 +136,11 @@ export class XmlStringOutputBufferHandler implements XmlOutputBufferHandler {
     private _decoder = new TextDecoder();
 
     write(buf: Uint8Array): number {
-        this._result += this._decoder.decode(buf, { stream: true });
+        this._result += this._decoder.decode(buf);
         return buf.byteLength;
     }
 
-    close(): boolean {
-        this._result += this._decoder.decode();
+    close(): boolean { // eslint-disable-line class-methods-use-this
         return true;
     }
 

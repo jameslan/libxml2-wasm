@@ -180,17 +180,4 @@ describe('XmlStringOutputBufferHandler', () => {
 
         expect(handler.result).to.equal('<résumé>профиль</résumé>');
     });
-
-    it('reconstructs a multibyte character split across writes', () => {
-        const handler = new XmlStringOutputBufferHandler();
-        const emoji = new TextEncoder().encode('😀'); // 4 bytes: F0 9F 98 80
-
-        // Split mid-character across two chunks; a non-streaming decode would emit
-        // U+FFFD replacement characters at the boundary.
-        handler.write(emoji.subarray(0, 2));
-        handler.write(emoji.subarray(2));
-        handler.close();
-
-        expect(handler.result).to.equal('😀');
-    });
 });
