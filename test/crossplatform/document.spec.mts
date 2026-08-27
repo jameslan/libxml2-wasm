@@ -104,6 +104,38 @@ describe('XmlDocument', () => {
         });
     });
 
+    describe('save', () => {
+        it('throws for an unsupported encoding instead of silently doing nothing', () => {
+            // libxml2 cannot create a save context for an unknown encoding and returns
+            // NULL; this must surface as an error rather than silently producing no output.
+            const handler = new XmlStringOutputBufferHandler();
+            expect(() => doc.save(handler, { encoding: 'no-such-encoding' }))
+                .to.throw(XmlError, /encoding/i);
+        });
+
+        it('does not retain the output handler after a failed save', async () => {
+            // The failed save above must also free the output-handler registry slot;
+            // otherwise the handler is pinned forever. Verify via GC reclamation: if the
+            // slot leaked, the registry keeps a strong ref and the WeakRef stays live.
+            const weak = (() => {
+                const handler = new XmlStringOutputBufferHandler();
+                expect(() => doc.save(handler, { encoding: 'no-such-encoding' }))
+                    .to.throw(XmlError, /encoding/i);
+                return new WeakRef(handler);
+            })();
+
+            for (let i = 0; i < 3; i += 1) { // retry, mirroring disposable.spec
+                (global as any).gc();
+                // eslint-disable-next-line no-await-in-loop
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 0);
+                });
+            }
+
+            expect(weak.deref()).to.be.undefined;
+        });
+    });
+
     describe('toString', () => {
         it('allows utf-8 or ascii', () => {
             expect(() => doc.toString({ encoding: 'utf-8' })).to.not.throw();
