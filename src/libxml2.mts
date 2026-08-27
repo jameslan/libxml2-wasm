@@ -646,16 +646,36 @@ const outputClose = libxml2.addFunction(
     'ii',
 );
 
+/**
+ * Register an output handler and run the FFI creator with its storage index.
+ * On success the slot is freed later via {@link outputClose}; when the creator
+ * returns a null pointer libxml2 never invokes the close callback, so free here.
+ */
+function withOutputHandler<T extends number>(
+    handler: XmlOutputBufferHandler,
+    create: (index: number) => T,
+): T {
+    const index = outputHandlerStorage.allocate(handler);
+    const ptr = create(index);
+    if (ptr === 0) {
+        outputHandlerStorage.free(index);
+    }
+    return ptr;
+}
+
 export function xmlSaveToIO(
     handler: XmlOutputBufferHandler,
     encoding: string | null,
     format: number,
 ): XmlSaveCtxtPtr {
-    const index = outputHandlerStorage.allocate(handler); // will be freed in outputClose
-    return withStringUTF8(
+    const ctxt = withOutputHandler(handler, (index) => withStringUTF8(
         encoding,
         (encBuf) => libxml2._xmlSaveToIO(outputWrite, outputClose, index, encBuf, format),
-    );
+    ));
+    if (ctxt === 0) {
+        throw new XmlError(`Unsupported save encoding "${encoding ?? 'utf-8'}"`);
+    }
+    return ctxt;
 }
 
 enum XmlParserInputFlags {
@@ -797,8 +817,10 @@ export const xmlXPathSetContextNode = libxml2._xmlXPathSetContextNode;
 export function xmlOutputBufferCreateIO(
     handler: XmlOutputBufferHandler,
 ): XmlOutputBufferPtr {
-    const index = outputHandlerStorage.allocate(handler); // will be freed in outputClose
-    return libxml2._xmlOutputBufferCreateIO(outputWrite, outputClose, index, 0);
+    return withOutputHandler(
+        handler,
+        (index) => libxml2._xmlOutputBufferCreateIO(outputWrite, outputClose, index, 0),
+    );
 }
 
 export const xmlOutputBufferClose = libxml2._xmlOutputBufferClose;
