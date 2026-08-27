@@ -5,7 +5,9 @@ import {
     xmlAddNextSibling,
     xmlAddPrevSibling,
     XmlError,
+    XmlErrorStruct,
     xmlFreeNode,
+    xmlGetLastError,
     xmlGetNsList,
     xmlHasNsProp,
     XmlNamedNodeStruct,
@@ -22,6 +24,7 @@ import {
     XmlNodeType,
     XmlNsStruct,
     xmlRemoveProp,
+    xmlResetLastError,
     xmlSaveClose,
     xmlSaveOption,
     xmlSaveSetIndentString,
@@ -40,7 +43,7 @@ import {
     xmlXPathSetContextNode,
 } from './libxml2.mjs';
 import { XmlStringOutputBufferHandler } from './utils.mjs';
-import { XmlXPath } from './xpath.mjs';
+import { XmlXPath, XmlXPathError } from './xpath.mjs';
 
 import type { SubtreeC14NOptions } from './c14n.mjs';
 import type {
@@ -59,8 +62,22 @@ function compiledXPathEval(nodePtr: XmlNodePtr, xpath: XmlXPath) {
             });
     }
     xmlXPathSetContextNode(nodePtr, context);
+    xmlResetLastError();
     const xpathObj = xmlXPathCompiledEval(xpath._ptr, context);
     xmlXPathFreeContext(context);
+    if (xpathObj === 0) {
+        // xmlXPathCompiledEval returns NULL on a runtime evaluation failure, e.g. an
+        // undefined namespace prefix, variable, or function. Forward libxml2's own
+        // diagnostic instead of letting the null pointer surface downstream as a
+        // generic 'Access with null pointer' error. libxml2 exposes no XPath-context
+        // error handler to bind, so read the global last-error (cleared above) rather
+        // than a context-scoped collector as parse()/XInclude do.
+        const lastError = xmlGetLastError();
+        const detail = lastError === 0 ? '' : `: ${XmlErrorStruct.message(lastError).trim()}`;
+        throw new XmlXPathError(
+            `Failed to evaluate XPath expression '${xpath.toString()}'${detail}`,
+        );
+    }
     return xpathObj;
 }
 

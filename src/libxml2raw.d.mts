@@ -68,6 +68,7 @@ export class LibXml2 {
     _xmlFreeDtd(dtd: XmlDtdPtr): void;
     _xmlGetIntSubset(doc: XmlDocPtr): XmlDtdPtr;
     _xmlGetLastError(): XmlErrorPtr;
+    _xmlGetNodePath(node: XmlNodePtr): CString;
     _xmlGetNsList(doc: XmlDocPtr, node: XmlNodePtr): Pointer;
     _xmlHasNsProp(node: XmlNodePtr, name: CString, namespace: CString): XmlAttrPtr;
     _xmlInitParser(): void;
@@ -184,6 +185,7 @@ export class LibXml2 {
     addFunction(func: Function, sig: string): Pointer;
     getValue(ptr: Pointer, type: string): number;
     lengthBytesUTF8(str: string): number;
+    removeFunction(func: Pointer): void;
     stringToUTF8(str: string, outPtr: CString, maxBytesToWrite: number): CString;
 }
 

@@ -65,6 +65,11 @@ export interface ErrorDetail {
      * The column number in the XML file where the error occurred.
      */
     col: number;
+
+    /**
+     * The XPath to the node associated with the error, when available.
+     */
+    xpath?: string;
 }
 
 /**
@@ -201,6 +206,18 @@ export function xmlNodeGetContent(node: XmlNodePtr): string {
     return moveUtf8ToString(libxml2._xmlNodeGetContent(node));
 }
 
+export function xmlGetNodePath(node: XmlNodePtr): string | null {
+    if (node === 0) {
+        return null;
+    }
+    const path = libxml2._xmlGetNodePath(node);
+    /* c8 ignore next 3, defensive code, only hit if libxml2 fails to allocate the path */
+    if (path === 0) {
+        return null;
+    }
+    return moveUtf8ToString(path);
+}
+
 export function xmlNodeSetContent(node: XmlNodePtr, content: string): number {
     return withStringUTF8(content, (buf, len) => libxml2._xmlNodeSetContentLen(node, buf, len));
 }
@@ -278,6 +295,11 @@ export const error = {
         };
         if (file != null) {
             detail.file = file;
+        }
+        const node = XmlErrorStruct.node(err);
+        const xpath = xmlGetNodePath(node);
+        if (xpath != null) {
+            detail.xpath = xpath;
         }
         error.storage.get(index).push(detail);
     }, 'vii'),
@@ -379,6 +401,13 @@ export class XmlErrorStruct {
     static line = getValueFunc(20, 'i32');
 
     static col = getValueFunc(40, 'i32');
+
+    static node(err: XmlErrorPtr): XmlNodePtr {
+        if (err === 0) {
+            return 0;
+        }
+        return libxml2.getValue(err + 48, '*');
+    }
 }
 
 export function xmlNewCDataBlock(doc: XmlDocPtr, content: string): XmlNodePtr {
@@ -460,6 +489,10 @@ export interface XmlInputProvider {
     close: (fd: Pointer) => boolean;
 }
 
+// Function-table entries of the registered callbacks. addFunction never reuses an entry
+// until it is removed, so they are tracked here and released by xmlCleanupInputProvider.
+const inputCallbackFuncs: Pointer[] = [];
+
 /**
  * Register the callbacks from the provider to the system.
  *
@@ -490,17 +523,30 @@ export function xmlRegisterInputProvider(
         (fd: Pointer) => (provider.close(fd) ? 0 : -1),
         'ii',
     );
+    const funcs = [matchFunc, openFunc, readFunc, closeFunc];
 
     const res = libxml2._xmlRegisterInputCallbacks(matchFunc, openFunc, readFunc, closeFunc);
-    return res >= 0;
+    if (res < 0) {
+        // libxml2 didn't take the callbacks, its callback table is full.
+        funcs.forEach((func) => libxml2.removeFunction(func));
+        return false;
+    }
+    inputCallbackFuncs.push(...funcs);
+    return true;
 }
 
 /**
  * Remove and cleanup all registered input providers.
+ *
+ * This releases the wasm function-table entries of the registered callbacks, so it must
+ * not be called from a provider callback: libxml2 keeps calling the read and close
+ * callbacks of the files it still has open.
  * @alpha
  */
 export function xmlCleanupInputProvider(): void {
     libxml2._xmlCleanupInputCallbacks();
+    inputCallbackFuncs.forEach((func) => libxml2.removeFunction(func));
+    inputCallbackFuncs.length = 0;
 }
 
 /**
