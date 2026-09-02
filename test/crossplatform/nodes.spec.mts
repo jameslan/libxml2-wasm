@@ -12,6 +12,7 @@ import {
     XmlXPath,
     XmlXPathError,
 } from '@libxml2-wasm/lib/index.mjs';
+import { XmlStringOutputBufferHandler } from '@libxml2-wasm/lib/utils.mjs';
 
 import type { XmlNode } from '@libxml2-wasm/lib/index.mjs';
 
@@ -951,6 +952,18 @@ describe('XmlElement', () => {
                 .to.equal('<?xml version="1.0" encoding="utf-8"?>\n<docs>node1node2</docs>\n');
             expect(newDoc.root.firstChild).to.be.instanceOf(XmlText);
             expect(newDoc.root.firstChild?.content).to.equal('node1node2');
+        });
+    });
+
+    describe('save', () => {
+        it('throws for an unsupported encoding instead of silently doing nothing', () => {
+            // libxml2 cannot create a save context for an unknown encoding and returns
+            // NULL; this must surface as an error (and must not leak the output handler
+            // registry slot), rather than silently producing no output.
+            const firstBook = doc.get('/bookstore/book') as XmlElement;
+            const handler = new XmlStringOutputBufferHandler();
+            expect(() => firstBook.save(handler, { encoding: 'no-such-encoding' }))
+                .to.throw(XmlError, /encoding/i);
         });
     });
 
