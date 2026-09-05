@@ -20,11 +20,13 @@ describe('encoding', () => {
                 xmlBuffer,
                 { encoding: 'iso8859-15' },
             );
+            expect(doc.encoding).to.equal('iso8859-15');
             expect(doc.get('asdf/@RT')?.content).to.equal('Müller');
         });
 
         it('should use encoding from xml declaration', () => {
             using doc = XmlDocument.fromBuffer(xmlBuffer);
+            expect(doc.encoding).to.equal('iso8859-15');
             expect(doc.get('asdf/@RT')?.content).to.equal('Müller');
         });
     });

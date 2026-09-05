@@ -6,6 +6,7 @@ import {
     xmlCtxtSetErrorHandler,
     xmlDocGetRootElement,
     xmlDocSetRootElement,
+    XmlDocStruct,
     XmlError,
     xmlFreeDoc,
     xmlFreeNode,
@@ -332,6 +333,32 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
         options: ParseOptions = {},
     ): XmlDocument {
         return parse(xmlReadMemory, source, options.url ?? null, options);
+    }
+
+    /**
+     * The standalone status of the document (indicator about external refs).
+     *
+     * 1 if standalone="yes",
+     * 0 if standalone="no",
+     * -1 if there is no XML declaration,
+     * -2 if there is an XML declaration, but no standalone attribute was specified
+     */
+    get standalone(): number {
+        return XmlDocStruct.standalone(this._ptr);
+    }
+
+    /**
+     * The version string of the XML declaration.
+     */
+    get version(): string {
+        return XmlDocStruct.version(this._ptr);
+    }
+
+    /**
+     * The actual encoding of the document, or null if not specified.
+     */
+    get encoding(): string | null {
+        return XmlDocStruct.encoding(this._ptr);
     }
 
     /**
