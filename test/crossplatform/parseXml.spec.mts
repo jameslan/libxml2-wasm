@@ -76,19 +76,19 @@ describe('parseXmlString', () => {
     });
 
     it('should use null as default encoding', () => {
-        const doc = XmlDocument.fromString('<doc/>');
-        expect(doc.getVersion()).to.equal('1.0');
-        expect(doc.getStandalone()).to.equal(-1);
-        expect(doc.getEncoding()).to.equal(null);
+        using doc = XmlDocument.fromString('<doc/>');
+        expect(doc.version).to.equal('1.0');
+        expect(doc.standalone).to.equal(-1);
+        expect(doc.encoding).to.equal(null);
     });
 
     it('should use encoding from xml declaration', () => {
-        const doc = XmlDocument.fromString(
+        using doc = XmlDocument.fromString(
             '<?xml version="1.0" encoding="Utf-8"?><doc/>',
         );
-        expect(doc.getVersion()).to.equal('1.0');
-        expect(doc.getStandalone()).to.equal(-2);
-        expect(doc.getEncoding()).to.equal('Utf-8');
+        expect(doc.version).to.equal('1.0');
+        expect(doc.standalone).to.equal(-2);
+        expect(doc.encoding).to.equal('Utf-8');
     });
 });
 

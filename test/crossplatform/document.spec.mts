@@ -19,18 +19,19 @@ describe('XmlDocument', () => {
     after(() => doc.dispose());
 
     describe('info', () => {
-        using d = XmlDocument.create();
-
-        it('returns undefined version on creation', () => {
-            expect(d.getVersion()).to.equal(undefined);
+        it('returns default version on creation', () => {
+            using d = XmlDocument.create();
+            expect(d.version).to.equal('1.0');
         });
 
-        it('returns undefined encoding on creation', () => {
-            expect(d.getEncoding()).to.equal(undefined);
+        it('returns null encoding on creation', () => {
+            using d = XmlDocument.create();
+            expect(d.encoding).to.equal(null);
         });
 
-        it('returns undefined standalone on creation', () => {
-            expect(d.getStandalone()).to.equal(undefined);
+        it('returns no-declaration standalone on creation', () => {
+            using d = XmlDocument.create();
+            expect(d.standalone).to.equal(-1);
         });
     });
 

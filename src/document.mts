@@ -336,29 +336,29 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
     }
 
     /**
-     * Get standalone document status (indicator about external refs)
+     * The standalone status of the document (indicator about external refs).
      *
      * 1 if standalone="yes",
      * 0 if standalone="no",
      * -1 if there is no XML declaration,
      * -2 if there is an XML declaration, but no standalone attribute was specified
      */
-    getStandalone(): number | undefined {
-        return this._ptr === 0 ? undefined : XmlDocStruct.standalone(this._ptr);
+    get standalone(): number {
+        return XmlDocStruct.standalone(this._ptr);
     }
 
     /**
-     * Get version string from XML declaration
+     * The version string of the XML declaration.
      */
-    getVersion(): string | undefined {
-        return this._ptr === 0 ? undefined : XmlDocStruct.version(this._ptr);
+    get version(): string {
+        return XmlDocStruct.version(this._ptr);
     }
 
     /**
-     * Get actual encoding if any
+     * The actual encoding of the document, or null if not specified.
      */
-    getEncoding(): string | null | undefined {
-        return this._ptr === 0 ? undefined : XmlDocStruct.encoding(this._ptr);
+    get encoding(): string | null {
+        return XmlDocStruct.encoding(this._ptr);
     }
 
     /**
