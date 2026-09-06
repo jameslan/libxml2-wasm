@@ -22,11 +22,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      contents: read # Use personal access token to create release, default token can be read only
+      contents: read # We'll use personal access token to create release, so default token can be read only
       id-token: write # for OIDC when publishing to npm
     steps:
       - uses: actions/checkout@v6
       - uses: actions/download-artifact@v8
+        with:
+          name: artifact
+          path: artifact
       - name: create release
         uses: ncipollo/release-action@v1
         with:
