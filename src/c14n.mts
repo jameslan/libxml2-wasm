@@ -1,3 +1,4 @@
+import { XmlDocument } from './document.mjs';
 import {
     addFunction,
     allocCStringArray,
@@ -9,15 +10,13 @@ import {
     XmlTreeCommonStruct,
 
 } from './libxml2.mjs';
-import { createNode, createNullableNode } from './nodes.mjs';
-import { ContextStorage } from './utils.mjs';
+import { createNode, createNullableNode, XmlNode } from './nodes.mjs';
+import { ContextStorage, XmlStringOutputBufferHandler } from './utils.mjs';
 
-import type { XmlDocument } from './document.mjs';
 import type { XmlOutputBufferHandler } from './libxml2.mjs';
 import type {
     Pointer, XmlDocPtr, XmlOutputBufferPtr,
 } from './libxml2raw.mjs';
-import type { XmlNode } from './nodes.mjs';
 
 /**
  * Context for the C14N isVisible callback.
@@ -238,30 +237,81 @@ function canonicalizeInternal(
     }
 }
 
-/**
- * Canonicalize an entire XML document to a buffer and invoke callbacks to process.
- *
+declare module './document.mjs' {
+    interface XmlDocument {
+        /**
+         * Canonicalize the document and invoke the handler to process.
+         *
+         * @param handler handlers to process the content in the buffer
+         * @param options options to adjust the canonicalization behavior
+         * @see {@link canonicalizeToString}
+         */
+        canonicalize: (handler: XmlOutputBufferHandler, options?: C14NOptions) => void;
 
- * @param handler Callback to receive the canonicalized output
- * @param doc The XML document to canonicalize
- * @param options Canonicalization options
- *
- * @example
- * ```typescript
- * const handler = new XmlStringOutputBufferHandler();
- * canonicalizeDocument(handler, doc, {
- *   mode: XmlC14NMode.XML_C14N_1_0,
- *   withComments: false
- * });
- * ```
- */
-export function canonicalizeDocument(
-    handler: XmlOutputBufferHandler,
-    doc: XmlDocument,
-    options: C14NOptions = {},
-): void {
-    canonicalizeInternal(handler, doc._ptr, options);
+        /**
+         * Canonicalize the document to a string.
+         *
+         * @param options options to adjust the canonicalization behavior
+         * @returns The canonicalized XML string
+         * @see {@link canonicalize}
+         */
+        canonicalizeToString: (options?: C14NOptions) => string;
+    }
 }
+
+Object.defineProperties(XmlDocument.prototype, {
+    canonicalize: {
+        value(this: XmlDocument, handler: XmlOutputBufferHandler, options?: C14NOptions) {
+            canonicalizeInternal(handler, this._ptr, options);
+        },
+    },
+
+    canonicalizeToString: {
+        value(this: XmlDocument, options?: C14NOptions) {
+            const handler = new XmlStringOutputBufferHandler();
+            this.canonicalize(handler, options);
+            return handler.result;
+        },
+    },
+});
+
+declare module './nodes.mjs' {
+    interface XmlNode {
+        /**
+         * Canonicalize this node and its subtree to a buffer and invoke the handler to process.
+         *
+         * @param handler handlers to process the content in the buffer
+         * @param options options to adjust the canonicalization behavior
+         * @see {@link canonicalizeToString}
+         */
+        canonicalize: (handler: XmlOutputBufferHandler, options?: SubtreeC14NOptions) => void;
+
+        /**
+         * Canonicalize this node and its subtree and return the result as a string.
+         *
+         * @param options options to adjust the canonicalization behavior
+         * @returns The canonicalized XML string.
+         * @see {@link canonicalize}
+         */
+        canonicalizeToString: (options?: SubtreeC14NOptions) => string;
+    }
+}
+
+Object.defineProperties(XmlNode.prototype, {
+    canonicalize: {
+        value(this: XmlNode, handler: XmlOutputBufferHandler, options?: SubtreeC14NOptions) {
+            canonicalizeSubtree(handler, this.doc, this, options);
+        },
+    },
+
+    canonicalizeToString: {
+        value(this: XmlNode, options?: SubtreeC14NOptions) {
+            const handler = new XmlStringOutputBufferHandler();
+            this.canonicalize(handler, options);
+            return handler.result;
+        },
+    },
+});
 
 /**
  * Canonicalize a subtree of an XML document to a buffer and invoke callbacks to process.

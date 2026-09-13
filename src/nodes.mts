@@ -1,5 +1,3 @@
-import { canonicalizeSubtree } from './c14n.mjs';
-import { XmlDocument } from './document.mjs';
 import {
     xmlAddChild,
     xmlAddNextSibling,
@@ -45,7 +43,6 @@ import {
 import { XmlStringOutputBufferHandler } from './utils.mjs';
 import { XmlXPath, XmlXPathError } from './xpath.mjs';
 
-import type { SubtreeC14NOptions } from './c14n.mjs';
 import type {
     SaveOptions,
     XmlOutputBufferHandler,
@@ -166,13 +163,6 @@ export abstract class XmlNode {
     }
 
     /**
-     * The {@link XmlDocument} containing this node.
-     */
-    get doc(): XmlDocument {
-        return XmlDocument.getInstance(XmlNodeStruct.doc(this._nodePtr));
-    }
-
-    /**
      * Remove the node from its parent.
      */
     remove(): void {
@@ -216,30 +206,6 @@ export abstract class XmlNode {
      */
     isSameNode(other: XmlNode): boolean {
         return this._nodePtr === other._nodePtr;
-    }
-
-    /**
-     * Canonicalize this node and its subtree to a buffer and invoke the handler to process.
-     *
-     * @param handler handlers to process the content in the buffer
-     * @param options options to adjust the canonicalization behavior
-     * @see {@link canonicalizeToString}
-     */
-    canonicalize(handler: XmlOutputBufferHandler, options?: SubtreeC14NOptions): void {
-        canonicalizeSubtree(handler, this.doc, this, options);
-    }
-
-    /**
-     * Canonicalize this node and its subtree and return the result as a string.
-     *
-     * @param options options to adjust the canonicalization behavior
-     * @returns The canonicalized XML string.
-     * @see {@link canonicalize}
-     */
-    canonicalizeToString(options?: SubtreeC14NOptions): string {
-        const handler = new XmlStringOutputBufferHandler();
-        this.canonicalize(handler, options);
-        return handler.result;
     }
 
     /**

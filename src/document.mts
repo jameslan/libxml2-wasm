@@ -1,4 +1,3 @@
-import { canonicalizeDocument } from './c14n.mjs';
 import { disposeBy, XmlDisposable } from './disposable.mjs';
 import { XmlDtd } from './dtd.mjs';
 import {
@@ -16,6 +15,7 @@ import {
     xmlNewDoc,
     xmlNewDocNode,
     xmlNewParserCtxt,
+    XmlNodeStruct,
     xmlReadMemory,
     xmlReadString,
     xmlSaveClose,
@@ -28,13 +28,11 @@ import {
     xmlXIncludeProcessNode,
     xmlXIncludeSetErrorHandler,
 } from './libxml2.mjs';
-import { XmlElement } from './nodes.mjs';
+import { XmlElement, XmlNode } from './nodes.mjs';
 import { XmlStringOutputBufferHandler } from './utils.mjs';
 
-import type { C14NOptions } from './c14n.mjs';
 import type { ErrorDetail, SaveOptions, XmlOutputBufferHandler } from './libxml2.mjs';
 import type { XmlDocPtr, XmlParserCtxtPtr } from './libxml2raw.mjs';
-import type { XmlNode } from './nodes.mjs';
 import type { NamespaceMap, XmlXPath } from './xpath.mjs';
 
 export enum ParseOption {
@@ -568,28 +566,21 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
             xmlXIncludeFreeContext(xinc);
         }
     }
+}
 
-    /**
-     * Canonicalize the document and invoke the handler to process.
-     *
-     * @param handler handlers to process the content in the buffer
-     * @param options options to adjust the canonicalization behavior
-     * @see {@link canonicalizeToString}
-     */
-    canonicalize(handler: XmlOutputBufferHandler, options?: C14NOptions): void {
-        canonicalizeDocument(handler, this, options);
-    }
-
-    /**
-     * Canonicalize the document to a string.
-     *
-     * @param options options to adjust the canonicalization behavior
-     * @returns The canonicalized XML string
-     * @see {@link canonicalize}
-     */
-    canonicalizeToString(options?: C14NOptions): string {
-        const handler = new XmlStringOutputBufferHandler();
-        this.canonicalize(handler, options);
-        return handler.result;
+declare module './nodes.mjs' {
+    interface XmlNode {
+        /**
+         * The {@link XmlDocument} containing this node.
+         */
+        get doc(): XmlDocument;
     }
 }
+
+Object.defineProperties(XmlNode.prototype, {
+    doc: {
+        get() {
+            return XmlDocument.getInstance(XmlNodeStruct.doc(this._nodePtr));
+        },
+    },
+});
