@@ -36,6 +36,7 @@ this library requires the minimum version of the following environments,
 
 # Features
 - Parsing & Querying
+- Streaming (SAX push parsing)
 - Validating
 - Modifying
 - Serializing

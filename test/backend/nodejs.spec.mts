@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import { join, resolve } from 'node:path';
+import vm from 'node:vm';
 
 import { expect, use } from 'chai';
 import sinon from 'sinon';
@@ -9,6 +10,7 @@ import sinonChai from 'sinon-chai';
 import {
     xmlCleanupInputProvider,
     XmlDocument,
+    XmlSaxParser,
     XmlValidateError,
     XsdValidator,
 } from '@libxml2-wasm/lib/index.mjs';
@@ -224,4 +226,21 @@ describe('Path handling', () => {
             expect(doc.get('/book/author/first-name')?.content).to.equal('Frank');
         });
     }
+});
+
+describe('XmlSaxParser cross-realm input', () => {
+    it('accepts a Uint8Array created in another realm', () => {
+        // instanceof fails across realms; push must not reject the chunk
+        const foreign: Uint8Array = vm.runInNewContext(
+            'new Uint8Array([60, 100, 111, 99, 47, 62])', // '<doc/>'
+        );
+        expect(foreign).to.not.be.an.instanceOf(Uint8Array);
+        const names: string[] = [];
+        using parser = XmlSaxParser.create({
+            startElementNs: (localName) => names.push(localName),
+        });
+        parser.push(foreign);
+        parser.finish();
+        expect(names).to.deep.equal(['doc']);
+    });
 });
