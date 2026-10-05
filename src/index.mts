@@ -32,6 +32,8 @@ export type {
     SaveOptions,
     XmlInputProvider,
     XmlOutputBufferHandler,
+    XmlSaxAttribute,
+    XmlSaxHandler,
 } from './libxml2.mjs';
 export {
     xmlCleanupInputProvider,
@@ -39,6 +41,7 @@ export {
     XmlLibError,
     xmlRegisterInputProvider,
 } from './libxml2.mjs';
+export { XmlSaxParser } from './sax.mjs';
 export { XmlDtd } from './dtd.mjs';
 export {
     DtdValidator,

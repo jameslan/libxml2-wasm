@@ -73,6 +73,12 @@ export interface ErrorDetail {
 }
 
 /**
+ * libxml2 xmlErrorLevel: diagnostics at this severity or above are failures.
+ * @internal
+ */
+export const XML_ERR_ERROR = 2;
+
+/**
  * An exception class represents the error in libxml2.
  */
 export class XmlLibError extends XmlError {
@@ -558,6 +564,452 @@ export function xmlCleanupInputProvider(): void {
 }
 
 /**
+ * An attribute of an element, reported by {@link XmlSaxHandler#startElementNs}.
+ *
+ * @see {@link XmlSaxHandler}
+ */
+export interface XmlSaxAttribute {
+    /**
+     * The local name of the attribute, without the namespace prefix.
+     */
+    localName: string;
+
+    /**
+     * The namespace prefix of the attribute, or `null` if it has none.
+     */
+    prefix: string | null;
+
+    /**
+     * The namespace URI of the attribute, or `null` if it has none.
+     */
+    namespaceUri: string | null;
+
+    /**
+     * The attribute value.
+     *
+     * Character references and predefined entities are already substituted,
+     * with two exceptions mirroring libxml2's SAX behavior, both lifted by
+     * {@link ParseOption.XML_PARSE_NOENT | XML_PARSE_NOENT}:
+     * an ampersand - however it is written, `&amp;` or `&#38;` -
+     * is reported as the character reference `&#38;`,
+     * and a reference to an entity declared in the DTD is passed through
+     * literally (`&name;`), not substituted.
+     */
+    value: string;
+}
+
+/**
+ * SAX callbacks invoked by an {@link XmlSaxParser} while it parses the document.
+ *
+ * All callbacks are optional; events without a callback are skipped without
+ * crossing the WebAssembly boundary.
+ * The set of reported events is fixed when the parser is created,
+ * but the callback for a reported event is looked up on the handler at
+ * every delivery: adding a callback that was absent at creation does not
+ * enable its event, while replacing or removing one that was present
+ * takes effect at once.
+ *
+ * Note that libxml2 delivers all names and character data in UTF-8,
+ * regardless of the encoding of the input document.
+ *
+ * @see {@link XmlSaxParser}
+ */
+export interface XmlSaxHandler {
+    /**
+     * Called when the parser starts processing the document,
+     * before any other callback.
+     */
+    startDocument?: () => void;
+
+    /**
+     * Called at the end of the document,
+     * when {@link XmlSaxParser#finish} processed the last pending events.
+     */
+    endDocument?: () => void;
+
+    /**
+     * Called after a start tag, with its namespace information.
+     *
+     * @param localName The local name of the element, without the namespace prefix
+     * @param prefix The namespace prefix of the element, or `null` if it has none
+     * @param namespaceUri The namespace URI of the element, or `null` if it has none
+     * @param namespaces The namespaces declared on this element,
+     * as `[prefix, uri]` pairs; the prefix is `null` for a default namespace declaration
+     * @param attributes The attributes of the element; default attributes
+     * declared in the internal DTD subset are included only when
+     * {@link ParseOption.XML_PARSE_DTDATTR} was set on the parser
+     */
+    startElementNs?: (
+        localName: string,
+        prefix: string | null,
+        namespaceUri: string | null,
+        namespaces: [prefix: string | null, uri: string][],
+        attributes: XmlSaxAttribute[],
+    ) => void;
+
+    /**
+     * Called after an end tag (or at the end of an empty element tag).
+     *
+     * @param localName The local name of the element, without the namespace prefix
+     * @param prefix The namespace prefix of the element, or `null` if it has none
+     * @param namespaceUri The namespace URI of the element, or `null` if it has none
+     */
+    endElementNs?: (
+        localName: string,
+        prefix: string | null,
+        namespaceUri: string | null,
+    ) => void;
+
+    /**
+     * Called with a run of character data.
+     *
+     * `data` holds UTF-8 encoded bytes and is a view into the WebAssembly memory:
+     * it is valid only during the callback, and only until the WebAssembly
+     * memory grows - calling into any API of this library, even on another
+     * document or parser, may grow the memory and silently detach the view.
+     * Copy the bytes (e.g. with `data.slice()`) before retaining them or
+     * calling into the library.
+     *
+     * libxml2 may deliver a single text node as many consecutive calls,
+     * and there is no guarantee that the split falls on a UTF-8 character
+     * boundary.
+     * To get the text, concatenate the bytes of consecutive calls,
+     * or decode them with a streaming `TextDecoder`
+     * (`decoder.decode(data, { stream: true })`);
+     * don't decode each chunk in isolation.
+     *
+     * @param data UTF-8 encoded character data, valid only during the callback
+     */
+    characters?: (data: Uint8Array) => void;
+
+    /**
+     * Called with the content of a CDATA section.
+     *
+     * If this callback is not set, CDATA content is reported through
+     * {@link characters} instead.
+     *
+     * `data` is subject to the same validity and splitting rules as
+     * {@link characters}.
+     *
+     * @param data UTF-8 encoded content of the CDATA section,
+     * valid only during the callback
+     */
+    cdataBlock?: (data: Uint8Array) => void;
+
+    /**
+     * Called after a comment.
+     *
+     * @param text The content of the comment
+     */
+    comment?: (text: string) => void;
+
+    /**
+     * Called after a processing instruction.
+     *
+     * @param target The target of the processing instruction
+     * @param data The data of the processing instruction,
+     * or `null` if it has none
+     */
+    processingInstruction?: (target: string, data: string | null) => void;
+}
+
+/**
+ * The JavaScript side of a push parser context.
+ * Its owner has to keep it alive for as long as the parser is used.
+ * @internal
+ */
+export interface SaxParserContext {
+    handler: XmlSaxHandler;
+    // A value thrown by a handler callback, to be rethrown after xmlParseChunk returns
+    failure?: { error: unknown };
+    // Whether XML_PARSE_DTDATTR was set at creation: libxml2 always appends
+    // DTD-defaulted attributes to the end of startElementNs's attribute
+    // array, counted separately in nb_defaulted, and expects the consumer
+    // to trim them when the option is off, the same way its own tree-building
+    // SAX2 callback does.
+    reportDtdDefaultedAttrs: boolean;
+}
+
+// Live SAX parser contexts. libxml2 invokes the SAX callbacks with the parser
+// context pointer as their first argument (the SAX user data is left NULL, so
+// ctxt->userData falls back to the context itself), which keys this map.
+// The references are weak: a handler usually refers back to its own parser -
+// that is how stop() is called - so holding one here would root the parser in
+// this module and keep it from ever being garbage collected.
+const saxParsers = new Map<XmlParserCtxtPtr, WeakRef<SaxParserContext>>();
+
+// Shared skeleton of the SAX trampolines: look up the live dispatch context,
+// suppress events after a failure, and never let a JS exception thrown by a
+// handler callback unwind through the C frames of the parser - that would
+// skip their cleanup - by stopping the parser and holding the exception
+// until xmlParseChunk returns.
+function saxCallback(
+    sig: string,
+    invoke: (context: SaxParserContext, ...args: number[]) => void,
+): Pointer {
+    return libxml2.addFunction((ctxt: XmlParserCtxtPtr, ...args: number[]) => {
+        const context = saxParsers.get(ctxt)?.deref();
+        /* c8 ignore next 3, defensive: callbacks are suppressed after a failure */
+        if (!context || context.failure) {
+            return;
+        }
+        try {
+            invoke(context, ...args);
+        } catch (err) {
+            context.failure = { error: err };
+            libxml2._xmlStopParser(ctxt);
+        }
+    }, sig);
+}
+
+const saxStartDocument = saxCallback('vi', (context) => {
+    context.handler.startDocument?.();
+});
+
+const saxEndDocument = saxCallback('vi', (context) => {
+    context.handler.endDocument?.();
+});
+
+const saxStartElementNs = saxCallback('viiiiiiiii', (
+    context,
+    localName,
+    prefix,
+    uri,
+    nbNamespaces,
+    namespaces,
+    nbAttributes,
+    nbDefaulted,
+    attributes,
+) => {
+    // the C callback stays installed when the JS one is removed mid-parse;
+    // skip the marshalling below too, not just the invocation
+    if (!context.handler.startElementNs) {
+        return;
+    }
+    // pointers are 4-byte aligned and fit in HEAP32:
+    // the memory is capped at 2GB (the ALLOW_MEMORY_GROWTH default)
+    const ptrs = libxml2.HEAP32;
+    // namespaces is an array of nbNamespaces (prefix, uri) pointer pairs
+    const nsDecls: [string | null, string][] = [];
+    for (let slot = namespaces / 4, end = slot + nbNamespaces * 2; slot < end; slot += 2) {
+        nsDecls.push([
+            nullableUTF8ToString(ptrs[slot]),
+            libxml2.UTF8ToString(ptrs[slot + 1]),
+        ]);
+    }
+    // attributes is an array of nbAttributes
+    // (localname, prefix, uri, value, end) pointer quintuplets;
+    // the value is NOT null terminated, it spans [value, end)
+    // DTD-defaulted attributes (counted in nbDefaulted) are appended after
+    // the ones actually written in the document; drop them unless the
+    // consumer asked for them, mirroring libxml2's own xmlSAX2StartElementNs
+    const reportedAttributes = context.reportDtdDefaultedAttrs
+        ? nbAttributes
+        : nbAttributes - nbDefaulted;
+    const attrs: XmlSaxAttribute[] = [];
+    for (let slot = attributes / 4, end = slot + reportedAttributes * 5; slot < end; slot += 5) {
+        const value = ptrs[slot + 3];
+        const valueEnd = ptrs[slot + 4];
+        attrs.push({
+            localName: libxml2.UTF8ToString(ptrs[slot]),
+            prefix: nullableUTF8ToString(ptrs[slot + 1]),
+            namespaceUri: nullableUTF8ToString(ptrs[slot + 2]),
+            value: valueEnd > value ? libxml2.UTF8ToString(value, valueEnd - value) : '',
+        });
+    }
+    context.handler.startElementNs(
+        libxml2.UTF8ToString(localName),
+        nullableUTF8ToString(prefix),
+        nullableUTF8ToString(uri),
+        nsDecls,
+        attrs,
+    );
+});
+
+const saxEndElementNs = saxCallback('viiii', (context, localName, prefix, uri) => {
+    context.handler.endElementNs?.(
+        libxml2.UTF8ToString(localName),
+        nullableUTF8ToString(prefix),
+        nullableUTF8ToString(uri),
+    );
+});
+
+const saxCharacters = saxCallback('viii', (context, ch, len) => {
+    context.handler.characters?.(libxml2.HEAPU8.subarray(ch, ch + len));
+});
+
+const saxCdataBlock = saxCallback('viii', (context, ch, len) => {
+    context.handler.cdataBlock?.(libxml2.HEAPU8.subarray(ch, ch + len));
+});
+
+const saxComment = saxCallback('vii', (context, text) => {
+    context.handler.comment?.(libxml2.UTF8ToString(text));
+});
+
+const saxProcessingInstruction = saxCallback('viii', (context, target, data) => {
+    context.handler.processingInstruction?.(
+        libxml2.UTF8ToString(target),
+        nullableUTF8ToString(data),
+    );
+});
+
+/**
+ * Field slots of struct xmlSAXHandler (each field is one 4-byte slot on wasm32).
+ *
+ * Pinned to the field order in the libxml2 submodule's include/libxml/parser.h:
+ *
+ *  0 internalSubset      1 isStandalone          2 hasInternalSubset
+ *  3 hasExternalSubset   4 resolveEntity         5 getEntity
+ *  6 entityDecl          7 notationDecl          8 attributeDecl
+ *  9 elementDecl        10 unparsedEntityDecl   11 setDocumentLocator
+ * 12 startDocument      13 endDocument          14 startElement
+ * 15 endElement         16 reference            17 characters
+ * 18 ignorableWhitespace 19 processingInstruction 20 comment
+ * 21 warning            22 error                23 fatalError
+ * 24 getParameterEntity 25 cdataBlock           26 externalSubset
+ * 27 initialized        28 _private             29 startElementNs
+ * 30 endElementNs       31 serror
+ */
+enum SaxHandlerSlot {
+    startDocument = 12,
+    endDocument = 13,
+    characters = 17,
+    ignorableWhitespace = 18,
+    processingInstruction = 19,
+    comment = 20,
+    cdataBlock = 25,
+    initialized = 27,
+    startElementNs = 29,
+    endElementNs = 30,
+}
+
+const SAX_HANDLER_SLOT_COUNT = 32;
+
+// Magic value in the `initialized` field enabling the SAX2 interface;
+// without it, xmlCreatePushParserCtxt copies only the SAX1-sized prefix
+// of the struct and drops startElementNs/endElementNs.
+const XML_SAX2_MAGIC = 0xDEEDBEAF;
+
+/**
+ * Create a libxml2 push parser context with SAX callbacks
+ * dispatching to `handler`.
+ *
+ * Only the struct slots for callbacks present on `handler` are populated,
+ * so skipped events never cross the WebAssembly boundary.
+ *
+ * @returns the parser context - 0 on failure - and the dispatch context that
+ * the caller has to keep alive for as long as the parser is used.
+ * @internal
+ */
+export function xmlCreatePushParserCtxt(
+    handler: XmlSaxHandler,
+    filename: string | null,
+): [XmlParserCtxtPtr, SaxParserContext] {
+    const context: SaxParserContext = { handler, reportDtdDefaultedAttrs: false };
+    const sax = libxml2._malloc(SAX_HANDLER_SLOT_COUNT * 4);
+    /* c8 ignore next 5, defensive: the allocation fails only when out of memory */
+    if (!sax) {
+        // a NULL handler would select libxml2's default, tree building one,
+        // which reports nothing and defeats the purpose of the push parser
+        return [0, context];
+    }
+    const base = sax / 4;
+    const slots = libxml2.HEAP32;
+    slots.fill(0, base, base + SAX_HANDLER_SLOT_COUNT);
+    if (handler.startDocument) {
+        slots[base + SaxHandlerSlot.startDocument] = saxStartDocument;
+    }
+    if (handler.endDocument) {
+        slots[base + SaxHandlerSlot.endDocument] = saxEndDocument;
+    }
+    if (handler.startElementNs) {
+        slots[base + SaxHandlerSlot.startElementNs] = saxStartElementNs;
+    }
+    if (handler.endElementNs) {
+        slots[base + SaxHandlerSlot.endElementNs] = saxEndElementNs;
+    }
+    if (handler.characters) {
+        slots[base + SaxHandlerSlot.characters] = saxCharacters;
+        // Deliver whitespace-only character data through the same callback;
+        // per the xmlSAXHandler docs, ignorableWhitespace should always be set
+        // to the same value as characters, otherwise the parser tries to
+        // detect "ignorable" whitespace, which is unreliable in push mode.
+        slots[base + SaxHandlerSlot.ignorableWhitespace] = saxCharacters;
+    }
+    if (handler.cdataBlock) {
+        slots[base + SaxHandlerSlot.cdataBlock] = saxCdataBlock;
+    }
+    if (handler.comment) {
+        slots[base + SaxHandlerSlot.comment] = saxComment;
+    }
+    if (handler.processingInstruction) {
+        slots[base + SaxHandlerSlot.processingInstruction] = saxProcessingInstruction;
+    }
+    slots[base + SaxHandlerSlot.initialized] = XML_SAX2_MAGIC;
+    // user data is left NULL: ctxt->userData then defaults to the context
+    // itself, which is what the shared callbacks above use as dispatch key
+    const ctxt = withStringUTF8(
+        filename,
+        (buf) => libxml2._xmlCreatePushParserCtxt(sax, 0, 0, 0, buf),
+    );
+    // the context copies the struct, it doesn't keep the pointer
+    libxml2._free(sax);
+    if (ctxt) {
+        saxParsers.set(ctxt, new WeakRef(context));
+    }
+    return [ctxt, context];
+}
+
+/**
+ * Parse a chunk of data with a push parser context.
+ *
+ * Rethrows the exception if a SAX callback of the chunk threw one.
+ *
+ * @returns the xmlParserErrors code of the parse, 0 on success.
+ * @internal
+ */
+export function xmlParseChunk(
+    ctxt: XmlParserCtxtPtr,
+    chunk: Uint8Array | null,
+    terminate: boolean,
+): number {
+    const flag = terminate ? 1 : 0;
+    let ret;
+    if (chunk) {
+        ret = withCString(chunk, (buf, len) => libxml2._xmlParseChunk(ctxt, buf, len, flag));
+    } else {
+        ret = libxml2._xmlParseChunk(ctxt, 0, 0, flag);
+    }
+    const parser = saxParsers.get(ctxt)?.deref();
+    if (parser?.failure) {
+        const { error: err } = parser.failure;
+        delete parser.failure;
+        throw err;
+    }
+    return ret;
+}
+
+/**
+ * Free a push parser context created by {@link xmlCreatePushParserCtxt}
+ * and its callback dispatch entry.
+ * @internal
+ */
+export function xmlFreeSaxParserCtxt(ctxt: XmlParserCtxtPtr): void {
+    saxParsers.delete(ctxt);
+    // Even in SAX mode, libxml2 keeps the entities declared in the internal
+    // subset in a document of its own, and releases it only when the parse
+    // runs to its end - not when it is stopped, fails or is abandoned.
+    // xmlFreeParserCtxt doesn't free it either; xmlCtxtGetDocument detaches
+    // it from the context, either handing it over or freeing it itself
+    // (after a fatal error).
+    const doc = libxml2._xmlCtxtGetDocument(ctxt);
+    if (doc) {
+        libxml2._xmlFreeDoc(doc);
+    }
+    libxml2._xmlFreeParserCtxt(ctxt);
+}
+
+/**
  * Options to be passed in the call to saving functions
  *
  * @default If not specified, `{ format: true }` will be used.
@@ -770,6 +1222,7 @@ export const xmlAddChild = libxml2._xmlAddChild;
 export const xmlAddNextSibling = libxml2._xmlAddNextSibling;
 export const xmlAddPrevSibling = libxml2._xmlAddPrevSibling;
 export const xmlCtxtSetErrorHandler = libxml2._xmlCtxtSetErrorHandler;
+export const xmlCtxtSetOptions = libxml2._xmlCtxtSetOptions;
 export const xmlCtxtValidateDtd = libxml2._xmlCtxtValidateDtd;
 export const xmlDocGetRootElement = libxml2._xmlDocGetRootElement;
 export const xmlDocSetRootElement = libxml2._xmlDocSetRootElement;
@@ -806,6 +1259,7 @@ export const xmlSchemaSetValidStructuredErrors = libxml2._xmlSchemaSetValidStruc
 export const xmlSchemaValidateDoc = libxml2._xmlSchemaValidateDoc;
 export const xmlSchemaValidateOneElement = libxml2._xmlSchemaValidateOneElement;
 export const xmlSetNs = libxml2._xmlSetNs;
+export const xmlStopParser = libxml2._xmlStopParser;
 export const xmlUnlinkNode = libxml2._xmlUnlinkNode;
 export const xmlXIncludeFreeContext = libxml2._xmlXIncludeFreeContext;
 export const xmlXIncludeNewContext = libxml2._xmlXIncludeNewContext;

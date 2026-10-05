@@ -26,6 +26,7 @@ export default {
     projectDocuments: [
         'docs/tutorial.md',
         'docs/io.md',
+        'docs/sax.md',
         'docs/manipulate.md',
         'docs/mem.md',
         'docs/performance.md',

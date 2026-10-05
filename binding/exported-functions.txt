@@ -5,9 +5,12 @@ _xmlAddNextSibling
 _xmlAddPrevSibling
 _xmlC14NExecute
 _xmlCleanupInputCallbacks
+_xmlCreatePushParserCtxt
+_xmlCtxtGetDocument
 _xmlCtxtParseDtd
 _xmlCtxtReadMemory
 _xmlCtxtSetErrorHandler
+_xmlCtxtSetOptions
 _xmlCtxtValidateDtd
 _xmlDocGetRootElement
 _xmlDocSetRootElement
@@ -35,6 +38,7 @@ _xmlNodeGetContent
 _xmlNodeSetContentLen
 _xmlOutputBufferClose
 _xmlOutputBufferCreateIO
+_xmlParseChunk
 _xmlRegisterInputCallbacks
 _xmlRelaxNGFree
 _xmlRelaxNGFreeParserCtxt
@@ -66,6 +70,7 @@ _xmlSearchNs
 _xmlSetNs
 _xmlSetNsProp
 _xmlSetWinPathEnabled
+_xmlStopParser
 _xmlUnlinkNode
 _xmlXIncludeFreeContext
 _xmlXIncludeNewContext

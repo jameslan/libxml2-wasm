@@ -2,6 +2,7 @@ import { disposeBy, XmlDisposable } from './disposable.mjs';
 import { XmlDtd } from './dtd.mjs';
 import {
     error,
+    XML_ERR_ERROR,
     xmlCtxtSetErrorHandler,
     xmlDocGetRootElement,
     xmlDocSetRootElement,
@@ -211,8 +212,19 @@ export interface ParseOptions {
 export class XmlParseError extends XmlLibError {
 }
 
-/** libxml2 xmlErrorLevel: diagnostics at this severity or above are failures. */
-const XML_ERR_ERROR = 2;
+/**
+ * Build the {@link XmlParseError} for a failed parse from the diagnostics
+ * it collected.
+ * @internal
+ */
+export function buildParseError(details: ErrorDetail[]): XmlParseError {
+    return new XmlParseError(
+        details.length > 0
+            ? details.map((d) => d.message).join('')
+            : 'Failed to parse XML', // no diagnostics, usually invalid input
+        details,
+    );
+}
 
 function parse<Input>(
     parser: (
@@ -249,12 +261,7 @@ function parse<Input>(
                 // discarded; free it here since no wrapper/finalizer will own it.
                 xmlFreeDoc(xml);
             }
-            throw new XmlParseError(
-                errDetails.length > 0
-                    ? errDetails.map((d) => d.message).join('')
-                    : 'Failed to parse XML', // no diagnostics, usually invalid input
-                errDetails,
-            );
+            throw buildParseError(errDetails);
         }
         // Every diagnostic here is non-fatal (a warning); surface it on the document
         // before the storage slot is freed below.
@@ -557,6 +564,8 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
         try {
             const ret = xmlXIncludeProcessNode(xinc, this._ptr);
             if (ret < 0) {
+                // not buildParseError: its fallback message is about parsing,
+                // and XInclude failures always carry their own diagnostics
                 const errDetails = error.storage.get(errIndex);
                 throw new XmlParseError(errDetails.map((d) => d.message).join(''), errDetails);
             }

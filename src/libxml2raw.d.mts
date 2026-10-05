@@ -40,6 +40,14 @@ export class LibXml2 {
     _xmlAddNextSibling(prev: XmlNodePtr, cur: XmlNodePtr): XmlNodePtr;
     _xmlAddPrevSibling(next: XmlNodePtr, cur: XmlNodePtr): XmlNodePtr;
     _xmlCleanupInputCallbacks(): void;
+    _xmlCreatePushParserCtxt(
+        sax: Pointer,
+        userData: Pointer,
+        chunk: CString,
+        size: number,
+        filename: CString,
+    ): XmlParserCtxtPtr;
+    _xmlCtxtGetDocument(ctxt: XmlParserCtxtPtr): XmlDocPtr;
     _xmlCtxtParseDtd(
         ctxt: XmlParserCtxtPtr,
         input: XmlParserInputPtr,
@@ -59,6 +67,7 @@ export class LibXml2 {
         handler: XmlStructuredErrorFunc,
         data: Pointer,
     ): void;
+    _xmlCtxtSetOptions(ctxt: XmlParserCtxtPtr, options: number): number;
     _xmlCtxtValidateDtd(ctxt: XmlParserCtxtPtr, doc: XmlDocPtr, dtd: XmlDtdPtr): number;
     _xmlFreeNode(node: XmlNodePtr): void;
     _xmlFreeParserCtxt(ctxt: XmlParserCtxtPtr): void;
@@ -88,6 +97,12 @@ export class LibXml2 {
     _xmlNewReference(doc: XmlDocPtr, name: CString): XmlNodePtr;
     _xmlNodeGetContent(node: XmlNodePtr): CString;
     _xmlNodeSetContentLen(node: XmlNodePtr, content: CString, len: number): number;
+    _xmlParseChunk(
+        ctxt: XmlParserCtxtPtr,
+        chunk: CString,
+        size: number,
+        terminate: number,
+    ): number;
     _xmlRegisterInputCallbacks(
         xmlInputMatchCallback: Pointer,
         xmlInputOpenCallback: Pointer,
@@ -127,6 +142,7 @@ export class LibXml2 {
     _xmlSearchNs(doc: XmlDocPtr, node: XmlNodePtr, prefix: CString): XmlNsPtr;
     _xmlSetNs(node: XmlNodePtr, ns: XmlNsPtr): void;
     _xmlSetNsProp(node: XmlNodePtr, ns: XmlNsPtr, name: CString, value: CString): XmlAttrPtr;
+    _xmlStopParser(ctxt: XmlParserCtxtPtr): void;
     _xmlXIncludeFreeContext(ctx: XmlXIncludeCtxtPtr): void;
     _xmlXIncludeNewContext(doc: XmlDocPtr): XmlXIncludeCtxtPtr;
     _xmlXIncludeProcessNode(ctxt: XmlXIncludeCtxtPtr, node: XmlNodePtr): number;
