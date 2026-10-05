@@ -19,6 +19,7 @@
 
     /* Emit */
     "sourceMap": true,
+    "inlineSources": true,
     "outDir": "./lib",
     "stripInternal": true,
 
