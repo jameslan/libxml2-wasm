@@ -39,6 +39,7 @@ this library requires the minimum version of the following environments,
 - Validating
 - Modifying
 - Serializing
+- HTML parsing and serializing
 - XInclude and XSD include/import (experimental)
 
 ## Getting started

@@ -25,8 +25,10 @@ export {
     XmlText,
     XmlTreeNode,
 } from './nodes.mjs';
-export type { ParseOptions } from './document.mjs';
-export { ParseOption, XmlDocument, XmlParseError } from './document.mjs';
+export type { HtmlParseOptions, ParseOptions } from './document.mjs';
+export {
+    HtmlParseOption, ParseOption, XmlDocument, XmlParseError,
+} from './document.mjs';
 export type {
     ErrorDetail,
     SaveOptions,

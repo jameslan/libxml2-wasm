@@ -50,3 +50,18 @@ For more detailed information on memory management, refer to [Memory Management]
 If the target environment version is set too low,
 the transpiler (e.g., TypeScript, Babel, etc.) may convert the `import` statement to a function call to `require()`.
 This can lead to runtime errors.
+
+## Parsing HTML
+
+Use {@link libxml2-wasm!XmlDocument.fromHtmlString | `XmlDocument.fromHtmlString`} (or
+{@link libxml2-wasm!XmlDocument.fromHtmlBuffer | `fromHtmlBuffer`}) to parse HTML instead of XML.
+The HTML parser recovers from broken markup rather than throwing,
+and adds implied `<html>`/`<head>`/`<body>` elements as needed.
+
+```js
+import { XmlDocument } from 'libxml2-wasm';
+const doc = XmlDocument.fromHtmlString('<p>Hello, <b>world</p>');
+console.log(doc.get('//p')?.content); // Hello, world
+console.log(doc.toString()); // serializes back as HTML syntax, since the document is HTML
+doc.dispose();
+```

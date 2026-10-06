@@ -173,6 +173,40 @@ export function xmlReadMemory(
     );
 }
 
+export function htmlReadString(
+    ctxt: XmlParserCtxtPtr,
+    htmlString: string,
+    url: string | null,
+    encoding: string | null,
+    options: number,
+): XmlDocPtr {
+    return withStringUTF8(
+        htmlString,
+        (htmlBuf, len) => withStrings(
+            (urlBuf, enc) => libxml2._htmlCtxtReadMemory(ctxt, htmlBuf, len, urlBuf, enc, options),
+            url,
+            encoding,
+        ),
+    );
+}
+
+export function htmlReadMemory(
+    ctxt: XmlParserCtxtPtr,
+    htmlBuffer: Uint8Array,
+    url: string | null,
+    encoding: string | null,
+    options: number,
+): XmlDocPtr {
+    return withCString(
+        htmlBuffer,
+        (htmlBuf, len) => withStrings(
+            (urlBuf, enc) => libxml2._htmlCtxtReadMemory(ctxt, htmlBuf, len, urlBuf, enc, options),
+            url,
+            encoding,
+        ),
+    );
+}
+
 export function xmlXPathRegisterNs(ctx: XmlXPathContextPtr, prefix: string, uri: string): number {
     return withStrings(
         (bufPrefix, bufUri) => libxml2._xmlXPathRegisterNs(ctx, bufPrefix, bufUri),
@@ -598,6 +632,17 @@ export interface SaveOptions {
      * @default The original encoding of the document or utf-8
      */
     encoding?: string;
+
+    /**
+     * Serialize using HTML syntax (unescaped `<script>`/`<style>` content, void
+     * elements without a closing slash, etc.) instead of XML syntax.
+     *
+     * Documents parsed with fromHtmlString/fromHtmlBuffer are always serialized as HTML;
+     * this option forces HTML syntax for XML documents and their nodes.
+     *
+     * @default false
+     */
+    asHtml?: boolean;
 }
 
 export function xmlSaveOption(options?: SaveOptions): number {
@@ -613,6 +658,9 @@ export function xmlSaveOption(options?: SaveOptions): number {
     }
     if (options.noEmptyTags) {
         flags |= 1 << 2;
+    }
+    if (options.asHtml) {
+        flags |= 1 << 6; // XML_SAVE_AS_HTML
     }
     return flags;
 }
@@ -765,6 +813,7 @@ export function allocCStringArray(strings: string[]): Pointer {
 }
 
 export const free = libxml2._free;
+export const htmlNewParserCtxt = libxml2._htmlNewParserCtxt;
 
 export const xmlAddChild = libxml2._xmlAddChild;
 export const xmlAddNextSibling = libxml2._xmlAddNextSibling;

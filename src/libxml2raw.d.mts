@@ -36,6 +36,16 @@ export class LibXml2 {
     _free(memblock: Pointer): void;
     _malloc(size: number): Pointer;
 
+    _htmlCtxtReadMemory(
+        ctxt: XmlParserCtxtPtr,
+        buffer: CString,
+        length: number,
+        url: CString,
+        encoding: CString,
+        options: number,
+    ): XmlDocPtr;
+    _htmlNewParserCtxt(): XmlParserCtxtPtr;
+
     _xmlAddChild(parent: XmlNodePtr, cur: XmlNodePtr): XmlNodePtr;
     _xmlAddNextSibling(prev: XmlNodePtr, cur: XmlNodePtr): XmlNodePtr;
     _xmlAddPrevSibling(next: XmlNodePtr, cur: XmlNodePtr): XmlNodePtr;

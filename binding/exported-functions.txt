@@ -1,4 +1,6 @@
 _free
+_htmlCtxtReadMemory
+_htmlNewParserCtxt
 _malloc
 _xmlAddChild
 _xmlAddNextSibling

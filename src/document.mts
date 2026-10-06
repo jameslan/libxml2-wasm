@@ -2,6 +2,9 @@ import { disposeBy, XmlDisposable } from './disposable.mjs';
 import { XmlDtd } from './dtd.mjs';
 import {
     error,
+    htmlNewParserCtxt,
+    htmlReadMemory,
+    htmlReadString,
     xmlCtxtSetErrorHandler,
     xmlDocGetRootElement,
     xmlDocSetRootElement,
@@ -208,6 +211,74 @@ export interface ParseOptions {
     option?: ParseOption;
 }
 
+/**
+ * Options for {@link XmlDocument.fromHtmlString} and {@link XmlDocument.fromHtmlBuffer}.
+ * @see https://gnome.pages.gitlab.gnome.org/libxml2/html/libxml2-HTMLparser.html
+ */
+export enum HtmlParseOption {
+    HTML_PARSE_DEFAULT = 0,
+    /** No effect as of libxml2 2.14. */
+    HTML_PARSE_RECOVER = 1 << 0,
+    /** Do not default to a doctype if none was found. */
+    HTML_PARSE_NODEFDTD = 1 << 2,
+    /**
+     * Disable error and warning reports to the error handlers.
+     * Errors are still accessible with xmlCtxtGetLastError().
+     */
+    HTML_PARSE_NOERROR = 1 << 5,
+    /** Disable warning reports. */
+    HTML_PARSE_NOWARNING = 1 << 6,
+    /** No effect. */
+    HTML_PARSE_PEDANTIC = 1 << 7,
+    /**
+     * Remove some text nodes containing only whitespace from the result document.
+     * Which nodes are removed depends on a conservative heuristic: the reindenting
+     * feature of the serialization code relies on this option being set when parsing.
+     * Use of this option is DISCOURAGED.
+     */
+    HTML_PARSE_NOBLANKS = 1 << 8,
+    /** No effect. */
+    HTML_PARSE_NONET = 1 << 11,
+    /** Do not add implied html, head, or body elements. */
+    HTML_PARSE_NOIMPLIED = 1 << 13,
+    /**
+     * Store small strings directly in the node struct to save memory.
+     */
+    HTML_PARSE_COMPACT = 1 << 16,
+    /**
+     * Relax some internal limits, see {@link ParseOption.XML_PARSE_HUGE} for the
+     * concrete limits this raises.
+     */
+    HTML_PARSE_HUGE = 1 << 19,
+    /**
+     * Ignore the encoding in the HTML declaration. The only effect is to enforce
+     * ISO-8859-1 decoding of ASCII-like data.
+     */
+    HTML_PARSE_IGNORE_ENC = 1 << 21,
+    /** Enable reporting of line numbers larger than 65535. */
+    HTML_PARSE_BIG_LINES = 1 << 22,
+    // HTML_PARSE_HTML5 is omitted: libxml2 builds no tree from it yet.
+}
+
+/**
+ * Options for {@link XmlDocument.fromHtmlString} and {@link XmlDocument.fromHtmlBuffer}.
+ */
+export interface HtmlParseOptions {
+    /**
+     * The URL of the document, used as the base for relative URLs and as the `file`
+     * reported on {@link XmlDocument.warnings}.
+     */
+    url?: string;
+    /**
+     * The encoding of the input.
+     *
+     * @default Sniffed from a `<meta charset>`/BOM, falling back to windows-1252.
+     */
+    encoding?: string;
+    /** Parser options, combined with bitwise OR. */
+    option?: HtmlParseOption;
+}
+
 export class XmlParseError extends XmlLibError {
 }
 
@@ -224,10 +295,14 @@ function parse<Input>(
     ) => XmlDocPtr,
     source: Input,
     url: string | null,
-    options: ParseOptions,
+    options: { encoding?: string; option?: number },
+    newCtxt: () => XmlParserCtxtPtr = xmlNewParserCtxt,
+    // The HTML parser always recovers, so its error-level diagnostics are not failures.
+    alwaysRecovers = false,
+    noDocMessage = 'Failed to parse XML',
 ): XmlDocument {
-    const xmlOptions = options.option ?? ParseOption.XML_PARSE_DEFAULT;
-    const ctxt = xmlNewParserCtxt();
+    const xmlOptions = options.option ?? 0;
+    const ctxt = newCtxt();
     const errIndex = error.storage.allocate([]);
     xmlCtxtSetErrorHandler(ctxt, error.errorCollector, errIndex);
     const xml = parser(
@@ -242,7 +317,7 @@ function parse<Input>(
         const errDetails = error.storage.get(errIndex);
         // Warnings (level 1) are non-fatal: libxml2 still returns a valid document.
         // Only error/fatal diagnostics, or a null result, count as a parse failure.
-        const fatal = errDetails.some((d) => d.level >= XML_ERR_ERROR);
+        const fatal = !alwaysRecovers && errDetails.some((d) => d.level >= XML_ERR_ERROR);
         if (fatal || !xml) {
             if (xml) {
                 // A document was produced (e.g. XML_PARSE_RECOVER) but is being
@@ -252,11 +327,11 @@ function parse<Input>(
             throw new XmlParseError(
                 errDetails.length > 0
                     ? errDetails.map((d) => d.message).join('')
-                    : 'Failed to parse XML', // no diagnostics, usually invalid input
+                    : noDocMessage, // no diagnostics, usually invalid input
                 errDetails,
             );
         }
-        // Every diagnostic here is non-fatal (a warning); surface it on the document
+        // Every diagnostic here is non-fatal; surface it on the document
         // before the storage slot is freed below.
         warnings = errDetails;
     } finally {
@@ -286,9 +361,15 @@ function freeDocument(ptr: XmlDocPtr) {
 @disposeBy(freeDocument)
 export class XmlDocument extends XmlDisposable<XmlDocument> {
     /**
-     * Non-fatal diagnostics (warning-level, {@link ErrorDetail.level} === 1) emitted by
-     * libxml2 while parsing this document. Empty for documents created via {@link create}
-     * or parsed without any warnings. Fatal diagnostics are thrown as {@link XmlParseError}.
+     * Non-fatal diagnostics emitted by libxml2 while parsing this document. Empty for
+     * documents created via {@link create} or parsed without any warnings.
+     *
+     * For {@link fromString} and {@link fromBuffer}, this only holds warning-level
+     * ({@link ErrorDetail.level} === 1) diagnostics; an error-or-above diagnostic instead
+     * aborts the parse and is thrown as {@link XmlParseError}.
+     *
+     * For {@link fromHtmlString} and {@link fromHtmlBuffer}, this can also hold error-level
+     * diagnostics, because the HTML parser recovers from broken markup.
      */
     readonly warnings: ErrorDetail[] = [];
 
@@ -331,6 +412,63 @@ export class XmlDocument extends XmlDisposable<XmlDocument> {
         options: ParseOptions = {},
     ): XmlDocument {
         return parse(xmlReadMemory, source, options.url ?? null, options);
+    }
+
+    /**
+     * Parse and create an {@link XmlDocument} from an HTML string, using libxml2's HTML parser.
+     *
+     * Broken markup is repaired rather than rejected; {@link XmlParseError} is thrown only
+     * when no document is produced (e.g. empty input).
+     *
+     * Note: Only UTF-8 encoding is supported for string input.
+     * For other encodings, use {@link fromHtmlBuffer} instead.
+     *
+     * @param source The HTML string
+     * @param options Parsing options
+     * @throws Error when encoding is not 'utf-8'
+     */
+    static fromHtmlString(
+        source: string,
+        options: HtmlParseOptions = {},
+    ): XmlDocument {
+        if (options.encoding && options.encoding !== 'utf-8') {
+            throw new XmlError(
+                'Non-UTF-8 encoding is not supported for string input, use fromHtmlBuffer instead',
+            );
+        }
+        return parse(
+            htmlReadString,
+            source,
+            options.url ?? null,
+            { ...options, encoding: 'utf-8' },
+            htmlNewParserCtxt,
+            /* alwaysRecovers */ true,
+            'Failed to parse HTML',
+        );
+    }
+
+    /**
+     * Parse and create an {@link XmlDocument} from an HTML buffer, using libxml2's HTML parser.
+     *
+     * Broken markup is repaired rather than rejected; {@link XmlParseError} is thrown only
+     * when no document is produced (e.g. empty input).
+     *
+     * @param source The HTML buffer
+     * @param options Parsing options
+     */
+    static fromHtmlBuffer(
+        source: Uint8Array,
+        options: HtmlParseOptions = {},
+    ): XmlDocument {
+        return parse(
+            htmlReadMemory,
+            source,
+            options.url ?? null,
+            options,
+            htmlNewParserCtxt,
+            /* alwaysRecovers */ true,
+            'Failed to parse HTML',
+        );
     }
 
     /**

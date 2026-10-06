@@ -30,6 +30,7 @@ this library requires the minimum version of the following environments,
 - Validating
 - Modifying
 - Serializing
+- HTML parsing and serializing
 - XInclude and XSD include/import (experimental)
 
 [^1]: The performance of different XML libraries can vary significantly.
